@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data", "Source\MySql.Data\MariaDB.Data.csproj", "{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data.Tests", "Tests\MySql.Data.Tests\MariaDB.Data.Tests.csproj", "{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|x64.Build.0 = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Debug|x86.Build.0 = Debug|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|x64.ActiveCfg = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|x64.Build.0 = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}.Release|x86.Build.0 = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|x64.Build.0 = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|x64.ActiveCfg = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|x64.Build.0 = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
