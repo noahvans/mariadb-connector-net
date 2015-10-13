@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data", "Source\MySql.Data\MariaDB.Data.csproj", "{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data", "Source\MariaDB.Data\MariaDB.Data.csproj", "{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data.Tests", "Tests\MySql.Data.Tests\MariaDB.Data.Tests.csproj", "{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MariaDB.Data.Tests", "Tests\MariaDB.Data.Tests\MariaDB.Data.Tests.csproj", "{F29E5B3D-7F76-4CF9-BF5E-8E3A1377B1E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
