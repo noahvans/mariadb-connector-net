@@ -9,7 +9,7 @@ Build Status
 |DNX|pending|pending|OK!|pending|pending|
 |CLR4|N/A|N/A|OK!|N/A|N/A|
 |CLR2|N/A|N/A|OK!|N/A|N/A|
-|MONO|pending|pending|pending|pending|pending|
+|MONO|[![Travis](https://travis-ci.org/noahvans/mariadb-connector-cs.svg?branch=dev)](https://travis-ci.org/noahvans/mariadb-connector-cs)|pending|pending|pending|pending|
 
 Get .NET Core
 -------------
