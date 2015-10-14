@@ -1,0 +1,8 @@
+language: csharp
+solution: MariaDBClient.CLR4.sln
+install:
+  - nuget restore MariaDBClient.CLR4.sln
+  - nuget install NUnit.Runners -Version 2.6.4 -OutputDirectory testrunner
+script:
+  - xbuild /p:Configuration=Release MariaDBClient.CLR4.sln
+  - mono ./testrunner/NUnit.Runners.2.6.4/tools/nunit-console.exe ./Tests/MariaDB.Data.Tests/bin/Release/MariaDB.Data.Tests.dll
