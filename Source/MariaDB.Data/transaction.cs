@@ -1,14 +1,14 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
@@ -38,9 +38,9 @@ namespace MariaDB.Data.MySqlClient
         /// </summary>
         /// <value>The <see cref="MySqlConnection"/> object associated with this transaction.</value>
         /// <remarks>
-        /// A single application may have multiple database connections, each 
-        /// with zero or more transactions. This property enables you to 
-        /// determine the connection object associated with a particular 
+        /// A single application may have multiple database connections, each
+        /// with zero or more transactions. This property enables you to
+        /// determine the connection object associated with a particular
         /// transaction created by <see cref="MySqlConnection.BeginTransaction()"/>.
         /// </remarks>
         public new MySqlConnection Connection
@@ -55,7 +55,7 @@ namespace MariaDB.Data.MySqlClient
         /// The <see cref="IsolationLevel"/> for this transaction. The default is <b>ReadCommitted</b>.
         /// </value>
         /// <remarks>
-        /// Parallel transactions are not supported. Therefore, the IsolationLevel 
+        /// Parallel transactions are not supported. Therefore, the IsolationLevel
         /// applies to the entire transaction.
         /// </remarks>
         public override IsolationLevel IsolationLevel
@@ -68,7 +68,7 @@ namespace MariaDB.Data.MySqlClient
             get { return conn; }
         }
 
-        #endregion
+        #endregion Properties
 
         protected override void Dispose(bool disposing)
         {

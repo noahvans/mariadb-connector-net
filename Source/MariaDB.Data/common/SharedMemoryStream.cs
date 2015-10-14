@@ -1,23 +1,22 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.IO;
 using MariaDB.Data.MySqlClient;
-using System.Diagnostics;
-
 
 namespace MariaDB.Data.Common
 {
@@ -31,8 +30,8 @@ namespace MariaDB.Data.Common
     {
         private const uint FILE_MAP_WRITE = 0x0002;
 
-        IntPtr fileMapping;
-        IntPtr view;
+        private IntPtr fileMapping;
+        private IntPtr view;
 
         public SharedMemory(string name, IntPtr size)
         {
@@ -50,12 +49,11 @@ namespace MariaDB.Data.Common
             get { return view; }
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
 
         protected virtual void Dispose(bool disposing)
         {
@@ -74,8 +72,8 @@ namespace MariaDB.Data.Common
                 }
             }
         }
-
     }
+
     /// <summary>
     /// Summary description for SharedMemoryStream.
     /// </summary>
@@ -123,12 +121,12 @@ namespace MariaDB.Data.Common
                     connectionClosed.Close();
                 }
                 connectionClosed = null;
-                EventWaitHandle[] handles = 
+                EventWaitHandle[] handles =
                 {serverRead, serverWrote, clientRead, clientWrote};
 
-                for(int i=0; i< handles.Length; i++)
+                for (int i = 0; i < handles.Length; i++)
                 {
-                    if(handles[i] != null)
+                    if (handles[i] != null)
                         handles[i].Close();
                 }
                 if (data != null)
@@ -146,11 +144,10 @@ namespace MariaDB.Data.Common
             {
                 connectRequest =
                     EventWaitHandle.OpenExisting(memoryName + "_CONNECT_REQUEST");
-               
             }
             catch (Exception)
             {
-                // If server runs as service, its shared memory is global 
+                // If server runs as service, its shared memory is global
                 // And if connector runs in user session, it needs to prefix
                 // shared memory name with "Global\"
                 string prefixedMemoryName = @"Global\" + memoryName;
@@ -172,15 +169,14 @@ namespace MariaDB.Data.Common
             }
         }
 
-
         private void SetupEvents()
         {
             string prefix = memoryName + "_" + connectNumber;
             data = new SharedMemory(prefix + "_DATA", (IntPtr)BUFFERLENGTH);
             serverWrote = EventWaitHandle.OpenExisting(prefix + "_SERVER_WROTE");
-            serverRead  = EventWaitHandle.OpenExisting(prefix + "_SERVER_READ");
+            serverRead = EventWaitHandle.OpenExisting(prefix + "_SERVER_READ");
             clientWrote = EventWaitHandle.OpenExisting(prefix + "_CLIENT_WROTE");
-            clientRead  = EventWaitHandle.OpenExisting(prefix + "_CLIENT_READ");
+            clientRead = EventWaitHandle.OpenExisting(prefix + "_CLIENT_READ");
             connectionClosed = EventWaitHandle.OpenExisting(prefix + "_CONNECTION_CLOSED");
 
             // tell the server we are ready
@@ -188,6 +184,7 @@ namespace MariaDB.Data.Common
         }
 
         #region Properties
+
         public override bool CanRead
         {
             get { return true; }
@@ -214,11 +211,11 @@ namespace MariaDB.Data.Common
             set { }
         }
 
-        #endregion
+        #endregion Properties
 
         public override void Flush()
         {
-            // No need to flush anything to disk ,as our shared memory is backed 
+            // No need to flush anything to disk ,as our shared memory is backed
             // by the page file
         }
 
@@ -236,7 +233,7 @@ namespace MariaDB.Data.Common
                     throw new TimeoutException("Timeout when reading from shared memory");
 
                 if (waitHandles[index] == connectionClosed)
-                    throw new MySqlException("Connection to server lost",true, null);
+                    throw new MySqlException("Connection to server lost", true, null);
 
                 if (readTimeout != System.Threading.Timeout.Infinite)
                 {
@@ -282,7 +279,7 @@ namespace MariaDB.Data.Common
                 stopwatch.Stop();
 
                 if (waitHandles[index] == connectionClosed)
-                    throw new MySqlException("Connection to server lost",true, null);
+                    throw new MySqlException("Connection to server lost", true, null);
 
                 if (index == WaitHandle.WaitTimeout)
                     throw new TimeoutException("Timeout when reading from shared memory");
@@ -340,7 +337,7 @@ namespace MariaDB.Data.Common
                 writeTimeout = value;
             }
         }
-
     }
+
 #endif
 }

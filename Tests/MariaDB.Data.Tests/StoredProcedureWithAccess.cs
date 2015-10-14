@@ -1,24 +1,19 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Data;
-using MariaDB.Data.MySqlClient;
-using NUnit.Framework;
 using System.Globalization;
-using System.Threading;
-using MariaDB.Data.Types;
-using System.Data.Common;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -38,7 +33,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         public void CallingStoredProcWithOnlyExecPrivs()
         {
             if (Version < new Version(5, 0)) return;
-            
+
             execSQL("CREATE PROCEDURE spTest() BEGIN SELECT 1; END");
             execSQL("CREATE PROCEDURE spTest2() BEGIN SELECT 1; END");
             suExecSQL("CREATE USER abc IDENTIFIED BY 'abc'");
@@ -53,9 +48,9 @@ namespace MariaDB.Data.MySqlClient.Tests
                     c.Open();
                     MySqlCommand cmd = new MySqlCommand("spTest", c);
                     cmd.CommandType = CommandType.StoredProcedure;
-                        object o = cmd.ExecuteScalar();
+                    object o = cmd.ExecuteScalar();
 
-                    try 
+                    try
                     {
                         cmd.CommandText = "spTest2";
                         cmd.ExecuteScalar();
@@ -304,16 +299,16 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual(MySqlDbType.Int32, cmd.Parameters[0].MySqlDbType);
         }
 
-        /// <summary> 
-        /// Bug #49642	FormatException when returning empty string from a stored function 
-        /// </summary> 
+        /// <summary>
+        /// Bug #49642	FormatException when returning empty string from a stored function
+        /// </summary>
         [Test]
         public void NotSpecifyingDataTypeOfReturnValue()
         {
             if (Version < new Version(5, 0)) return;
 
-            execSQL(@"CREATE FUNCTION `TestFunction`() 
-                RETURNS varchar(20) 
+            execSQL(@"CREATE FUNCTION `TestFunction`()
+                RETURNS varchar(20)
                 RETURN ''");
             MySqlCommand cmd = new MySqlCommand("TestFunction", conn);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -332,7 +327,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         public void UpdateBatchSizeMoreThanOne()
         {
             execSQL("DROP TABLE IF EXISTS test");
-            execSQL(@"CREATE TABLE test(fldID INT NOT NULL, 
+            execSQL(@"CREATE TABLE test(fldID INT NOT NULL,
                 fldValue VARCHAR(50) NOT NULL, PRIMARY KEY(fldID))");
 
             MySqlDataAdapter adapter = new MySqlDataAdapter("SELECT * FROM test", conn);

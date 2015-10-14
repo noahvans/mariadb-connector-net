@@ -1,23 +1,23 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using MariaDB.Data.MySqlClient.Properties;
 using MariaDB.Data.Types;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -114,15 +114,15 @@ namespace MariaDB.Data.MySqlClient
         public bool Cached
         {
             get { return cached; }
-            set 
-            { 
+            set
+            {
                 cached = value;
                 if (cached && cachedValues == null)
                     cachedValues = new List<IMySqlValue[]>();
             }
         }
 
-        #endregion
+        #endregion Properties
 
         /// <summary>
         /// return the ordinal for the given column name
@@ -182,7 +182,6 @@ namespace MariaDB.Data.MySqlClient
                 totalRows++;
             return fetched;
         }
-
 
         public bool NextRow(CommandBehavior behavior)
         {
@@ -245,7 +244,6 @@ namespace MariaDB.Data.MySqlClient
         {
             if (!readDone)
             {
-
                 // if we have rows but the user didn't read the first one then mark it as skipped
                 if (HasRows && rowIndex == -1)
                     skippedRows++;
@@ -259,7 +257,7 @@ namespace MariaDB.Data.MySqlClient
                 }
                 catch (System.IO.IOException)
                 {
-                    // it is ok to eat IO exceptions here, we just want to 
+                    // it is ok to eat IO exceptions here, we just want to
                     // close the result set
                 }
                 readDone = true;

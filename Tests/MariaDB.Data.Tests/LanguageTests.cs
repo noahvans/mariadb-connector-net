@@ -1,22 +1,17 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Data;
-using System.IO;
-using System.Globalization;
-using System.Threading;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -218,7 +213,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             {
                 c.Open();
 
-
                 MySqlCommand cmd = new MySqlCommand("INSERT INTO Test VALUES(1, 'ĞËÇÄŞ')", c);
                 cmd.ExecuteNonQuery();
 
@@ -259,7 +253,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         {
             if (Version < new Version(4, 1)) return;
 
-            createTable(@"CREATE TABLE `test_tbl`(`test` VARCHAR(255) NOT NULL) 
+            createTable(@"CREATE TABLE `test_tbl`(`test` VARCHAR(255) NOT NULL)
                             CHARACTER SET utf8 COLLATE utf8_swedish_ci", "MYISAM");
             execSQL("INSERT INTO test_tbl VALUES ('myval')");
             MySqlCommand cmd = new MySqlCommand("SELECT test FROM test_tbl", conn);
@@ -267,7 +261,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #25651 SELECT does not work properly when WHERE contains UTF-8 characters 
+        /// Bug #25651 SELECT does not work properly when WHERE contains UTF-8 characters
         /// </summary>
         [Test]
         public void UTF8Parameters()

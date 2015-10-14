@@ -513,16 +513,7 @@ namespace MariaDB.Data.MySqlClient.Properties {
         ///DISTINCTROW
         ///DIV
         ///DOUBLE
-        ///DROP
-        ///DUAL
-        ///EACH
-        ///ELSE
-        ///ELSEIF
-        ///ENCLOSED
-        ///ESCAPED
-        ///EXISTS
-        ///EXIT
-        ///EXP [rest of string was truncated]&quot;;.
+        ///DRO [rest of string was truncated]&quot;;.
         /// </summary>
         public static string keywords {
             get {
@@ -1107,7 +1098,7 @@ namespace MariaDB.Data.MySqlClient.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to enable query analysis.  Be sure the MySql.Data.EMTrace assembly is properly located and registered..
+        ///   Looks up a localized string similar to Unable to enable query analysis.  Be sure the MariaDB.Data.EMTrace assembly is properly located and registered..
         /// </summary>
         public static string UnableToEnableQueryAnalysis {
             get {

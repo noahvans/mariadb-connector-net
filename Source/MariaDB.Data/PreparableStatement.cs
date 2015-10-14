@@ -1,22 +1,22 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Collections;
-using System.Text;
 using System.Collections.Generic;
-using MariaDB.Data.MySqlClient.Properties;
 using System.Data;
+using System.Text;
+using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -27,11 +27,11 @@ namespace MariaDB.Data.MySqlClient
     {
         private int executionCount;
         private int statementId;
-        BitArray nullMap;
-        List<MySqlParameter> parametersToSend = new List<MySqlParameter>();
-        MySqlPacket packet;
-        int dataPosition;
-        int nullMapPosition;
+        private BitArray nullMap;
+        private List<MySqlParameter> parametersToSend = new List<MySqlParameter>();
+        private MySqlPacket packet;
+        private int dataPosition;
+        private int nullMapPosition;
 
         public PreparableStatement(MySqlCommand command, string text)
             : base(command, text)
@@ -56,7 +56,7 @@ namespace MariaDB.Data.MySqlClient
             get { return statementId; }
         }
 
-        #endregion
+        #endregion Properties
 
         public virtual void Prepare()
         {
@@ -91,7 +91,7 @@ namespace MariaDB.Data.MySqlClient
             }
 
             packet = new MySqlPacket(Driver.Encoding);
-            
+
             // write out some values that do not change run to run
             packet.WriteByte(0);
             packet.WriteInteger(statementId, 4);
@@ -120,15 +120,15 @@ namespace MariaDB.Data.MySqlClient
 
             // we check this because Mono doesn't ignore the case where nullMapBytes
             // is zero length.
-//            if (nullMapBytes.Length > 0)
-  //          {
-    //            byte[] bits = packet.Buffer;
-      //          nullMap.CopyTo(bits, 
-        //        nullMap.CopyTo(nullMapBytes, 0);
+            //            if (nullMapBytes.Length > 0)
+            //          {
+            //            byte[] bits = packet.Buffer;
+            //          nullMap.CopyTo(bits,
+            //        nullMap.CopyTo(nullMapBytes, 0);
 
             // start constructing our packet
-//            if (Parameters.Count > 0)
-  //              nullMap.CopyTo(packet.Buffer, nullMapPosition);
+            //            if (Parameters.Count > 0)
+            //              nullMap.CopyTo(packet.Buffer, nullMapPosition);
             //if (parameters != null && parameters.Count > 0)
             //else
             //	packet.WriteByte( 0 );

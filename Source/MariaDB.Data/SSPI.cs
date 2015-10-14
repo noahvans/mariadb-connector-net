@@ -1,55 +1,49 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
-using System.Collections;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Net.Sockets;
-
-using HANDLE = System.IntPtr;
 using System;
+using System.Diagnostics;
 using System.IO;
-
+using System.Runtime.InteropServices;
 
 namespace MariaDB.Data.MySqlClient
 {
     internal class SSPI
     {
-        const int SEC_E_OK = 0;
-        const int SEC_I_CONTINUE_NEEDED = 0x90312;
-        const int SEC_I_COMPLETE_NEEDED = 0x1013;
-        const int SEC_I_COMPLETE_AND_CONTINUE = 0x1014;
+        private const int SEC_E_OK = 0;
+        private const int SEC_I_CONTINUE_NEEDED = 0x90312;
+        private const int SEC_I_COMPLETE_NEEDED = 0x1013;
+        private const int SEC_I_COMPLETE_AND_CONTINUE = 0x1014;
 
-        const int SECPKG_CRED_OUTBOUND = 2;
-        const int SECURITY_NETWORK_DREP = 0;
-        const int SECURITY_NATIVE_DREP = 0x10;
-        const int SECPKG_CRED_INBOUND = 1;
-        const int MAX_TOKEN_SIZE = 12288;
-        const int SECPKG_ATTR_SIZES = 0;
-        const int STANDARD_CONTEXT_ATTRIBUTES = 0;
+        private const int SECPKG_CRED_OUTBOUND = 2;
+        private const int SECURITY_NETWORK_DREP = 0;
+        private const int SECURITY_NATIVE_DREP = 0x10;
+        private const int SECPKG_CRED_INBOUND = 1;
+        private const int MAX_TOKEN_SIZE = 12288;
+        private const int SECPKG_ATTR_SIZES = 0;
+        private const int STANDARD_CONTEXT_ATTRIBUTES = 0;
 
-        SECURITY_HANDLE outboundCredentials = new SECURITY_HANDLE(0);
-        SECURITY_HANDLE clientContext = new SECURITY_HANDLE(0);
-        Stream stream;
-        String targetName;
-        byte[] packetHeader;
-        int seq = 3;
-
+        private SECURITY_HANDLE outboundCredentials = new SECURITY_HANDLE(0);
+        private SECURITY_HANDLE clientContext = new SECURITY_HANDLE(0);
+        private Stream stream;
+        private String targetName;
+        private byte[] packetHeader;
+        private int seq = 3;
 
         [DllImport("secur32", CharSet = CharSet.Auto)]
-        static extern int AcquireCredentialsHandle(
-            string pszPrincipal, 
-            string pszPackage, 
+        private static extern int AcquireCredentialsHandle(
+            string pszPrincipal,
+            string pszPackage,
             int fCredentialUse,
             IntPtr PAuthenticationID,
             IntPtr pAuthData,
@@ -59,14 +53,14 @@ namespace MariaDB.Data.MySqlClient
             ref SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int InitializeSecurityContext(
+        private static extern int InitializeSecurityContext(
             ref SECURITY_HANDLE phCredential,
             IntPtr phContext,
             string pszTargetName,
             int fContextReq,
             int Reserved1,
             int TargetDataRep,
-            IntPtr pInput, 
+            IntPtr pInput,
             int Reserved2,
             out SECURITY_HANDLE phNewContext,
             out SecBufferDesc pOutput,
@@ -74,24 +68,24 @@ namespace MariaDB.Data.MySqlClient
             out SECURITY_INTEGER ptsExpiry);
 
         [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int InitializeSecurityContext(
+        private static extern int InitializeSecurityContext(
             ref SECURITY_HANDLE phCredential,
-            ref SECURITY_HANDLE phContext, 
+            ref SECURITY_HANDLE phContext,
             string pszTargetName,
             int fContextReq,
             int Reserved1,
             int TargetDataRep,
-            ref SecBufferDesc SecBufferDesc, 
+            ref SecBufferDesc SecBufferDesc,
             int Reserved2,
             out SECURITY_HANDLE phNewContext,
             out SecBufferDesc pOutput,
             out uint pfContextAttr,
             out SECURITY_INTEGER ptsExpiry);
 
-         [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
-        static extern int CompleteAuthToken(
-            ref SECURITY_HANDLE phContext,
-            ref SecBufferDesc pToken );
+        [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern int CompleteAuthToken(
+           ref SECURITY_HANDLE phContext,
+           ref SecBufferDesc pToken);
 
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int QueryContextAttributes(
@@ -105,8 +99,6 @@ namespace MariaDB.Data.MySqlClient
         [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern int DeleteSecurityContext(ref SECURITY_HANDLE pCred);
 
-
-
         public SSPI(string targetName, Stream stream, int seqNo)
         {
             this.targetName = null;
@@ -114,7 +106,6 @@ namespace MariaDB.Data.MySqlClient
             packetHeader = new byte[4];
             seq = seqNo;
         }
-
 
         // Read MySQL packet
         // since SSPI blobs data cannot be larger than ~12K,
@@ -125,7 +116,7 @@ namespace MariaDB.Data.MySqlClient
             MySqlStream.ReadFully(stream, packetHeader, 0, 4);
             int length = (int)(packetHeader[0] + (packetHeader[1] << 8) +
                 (packetHeader[2] << 16));
-            seq = packetHeader[3]+1;
+            seq = packetHeader[3] + 1;
             buffer = new byte[length];
             MySqlStream.ReadFully(stream, buffer, 0, length);
 
@@ -157,7 +148,7 @@ namespace MariaDB.Data.MySqlClient
             ss = AcquireCredentialsHandle(null, "Negotiate", SECPKG_CRED_OUTBOUND,
                   IntPtr.Zero, IntPtr.Zero, 0, IntPtr.Zero, ref outboundCredentials,
                   ref lifetime);
-            if(ss != SEC_E_OK)
+            if (ss != SEC_E_OK)
             {
                 throw new MySqlException(
                     "AcquireCredentialsHandle failed with errorcode" + ss);
@@ -183,13 +174,12 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-
-        void InitializeClient(out byte[] clientBlob, byte[] serverBlob, 
+        private void InitializeClient(out byte[] clientBlob, byte[] serverBlob,
             out bool continueProcessing)
         {
             clientBlob = null;
             continueProcessing = true;
-            SecBufferDesc clientBufferDesc = new SecBufferDesc(MAX_TOKEN_SIZE); 
+            SecBufferDesc clientBufferDesc = new SecBufferDesc(MAX_TOKEN_SIZE);
             SECURITY_INTEGER lifetime = new SECURITY_INTEGER(0);
             int ss = -1;
             try
@@ -210,12 +200,11 @@ namespace MariaDB.Data.MySqlClient
                         out clientContext,
                         out clientBufferDesc,
                         out ContextAttributes,
-                        out lifetime); 
-
+                        out lifetime);
                 }
                 else
                 {
-                    String s = System.Text.Encoding.UTF8.GetString(serverBlob, 0, 
+                    String s = System.Text.Encoding.UTF8.GetString(serverBlob, 0,
                         serverBlob.Length);
                     SecBufferDesc serverBufferDesc = new SecBufferDesc(serverBlob);
 
@@ -229,7 +218,7 @@ namespace MariaDB.Data.MySqlClient
                             SECURITY_NETWORK_DREP,
                             ref serverBufferDesc,
                             0,
-                            out clientContext, 
+                            out clientContext,
                             out clientBufferDesc,
                             out ContextAttributes,
                             out lifetime);
@@ -239,7 +228,6 @@ namespace MariaDB.Data.MySqlClient
                         serverBufferDesc.Dispose();
                     }
                 }
-
 
                 if ((SEC_I_COMPLETE_NEEDED == ss)
                     || (SEC_I_COMPLETE_AND_CONTINUE == ss))
@@ -253,7 +241,7 @@ namespace MariaDB.Data.MySqlClient
                     ss != SEC_I_COMPLETE_AND_CONTINUE)
                 {
                     throw new MySqlException(
-                        "InitializeSecurityContext() failed  with errorcode "+ss);
+                        "InitializeSecurityContext() failed  with errorcode " + ss);
                 }
 
                 clientBlob = clientBufferDesc.GetSecBufferByteArray();
@@ -266,11 +254,9 @@ namespace MariaDB.Data.MySqlClient
         }
     }
 
-
     [StructLayout(LayoutKind.Sequential)]
-    struct SecBufferDesc : IDisposable
+    internal struct SecBufferDesc : IDisposable
     {
-
         public int ulVersion;
         public int cBuffers;
         public IntPtr pBuffers; //Point to SecBuffer
@@ -315,7 +301,7 @@ namespace MariaDB.Data.MySqlClient
                 throw new InvalidOperationException("Object has already been disposed!!!");
             }
             Debug.Assert(cBuffers == 1);
-            SecBuffer secBuffer = (SecBuffer)Marshal.PtrToStructure(pBuffers, 
+            SecBuffer secBuffer = (SecBuffer)Marshal.PtrToStructure(pBuffers,
                 typeof(SecBuffer));
             if (secBuffer.cbBuffer > 0)
             {
@@ -324,7 +310,6 @@ namespace MariaDB.Data.MySqlClient
             }
             return (Buffer);
         }
-
     }
 
     public enum SecBufferType
@@ -338,8 +323,8 @@ namespace MariaDB.Data.MySqlClient
     [StructLayout(LayoutKind.Sequential)]
     public struct SecHandle //=PCtxtHandle
     {
-        IntPtr dwLower; // ULONG_PTR translates to IntPtr not to uint
-        IntPtr dwUpper; // this is crucial for 64-Bit Platforms
+        private IntPtr dwLower; // ULONG_PTR translates to IntPtr not to uint
+        private IntPtr dwUpper; // this is crucial for 64-Bit Platforms
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -348,7 +333,6 @@ namespace MariaDB.Data.MySqlClient
         public int cbBuffer;
         public int BufferType;
         public IntPtr pvBuffer;
-
 
         public SecBuffer(int bufferSize)
         {
@@ -382,11 +366,13 @@ namespace MariaDB.Data.MySqlClient
             }
         }
     }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct SECURITY_INTEGER
     {
         public uint LowPart;
         public int HighPart;
+
         public SECURITY_INTEGER(int dummy)
         {
             LowPart = 0;
@@ -399,6 +385,7 @@ namespace MariaDB.Data.MySqlClient
     {
         public uint LowPart;
         public uint HighPart;
+
         public SECURITY_HANDLE(int dummy)
         {
             LowPart = HighPart = 0;
@@ -413,6 +400,4 @@ namespace MariaDB.Data.MySqlClient
         public uint cbBlockSize;
         public uint cbSecurityTrailer;
     };
-
 }
-

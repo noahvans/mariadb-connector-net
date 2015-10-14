@@ -1,25 +1,25 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Data.Common;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Text;
-using MariaDB.Data.MySqlClient.Properties;
+using System.Data.Common;
 using System.Globalization;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -27,10 +27,13 @@ namespace MariaDB.Data.MySqlClient
     {
         private static Dictionary<string, string> validKeywords =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
         private static Dictionary<string, PropertyDefaultValue> defaultValues =
             new Dictionary<string, PropertyDefaultValue>(StringComparer.OrdinalIgnoreCase);
+
         private Dictionary<string, object> values =
             new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
         private bool hasProcAccess = true;
 
         static MySqlConnectionStringBuilder()
@@ -68,7 +71,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets the name of the database the connection should 
+        /// Gets or sets the name of the database the connection should
         /// initially connect to.
         /// </summary>
         [Category("Connection")]
@@ -159,7 +162,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets the base name of the shared memory objects used to 
+        /// Gets or sets the base name of the shared memory objects used to
         /// communicate with MySQL when the shared memory protocol is being used.
         /// </summary>
         [Category("Connection")]
@@ -204,7 +207,7 @@ namespace MariaDB.Data.MySqlClient
             set
             {
                 // Timeout in milliseconds should not exceed maximum for 32 bit
-                // signed integer (~24 days). We truncate the value if it exceeds 
+                // signed integer (~24 days). We truncate the value if it exceeds
                 // maximum (MySqlCommand.CommandTimeout uses the same technique
                 uint timeout = Math.Min(value, Int32.MaxValue / 1000);
                 if (timeout != value)
@@ -233,7 +236,7 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Default Command Timeout", value); }
         }
 
-        #endregion
+        #endregion Server Properties
 
         #region Authentication Properties
 
@@ -285,6 +288,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
 #if !CF
+
         [Category("Authentication")]
         [DisplayName("Certificate File")]
         [Description("Certificate file in PKCS#12 format (.pfx)")]
@@ -338,6 +342,7 @@ namespace MariaDB.Data.MySqlClient
                 SetValue("Certificate Thumbprint", value);
             }
         }
+
 #endif
 
         [Category("Authentication")]
@@ -360,7 +365,7 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #endregion
+        #endregion Authentication Properties
 
         #region Other Properties
 
@@ -379,7 +384,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets a boolean value indicating if zero datetime values should be 
+        /// Gets or sets a boolean value indicating if zero datetime values should be
         /// converted to DateTime.MinValue.
         /// </summary>
         [Category("Advanced")]
@@ -541,7 +546,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Use Affected Rows", value); }
         }
 
-
         [Category("Advanced")]
         [DisplayName("Old Guids")]
         [Description("Treat binary(16) columns as guids")]
@@ -577,7 +581,7 @@ namespace MariaDB.Data.MySqlClient
 
         [Category("Advanced")]
         [DisplayName("Table Cache")]
-        [Description(@"Enables or disables caching of TableDirect command.  
+        [Description(@"Enables or disables caching of TableDirect command.
             A value of yes enables the cache while no disables it.")]
         [DefaultValue(false)]
         [ValidKeywords("tablecache, table cache")]
@@ -617,8 +621,7 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Replication", value); }
         }
 
-
-        #endregion
+        #endregion Other Properties
 
         #region Pooling Properties
 
@@ -708,7 +711,7 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Cache Server Properties", value); }
         }
 
-        #endregion
+        #endregion Pooling Properties
 
         #region Language and Character Set Properties
 
@@ -768,6 +771,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
 #if !CF
+
         /// <summary>
         /// Indicates whether to use SSL connections and how to handle server certificate errors.
         /// </summary>
@@ -780,9 +784,10 @@ namespace MariaDB.Data.MySqlClient
             get { return (MySqlSslMode)values["Ssl Mode"]; }
             set { SetValue("Ssl Mode", value); }
         }
+
 #endif
 
-        #endregion
+        #endregion Language and Character Set Properties
 
         internal bool HasProcAccess
         {
@@ -803,6 +808,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
 #if !CF
+
         public override bool ContainsKey(string keyword)
         {
             try
@@ -816,6 +822,7 @@ namespace MariaDB.Data.MySqlClient
                 return false;
             }
         }
+
 #endif
 
         public override object this[string keyword]
@@ -904,7 +911,7 @@ namespace MariaDB.Data.MySqlClient
         private static void NormalizeValue(string keyword, ref object value)
         {
             // Handle special case "Integrated Security=SSPI"
-            // Integrated Security is a logically bool parameter, SSPI value 
+            // Integrated Security is a logically bool parameter, SSPI value
             // for it is the same as "true" (SSPI is SQL Server legacy value
             if (keyword == "Integrated Security" && value is string &&
                 ((string)value).ToLower(CultureInfo.InvariantCulture) == "sspi")
@@ -957,7 +964,7 @@ namespace MariaDB.Data.MySqlClient
             if (!validKeywords.ContainsKey(key))
                 throw new ArgumentException(Resources.KeywordNotSupported, keyword);
 #if CF
-            if (validKeywords[key] == "Certificate File" || validKeywords[key] == "Certificate Password" || validKeywords[key] == "SSL Mode" 
+            if (validKeywords[key] == "Certificate File" || validKeywords[key] == "Certificate Password" || validKeywords[key] == "SSL Mode"
                 || validKeywords[key] == "Encrypt" || validKeywords[key] == "Certificate Store Location" || validKeywords[key] == "Certificate Thumbprint")
                 throw new ArgumentException(Resources.KeywordNotSupported, validKeywords[key]);
 #endif

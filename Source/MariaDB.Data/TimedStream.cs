@@ -1,43 +1,40 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.IO;
-using System.Net.Sockets;
-using System.Diagnostics;
 using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
     /// <summary>
     /// Stream that supports timeout of IO operations.
-    /// This class is used is used to support timeouts for SQL command, where a 
-    /// typical operation involves several network reads/writes. 
+    /// This class is used is used to support timeouts for SQL command, where a
+    /// typical operation involves several network reads/writes.
     /// Timeout here is defined as the accumulated duration of all IO operations.
     /// </summary>
-    
+
     internal class TimedStream : Stream
     {
-        Stream baseStream;
+        private Stream baseStream;
 
-        int timeout;
-        int lastReadTimeout;
-        int lastWriteTimeout;
-        LowResolutionStopwatch stopwatch;
-        bool isClosed;
+        private int timeout;
+        private int lastReadTimeout;
+        private int lastWriteTimeout;
+        private LowResolutionStopwatch stopwatch;
+        private bool isClosed;
 
-
-        enum IOKind
+        private enum IOKind
         {
             Read,
             Write
@@ -59,13 +56,12 @@ namespace MariaDB.Data.MySqlClient
             stopwatch = new LowResolutionStopwatch();
         }
 
-
         /// <summary>
         /// Figure out whether it is necessary to reset timeout on stream.
         /// We track the current value of timeout and try to avoid
         /// changing it too often, because setting Read/WriteTimeout property
-        /// on network stream maybe a slow operation that involves a system call 
-        /// (setsockopt). Therefore, we allow a small difference, and do not 
+        /// on network stream maybe a slow operation that involves a system call
+        /// (setsockopt). Therefore, we allow a small difference, and do not
         /// reset timeout if current value is slightly greater than the requested
         /// one (within 0.1 second).
         /// </summary>
@@ -77,15 +73,14 @@ namespace MariaDB.Data.MySqlClient
                 return true;
             if (newValue > currentValue)
                 return true;
-            if (currentValue>= newValue + 100)
+            if (currentValue >= newValue + 100)
                 return true;
 
             return false;
-
         }
+
         private void StartTimer(IOKind op)
         {
-
             int streamTimeout;
 
             if (timeout == System.Threading.Timeout.Infinite)
@@ -119,6 +114,7 @@ namespace MariaDB.Data.MySqlClient
 
             stopwatch.Start();
         }
+
         private void StopTimer()
         {
             if (timeout == System.Threading.Timeout.Infinite)
@@ -126,10 +122,10 @@ namespace MariaDB.Data.MySqlClient
 
             stopwatch.Stop();
 
-            // Normally, a timeout exception would be thrown  by stream itself, 
-            // since we set the read/write timeout  for the stream.  However 
-            // there is a gap between  end of IO operation and stopping the 
-            // stop watch,  and it makes it possible for timeout to exceed 
+            // Normally, a timeout exception would be thrown  by stream itself,
+            // since we set the read/write timeout  for the stream.  However
+            // there is a gap between  end of IO operation and stopping the
+            // stop watch,  and it makes it possible for timeout to exceed
             // even after IO completed successfully.
             if (stopwatch.ElapsedMilliseconds > timeout)
             {
@@ -137,6 +133,7 @@ namespace MariaDB.Data.MySqlClient
                 throw new TimeoutException("Timeout in IO operation");
             }
         }
+
         public override bool CanRead
         {
             get { return baseStream.CanRead; }
@@ -251,6 +248,7 @@ namespace MariaDB.Data.MySqlClient
             get { return baseStream.ReadTimeout; }
             set { baseStream.ReadTimeout = value; }
         }
+
         public override int WriteTimeout
         {
             get { return baseStream.WriteTimeout; }
@@ -274,14 +272,13 @@ namespace MariaDB.Data.MySqlClient
             stopwatch.Reset();
         }
 
-
         /// <summary>
         /// Common handler for IO exceptions.
-        /// Resets timeout to infinity if timeout exception is 
+        /// Resets timeout to infinity if timeout exception is
         /// detected and stops the times.
         /// </summary>
         /// <param name="e">original exception</param>
-        void HandleException(Exception e)
+        private void HandleException(Exception e)
         {
             stopwatch.Stop();
             ResetTimeout(-1);

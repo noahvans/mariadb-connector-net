@@ -1,26 +1,25 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Data;
-using System.Text;
-using MariaDB.Data.Common;
-using System.Globalization;
-using System.Diagnostics;
-using System.Data.SqlTypes;
-using MariaDB.Data.Types;
 using System.Collections;
+using System.Data;
+using System.Data.SqlTypes;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using MariaDB.Data.MySqlClient.Properties;
+using MariaDB.Data.Types;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -32,16 +31,16 @@ namespace MariaDB.Data.MySqlClient
 
         protected override DataTable GetCollections()
         {
-           DataTable dt = base.GetCollections();
+            DataTable dt = base.GetCollections();
 
-           object[][] collections = new object[][] 
-            {
+            object[][] collections = new object[][]
+             {
                 new object[] {"Views", 2, 3},
                 new object[] {"ViewColumns", 3, 4},
                 new object[] {"Procedure Parameters", 5, 1},
                 new object[] {"Procedures", 4, 3},
                 new object[] {"Triggers", 2, 4}
-            };
+             };
 
             FillTable(dt, collections);
             return dt;
@@ -51,7 +50,7 @@ namespace MariaDB.Data.MySqlClient
         {
             DataTable dt = base.GetRestrictions();
 
-            object[][] restrictions = new object[][] 
+            object[][] restrictions = new object[][]
             {
                 new object[] {"Procedure Parameters", "Database", "", 0},
                 new object[] {"Procedure Parameters", "Schema", "", 1},
@@ -155,7 +154,7 @@ namespace MariaDB.Data.MySqlClient
             dt.TableName = "ViewColumns";
             dt.Columns[0].ColumnName = "VIEW_CATALOG";
             dt.Columns[1].ColumnName = "VIEW_SCHEMA";
-            dt.Columns[2].ColumnName  = "VIEW_NAME";
+            dt.Columns[2].ColumnName = "VIEW_NAME";
             QuoteDefaultValues(dt);
             return dt;
         }
@@ -193,7 +192,7 @@ namespace MariaDB.Data.MySqlClient
                 else
                     throw;
             }
-            
+
             string[] keys = new string[4];
             keys[0] = "ROUTINE_CATALOG";
             keys[1] = "ROUTINE_SCHEMA";
@@ -295,13 +294,14 @@ namespace MariaDB.Data.MySqlClient
                 else
                     GetParametersForRoutineFromIS(parms, restrictions);
             }
-            else foreach (DataRow routine in routines.Rows)
-            {
-                if (restrictions != null && restrictions.Length >= 3)
-                    restrictions[2] = routine["ROUTINE_NAME"].ToString();
+            else
+                foreach (DataRow routine in routines.Rows)
+                {
+                    if (restrictions != null && restrictions.Length >= 3)
+                        restrictions[2] = routine["ROUTINE_NAME"].ToString();
 
-                GetParametersForRoutineFromIS(parms, restrictions);
-            }
+                    GetParametersForRoutineFromIS(parms, restrictions);
+                }
             parms.TableName = "Procedure Parameters";
             return parms;
         }
@@ -363,14 +363,19 @@ namespace MariaDB.Data.MySqlClient
             {
                 case "VIEWS":
                     return GetViews(restrictions);
+
                 case "PROCEDURES":
                     return GetProcedures(restrictions);
+
                 case "PROCEDURES WITH PARAMETERS":
                     return GetProceduresWithParameters(restrictions);
+
                 case "PROCEDURE PARAMETERS":
                     return GetProcedureParameters(restrictions, null);
+
                 case "TRIGGERS":
                     return GetTriggers(restrictions);
+
                 case "VIEWCOLUMNS":
                     return GetViewColumns(restrictions);
             }
@@ -388,7 +393,7 @@ namespace MariaDB.Data.MySqlClient
                     if (values[i] == null || values[i] == String.Empty) continue;
                     if (where.Length > 0)
                         where.Append(" AND ");
-                    where.AppendFormat(CultureInfo.InvariantCulture, 
+                    where.AppendFormat(CultureInfo.InvariantCulture,
                         "{0} LIKE '{1}'", keys[i], values[i]);
                 }
             }
@@ -424,25 +429,25 @@ namespace MariaDB.Data.MySqlClient
 
             string sql = @"SELECT rc.constraint_catalog, rc.constraint_schema,
                 rc.constraint_name, kcu.table_catalog, kcu.table_schema, rc.table_name,
-                rc.match_option, rc.update_rule, rc.delete_rule, 
+                rc.match_option, rc.update_rule, rc.delete_rule,
                 NULL as referenced_table_catalog,
-                kcu.referenced_table_schema, rc.referenced_table_name 
+                kcu.referenced_table_schema, rc.referenced_table_name
                 FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc
-                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON 
+                LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON
                 kcu.constraint_catalog <=> rc.constraint_catalog AND
-                kcu.constraint_schema <=> rc.constraint_schema AND 
+                kcu.constraint_schema <=> rc.constraint_schema AND
                 kcu.constraint_name <=> rc.constraint_name AND
                 kcu.ORDINAL_POSITION=1 WHERE 1=1";
 
-            StringBuilder where =new StringBuilder();
+            StringBuilder where = new StringBuilder();
             if (restrictions.Length >= 2 && !String.IsNullOrEmpty(restrictions[1]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND rc.constraint_schema LIKE '{0}'", restrictions[1]);
             if (restrictions.Length >= 3 && !String.IsNullOrEmpty(restrictions[2]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND rc.table_name LIKE '{0}'", restrictions[2]);
             if (restrictions.Length >= 4 && !String.IsNullOrEmpty(restrictions[3]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND rc.constraint_name LIKE '{0}'", restrictions[2]);
 
             sql += where.ToString();
@@ -460,13 +465,13 @@ namespace MariaDB.Data.MySqlClient
 
             StringBuilder where = new StringBuilder();
             if (restrictions.Length >= 2 && !String.IsNullOrEmpty(restrictions[1]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND kcu.constraint_schema LIKE '{0}'", restrictions[1]);
             if (restrictions.Length >= 3 && !String.IsNullOrEmpty(restrictions[2]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND kcu.table_name LIKE '{0}'", restrictions[2]);
             if (restrictions.Length >= 4 && !String.IsNullOrEmpty(restrictions[3]))
-                where.AppendFormat(CultureInfo.InvariantCulture, 
+                where.AppendFormat(CultureInfo.InvariantCulture,
                     " AND kcu.constraint_name LIKE '{0}'", restrictions[3]);
 
             sql += where.ToString();
@@ -620,8 +625,8 @@ namespace MariaDB.Data.MySqlClient
             else
                 dtd.Append(GetDataTypeDefaults(type, row));
 
-            while (token != ")" && 
-                   token != "," && 
+            while (token != ")" &&
+                   token != "," &&
                    String.Compare(token, "begin", true) != 0 &&
                    String.Compare(token, "return", true) != 0)
             {
@@ -695,7 +700,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #endregion
-
+        #endregion Procedures Support Rouines
     }
 }

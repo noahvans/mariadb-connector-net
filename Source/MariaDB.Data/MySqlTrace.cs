@@ -1,19 +1,17 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.Reflection;
 using MariaDB.Data.MySqlClient.Properties;
@@ -45,7 +43,7 @@ namespace MariaDB.Data.MySqlClient
             get { return source.Listeners; }
         }
 
-        public static SourceSwitch Switch 
+        public static SourceSwitch Switch
         {
             get { return source.Switch; }
             set { source.Switch = value; }
@@ -60,9 +58,11 @@ namespace MariaDB.Data.MySqlClient
         {
             if (qaEnabled) return;
             // create a EMTraceListener and add it to our source
-            TraceListener l = (TraceListener)Activator.CreateInstance("MySql.EMTrace", 
-                "MySql.EMTrace.EMTraceListener", false, BindingFlags.CreateInstance,
-                null, new object[] { host, postInterval }, null, null).Unwrap();
+#if CLR2
+            TraceListener l = (TraceListener)Activator.CreateInstance(Type.GetType("MySql.EMTrace"), "MySql.EMTrace.EMTraceListener", false, BindingFlags.CreateInstance, null, new object[] { host, postInterval }, null, null);
+#else
+            TraceListener l = (TraceListener)Activator.CreateInstance("MySql.EMTrace", "MySql.EMTrace.EMTraceListener", false, BindingFlags.CreateInstance, null, new object[] { host, postInterval }, null, null).Unwrap();
+#endif
             if (l == null)
                 throw new MySqlException(Resources.UnableToEnableQueryAnalysis);
             source.Listeners.Add(l);
@@ -84,6 +84,7 @@ namespace MariaDB.Data.MySqlClient
         {
             get { return source; }
         }
+
 #endif
 
         internal static void LogInformation(int id, string msg)
@@ -111,11 +112,13 @@ namespace MariaDB.Data.MySqlClient
         }
 
 #if !CF
+
         internal static void TraceEvent(TraceEventType eventType,
             MySqlTraceEventType mysqlEventType, string msgFormat, params object[] args)
         {
             Source.TraceEvent(eventType, (int)mysqlEventType, msgFormat, args);
         }
+
 #endif
     }
 

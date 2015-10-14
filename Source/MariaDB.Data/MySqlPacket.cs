@@ -1,26 +1,26 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Diagnostics;
-using System.Text;
 using System.IO;
+using System.Text;
 using MariaDB.Data.Common;
 using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
-    class MySqlPacket
+    internal class MySqlPacket
     {
         private byte[] tempBuffer = new byte[256];
         private Encoding encoding;
@@ -48,10 +48,10 @@ namespace MariaDB.Data.MySqlClient
         public Encoding Encoding
         {
             get { return encoding; }
-            set 
+            set
             {
                 Debug.Assert(value != null);
-                encoding = value; 
+                encoding = value;
             }
         }
 
@@ -66,7 +66,7 @@ namespace MariaDB.Data.MySqlClient
             set { buffer.Position = (long)value; }
         }
 
-        public int Length 
+        public int Length
         {
             get { return (int)buffer.Length; }
             set { buffer.SetLength(value); }
@@ -74,10 +74,10 @@ namespace MariaDB.Data.MySqlClient
 
         public bool IsLastPacket
         {
-            get 
+            get
             {
                 byte[] bits = buffer.GetBuffer();
-                return bits[0] == 0xfe && Length <= 5; 
+                return bits[0] == 0xfe && Length <= 5;
             }
         }
 
@@ -92,13 +92,12 @@ namespace MariaDB.Data.MySqlClient
             set { version = value; }
         }
 
-        #endregion
+        #endregion Properties
 
         public void Clear()
         {
             Position = 4;
         }
-
 
         #region Byte methods
 
@@ -135,7 +134,7 @@ namespace MariaDB.Data.MySqlClient
             return ReadInteger(c);
         }
 
-        #endregion
+        #endregion Byte methods
 
         #region Integer methods
 
@@ -280,7 +279,7 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #endregion
+        #endregion Integer methods
 
         #region String methods
 
@@ -288,7 +287,7 @@ namespace MariaDB.Data.MySqlClient
         {
             byte[] bytes = encoding.GetBytes(s);
             WriteLength(bytes.Length);
-            Write(bytes, 0, bytes.Length);            
+            Write(bytes, 0, bytes.Length);
         }
 
         public void WriteStringNoNull(string v)
@@ -338,7 +337,7 @@ namespace MariaDB.Data.MySqlClient
                 bits[end] != 0 && (int)bits[end] != -1)
                 end++;
 
-            string s = enc.GetString(bits, 
+            string s = enc.GetString(bits,
                 (int)buffer.Position, end - (int)buffer.Position);
             buffer.Position = end + 1;
             return s;
@@ -348,6 +347,7 @@ namespace MariaDB.Data.MySqlClient
         {
             return ReadString(this.encoding);
         }
-        #endregion        
+
+        #endregion String methods
     }
 }

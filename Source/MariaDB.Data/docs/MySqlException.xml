@@ -7,7 +7,7 @@
       <para>
         Any open connections are not automatically closed when an exception is thrown.  If
         the client application determines that the exception is fatal, it should close any open
-        <see cref="MySqlDataReader"/> objects or <see cref="MySqlConnection"/> objects.
+        <see cref="MySqlDataReader" /> objects or <see cref="MySqlConnection" /> objects.
       </para>
     </remarks>
 
@@ -47,7 +47,5 @@
         }
       </code>
     </example>
-
-
   </MyMembers>
 </MyDocs>

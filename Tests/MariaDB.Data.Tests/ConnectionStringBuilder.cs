@@ -1,20 +1,17 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Data;
-using System.IO;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -64,7 +61,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual(String.Empty, sb.CharacterSet);
             Assert.AreEqual(false, sb.UseCompression);
             Assert.AreEqual("MYSQL", sb.PipeName);
-            Assert.IsFalse(sb.Logging);            
+            Assert.IsFalse(sb.Logging);
             Assert.IsTrue(sb.AllowBatch);
             Assert.IsFalse(sb.ConvertZeroDateTime);
             Assert.AreEqual("MYSQL", sb.SharedMemoryName);
@@ -89,12 +86,14 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
 #if !CF
+
         [Test]
         public void EncryptKeyword()
         {
             string connStr = "database=test;uid=root;server=localhost;encrypt=yes";
             MySqlConnectionStringBuilder sb = new MySqlConnectionStringBuilder(connStr);
         }
+
 #endif
 
         /// <summary>
@@ -110,6 +109,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
 #if !CF
+
         /// <summary>
         /// Bug #59835	.Net Connector MySqlConnectionStringBuilder wrong result ContainsKey function
         /// </summary>
@@ -124,6 +124,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.IsTrue(s.ContainsKey("host"));
             Assert.IsFalse(s.ContainsKey("badkey"));
         }
+
 #endif
 
         [Test]
@@ -134,12 +135,14 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
 #if !CF
+
         [Test]
         public void EncrpytSslmode()
         {
             MySqlConnectionStringBuilder s = new MySqlConnectionStringBuilder("server=localhost;encrypt=true");
             Assert.AreEqual(s.SslMode, MySqlSslMode.Preferred);
         }
+
 #endif
 
         [Test]

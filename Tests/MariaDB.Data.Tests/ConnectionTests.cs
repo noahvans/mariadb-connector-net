@@ -1,25 +1,19 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Data;
-using MariaDB.Data.MySqlClient;
 using MariaDB.Data.MySqlClient.Properties;
-using NUnit.Framework;
-using System.Configuration;
-using System.Security;
-using System.Security.Permissions;
-using System.Net;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -76,12 +70,12 @@ namespace MariaDB.Data.MySqlClient.Tests
         {
             TestIntegratedSecurity(true);
         }
+
         public void TestIntegratedSecurity(bool pooling)
         {
             if (version.Major < 5 && version.Minor < 5) return;
 
             const string PluginName = "authentication_windows";
-
 
             // Check if server has windows authentication plugin is installed
             MySqlCommand cmd = new MySqlCommand("show plugins", rootConn);
@@ -98,7 +92,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                     }
                 }
             }
-            if(!haveWindowsAuthentication)
+            if (!haveWindowsAuthentication)
                 return;
 
             bool haveAuthWindowsUser = false;
@@ -113,22 +107,22 @@ namespace MariaDB.Data.MySqlClient.Tests
                 if (r.Read())
                 {
                     haveAuthWindowsUser = true;
-                    pluginName = (string) r["plugin"];
-                    authenticationString = (string) r["authentication_string"];
+                    pluginName = (string)r["plugin"];
+                    authenticationString = (string)r["authentication_string"];
                 }
             }
 
             // Create mapping for current Windows user=>foo_user
             String windowsUser = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
             windowsUser = windowsUser.Replace("\\", "\\\\");
-            string userMapping = windowsUser+"=foo_user";
+            string userMapping = windowsUser + "=foo_user";
 
             try
             {
                 if (!haveAuthWindowsUser)
                 {
                     suExecSQL(
-                        "CREATE USER auth_windows IDENTIFIED WITH " + PluginName +" as '" +
+                        "CREATE USER auth_windows IDENTIFIED WITH " + PluginName + " as '" +
                          userMapping + "'");
                 }
                 else
@@ -142,7 +136,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                 suExecSQL("grant all privileges on *.* to 'foo_user'@'%'");
                 suExecSQL("grant proxy on foo_user to auth_windows");
 
-
                 // Finally, use IntegratedSecurity=true for the newly created user
                 string connStr = GetConnectionString(true) + ";Integrated Security=SSPI";
 
@@ -154,7 +147,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                 int testIterations = pooling ? 2 : 1;
 
                 int threadId = -1;
-                for (int i = 0; i < testIterations ;i++ )
+                for (int i = 0; i < testIterations; i++)
                 {
                     using (MySqlConnection c = new MySqlConnection(connStr))
                     {
@@ -169,7 +162,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                         // Check if proxy user is correct
                         Assert.IsTrue(user.StartsWith("auth_windows@"));
 
-                        // check if mysql user is correct 
+                        // check if mysql user is correct
                         // (foo_user is mapped to current  OS user)
                         command.CommandText = "select current_user()";
                         string currentUser = (string)command.ExecuteScalar();
@@ -201,6 +194,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                 }
             }
         }
+
 #endif
 
         [Test]
@@ -316,6 +310,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                     c.Close();
                 }
                 */
+
         [Test]
         public void ConnectInVariousWays()
         {
@@ -376,8 +371,8 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #10281 Clone issue with MySqlConnection 
-        /// Bug #27269 MySqlConnection.Clone does not mimic SqlConnection.Clone behaviour 
+        /// Bug #10281 Clone issue with MySqlConnection
+        /// Bug #27269 MySqlConnection.Clone does not mimic SqlConnection.Clone behaviour
         /// </summary>
         [Test]
         public void TestConnectionClone()
@@ -461,7 +456,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #24802 Error Handling 
+        /// Bug #24802 Error Handling
         /// </summary>
         [Test]
         public void TestConnectingSocketBadHostName()
@@ -503,16 +498,17 @@ namespace MariaDB.Data.MySqlClient.Tests
             }
         }
 
-
-        class ConnectionClosedCheck
+        private class ConnectionClosedCheck
         {
             public bool closed = false;
+
             public void stateChangeHandler(object sender, StateChangeEventArgs e)
             {
                 if (e.CurrentState == ConnectionState.Closed)
                     closed = true;
             }
         }
+
         [Test]
         public void ConnectionCloseByGC()
         {
@@ -531,10 +527,12 @@ namespace MariaDB.Data.MySqlClient.Tests
             MySqlCommand cmd = new MySqlCommand("KILL " + threadId, conn);
             cmd.ExecuteNonQuery();
         }
+
         /// <summary>
-        /// Bug #30964 StateChange imperfection 
+        /// Bug #30964 StateChange imperfection
         /// </summary>
-        MySqlConnection rqConnection;
+        private MySqlConnection rqConnection;
+
         [Test]
         public void RunningAQueryFromStateChangeHandler()
         {
@@ -546,7 +544,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             }
         }
 
-        void RunningQueryStateChangeHandler(object sender, StateChangeEventArgs e)
+        private void RunningQueryStateChangeHandler(object sender, StateChangeEventArgs e)
         {
             if (e.CurrentState == ConnectionState.Open)
             {
@@ -557,7 +555,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #31262 NullReferenceException in MySql.Data.MySqlClient.NativeDriver.ExecuteCommand 
+        /// Bug #31262 NullReferenceException in MySql.Data.MySqlClient.NativeDriver.ExecuteCommand
         /// </summary>
         [Test]
         public void ConnectionNotOpenThrowningBadException()
@@ -581,7 +579,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #31433 Username incorrectly cached for logon where case sensitive 
+        /// Bug #31433 Username incorrectly cached for logon where case sensitive
         /// </summary>
         [Test]
         public void CaseSensitiveUserId()
@@ -606,7 +604,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #35619 creating a MySql connection from toolbox generates an error 
+        /// Bug #35619 creating a MySql connection from toolbox generates an error
         /// </summary>
         [Test]
         public void NullConnectionString()
@@ -653,6 +651,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
 #if !CF
+
         [Test]
         public void CanOpenConnectionInMediumTrust()
         {
@@ -690,7 +689,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         /// <summary>
         /// A client can connect to MySQL server using SSL and a pfx file.
         /// <remarks>
-        /// This test requires starting the server with SSL support. 
+        /// This test requires starting the server with SSL support.
         /// For instance, the following command line enables SSL in the server:
         /// mysqld --no-defaults --standalone --console --ssl-ca='MySQLServerDir'\mysql-test\std_data\cacert.pem --ssl-cert='MySQLServerDir'\mysql-test\std_data\server-cert.pem --ssl-key='MySQLServerDir'\mysql-test\std_data\server-key.pem
         /// </remarks>
@@ -708,13 +707,14 @@ namespace MariaDB.Data.MySqlClient.Tests
                 Assert.AreEqual(ConnectionState.Open, c.State);
             }
         }
+
 #endif
 
 #if CF
         /// <summary>
         /// A client running in .NET Compact Framework can't connect to MySQL server using SSL and a pfx file.
         /// <remarks>
-        /// This test requires starting the server with SSL support. 
+        /// This test requires starting the server with SSL support.
         /// For instance, the following command line enables SSL in the server:
         /// mysqld --no-defaults --standalone --console --ssl-ca='MySQLServerDir'\mysql-test\std_data\cacert.pem --ssl-cert='MySQLServerDir'\mysql-test\std_data\server-cert.pem --ssl-key='MySQLServerDir'\mysql-test\std_data\server-key.pem
         /// </remarks>
@@ -736,7 +736,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             MySqlConnection connection = new MySqlConnection(GetConnectionString(true));
             connection.Open();
             Assert.AreEqual(ConnectionState.Open, connection.State);
-            
+
             connection.Open();
             Assert.AreEqual(ConnectionState.Open, connection.State);
 

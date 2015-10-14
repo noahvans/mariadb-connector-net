@@ -1,32 +1,31 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Data;
-using System.IO;
-using NUnit.Framework;
-using System.Transactions;
 using System.Data.Common;
-using System.Threading;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
+using System.Threading;
+using System.Transactions;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
     [TestFixture]
     public class Transactions : BaseTest
     {
-        void TransactionScopeInternal(bool commit)
+        private void TransactionScopeInternal(bool commit)
         {
             createTable("CREATE TABLE Test (key2 VARCHAR(1), name VARCHAR(100), name2 VARCHAR(100))", "INNODB");
             using (MySqlConnection c = new MySqlConnection(GetConnectionString(true)))
@@ -112,8 +111,9 @@ namespace MariaDB.Data.MySqlClient.Tests
                     TransactionScopeMultipleInternal(true);
                 }
         */
+
         /// <summary>
-        /// Bug #34448 Connector .Net 5.2.0 with Transactionscope doesn´t use specified IsolationLevel 
+        /// Bug #34448 Connector .Net 5.2.0 with Transactionscope doesn´t use specified IsolationLevel
         /// </summary>
         [Test]
         public void TransactionScopeWithIsolationLevel()
@@ -139,7 +139,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Bug #27289 Transaction is not rolledback when connection close 
+        /// Bug #27289 Transaction is not rolledback when connection close
         /// </summary>
         [Test]
         public void RollingBackOnClose()
@@ -179,7 +179,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             connStr = String.Format(@"Use Affected Rows=true;allow user variables=yes;Server=localhost;Port=3306;
             Database={0};Uid=root;Connect Timeout=35;default command timeout=90;charset=utf8", database0);
-
 
             execSQL(@"CREATE TABLE `t1` (
                 `Key` int(10) unsigned NOT NULL auto_increment,
@@ -226,12 +225,11 @@ namespace MariaDB.Data.MySqlClient.Tests
                 }
 
                 scope.Complete();
-            }            
+            }
         }
 
-
         /// <summary>
-        /// Bug #22042 mysql-connector-net-5.0.0-alpha BeginTransaction 
+        /// Bug #22042 mysql-connector-net-5.0.0-alpha BeginTransaction
         /// </summary>
         [Test]
         public void Bug22042()
@@ -414,7 +412,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             }
         }
 
-
         private void NestedScopeInternalTest(
             TransactionScopeOption nestedOption,
             bool innerComplete,
@@ -435,7 +432,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                         cmd1.ExecuteNonQuery();
                         using (TransactionScope inner = new TransactionScope(nestedOption))
                         {
-
                             MySqlConnection c2;
                             if (nestedOption == TransactionScopeOption.Required)
                             {
@@ -445,7 +441,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                             }
                             else
                             {
-                                // when TransactionScopeOption.RequiresNew or 
+                                // when TransactionScopeOption.RequiresNew or
                                 // new TransactionScopeOption.Suppress is used,
                                 // we have to use a new transaction. We create a
                                 // new connection for it.
@@ -467,7 +463,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                     }
                     if (outerComplete)
                         outer.Complete();
-
                 }
                 bool innerChangesVisible =
                    ((long)MySqlHelper.ExecuteScalar(conn, "select count(*) from T where str = 'inner'") == 1);
@@ -483,13 +478,12 @@ namespace MariaDB.Data.MySqlClient.Tests
         }
 
         /// <summary>
-        /// Test inner/outer scope behavior, with different scope options, 
+        /// Test inner/outer scope behavior, with different scope options,
         /// completing either inner or outer scope, or both.
         /// </summary>
         [Test]
         public void NestedScope()
         {
-
             // inner scope joins the ambient scope, neither inner not outer  scope completes
             // Expect empty table.
             NestedScopeInternalTest(TransactionScopeOption.Required, false, false, false, false);
@@ -513,8 +507,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             // Expect table with entries for inner and outer scope
             NestedScopeInternalTest(TransactionScopeOption.Required, true, true, true, true);
 
-
-
             // inner scope creates new transaction, neither inner not outer  scope completes
             // Expect empty table.
             NestedScopeInternalTest(TransactionScopeOption.RequiresNew, false, false, false, false);
@@ -529,7 +521,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // inner scope creates new transaction, both complete
             NestedScopeInternalTest(TransactionScopeOption.RequiresNew, true, true, true, true);
-
 
             // inner scope suppresses transaction, neither inner not outer  scope completes
             // Expect changes made by inner scope to be visible
@@ -546,8 +537,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             // inner scope supresses transaction, both complete
             NestedScopeInternalTest(TransactionScopeOption.Suppress, true, true, true, true);
         }
-
-
 
         private void ReusingSameConnection(bool pooling, bool complete)
         {
@@ -641,8 +630,8 @@ namespace MariaDB.Data.MySqlClient.Tests
 
         /// <summary>
         /// Variation of previous test, with a single connection and maual enlistment.
-        /// Checks that  transaction rollback leaves the connection intact (does not close it) 
-        /// and  checks that no command is possible after scope has expired and 
+        /// Checks that  transaction rollback leaves the connection intact (does not close it)
+        /// and  checks that no command is possible after scope has expired and
         /// rollback by timer thread is finished.
         /// </summary>
         [Test]
@@ -674,7 +663,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                     }
 
                     // Here, scope is timed out and rollback is in progress.
-                    // Wait until timeout thread finishes rollback then try to 
+                    // Wait until timeout thread finishes rollback then try to
                     // use an aborted connection.
                     Thread.Sleep(500);
                     try
@@ -692,7 +681,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                 Assert.AreEqual(0, count);
             }
         }
-
 
         /// <summary>
         /// Bug#54681 : Null Reference exception when using transaction
@@ -772,7 +760,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                             command.Parameters.Add("?f5", MySqlDbType.LongBlob);
                             command.CommandTimeout = 0;
                             command.Prepare();
-
 
                             byte[] buffer;
 

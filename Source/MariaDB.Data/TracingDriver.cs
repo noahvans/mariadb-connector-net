@@ -1,24 +1,23 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Text;
-using MariaDB.Data.Types;
-using System.Diagnostics;
 using System.Collections.Generic;
-using MariaDB.Data.MySqlClient.Properties;
+using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using MariaDB.Data.Common;
+using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -38,14 +37,14 @@ namespace MariaDB.Data.MySqlClient
         public override void Open()
         {
             base.Open();
-            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ConnectionOpened, 
+            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ConnectionOpened,
                 Resources.TraceOpenConnection, driverId, Settings.ConnectionString, ThreadID);
         }
 
         public override void Close()
         {
             base.Close();
-            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ConnectionClosed, 
+            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ConnectionClosed,
                 Resources.TraceCloseConnection, driverId);
         }
 
@@ -64,7 +63,7 @@ namespace MariaDB.Data.MySqlClient
 
             base.SendQuery(p);
 
-            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.QueryOpened, 
+            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.QueryOpened,
                 Resources.TraceQueryOpened, driverId, ThreadID, cmdText);
             if (normalized_query != null)
                 MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.QueryNormalized,
@@ -76,7 +75,7 @@ namespace MariaDB.Data.MySqlClient
             try
             {
                 int fieldCount = base.GetResult(statementId, ref affectedRows, ref insertedId);
-                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ResultOpened, 
+                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ResultOpened,
                     Resources.TraceResult, driverId, fieldCount, affectedRows, insertedId);
 
                 return fieldCount;
@@ -84,7 +83,7 @@ namespace MariaDB.Data.MySqlClient
             catch (MySqlException ex)
             {
                 // we got an error so we report it
-                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.Error, 
+                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.Error,
                     Resources.TraceOpenResultError, driverId, ex.Number, ex.Message);
                 throw ex;
             }
@@ -98,8 +97,8 @@ namespace MariaDB.Data.MySqlClient
                 //oldRS = activeResults[statementId];
                 if (Settings.UseUsageAdvisor)
                     ReportUsageAdvisorWarnings(statementId, activeResult);
-                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ResultClosed, 
-                    Resources.TraceResultClosed, driverId, activeResult.TotalRows, activeResult.SkippedRows, 
+                MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.ResultClosed,
+                    Resources.TraceResultClosed, driverId, activeResult.TotalRows, activeResult.SkippedRows,
                     rowSizeInBytes);
                 rowSizeInBytes = 0;
                 activeResult = null;
@@ -127,7 +126,7 @@ namespace MariaDB.Data.MySqlClient
         public override void SetDatabase(string dbName)
         {
             base.SetDatabase(dbName);
-            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.NonQuery, 
+            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.NonQuery,
                 Resources.TraceSetDatabase, driverId, dbName);
         }
 
@@ -154,7 +153,7 @@ namespace MariaDB.Data.MySqlClient
             }
             catch (MySqlException ex)
             {
-                MySqlTrace.TraceEvent(TraceEventType.Error, MySqlTraceEventType.Error, 
+                MySqlTrace.TraceEvent(TraceEventType.Error, MySqlTraceEventType.Error,
                     Resources.TraceFetchError, driverId, ex.Number, ex.Message);
                 throw ex;
             }
@@ -164,7 +163,7 @@ namespace MariaDB.Data.MySqlClient
         {
             base.CloseQuery(connection, statementId);
 
-            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.QueryClosed, 
+            MySqlTrace.TraceEvent(TraceEventType.Information, MySqlTraceEventType.QueryClosed,
                 Resources.TraceQueryDone, driverId);
         }
 
@@ -172,7 +171,7 @@ namespace MariaDB.Data.MySqlClient
         {
             List<MySqlError> warnings = base.ReportWarnings(connection);
             foreach (MySqlError warning in warnings)
-                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.Warning, 
+                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.Warning,
                     Resources.TraceWarning, driverId, warning.Level, warning.Code, warning.Message);
             return warnings;
         }
@@ -191,15 +190,15 @@ namespace MariaDB.Data.MySqlClient
             if (!Settings.UseUsageAdvisor) return;
 
             if (HasStatus(ServerStatusFlags.NoIndex))
-                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning, 
+                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning,
                     Resources.TraceUAWarningNoIndex, driverId, UsageAdvisorWarningFlags.NoIndex);
             else if (HasStatus(ServerStatusFlags.BadIndex))
-                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning, 
+                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning,
                     Resources.TraceUAWarningBadIndex, driverId, UsageAdvisorWarningFlags.BadIndex);
 
             // report abandoned rows
             if (rs.SkippedRows > 0)
-                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning, 
+                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning,
                     Resources.TraceUAWarningSkippedRows, driverId, UsageAdvisorWarningFlags.SkippedRows, rs.SkippedRows);
 
             // report not all fields accessed
@@ -213,8 +212,8 @@ namespace MariaDB.Data.MySqlClient
                         notAccessed.AppendFormat("{0}{1}", delimiter, rs.Fields[i].ColumnName);
                         delimiter = ",";
                     }
-                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning, 
-                    Resources.TraceUAWarningSkippedColumns, driverId, UsageAdvisorWarningFlags.SkippedColumns, 
+                MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning,
+                    Resources.TraceUAWarningSkippedColumns, driverId, UsageAdvisorWarningFlags.SkippedColumns,
                         notAccessed.ToString());
             }
 
@@ -231,7 +230,7 @@ namespace MariaDB.Data.MySqlClient
                         delimiter = ",";
                     }
                     if (s.Length > 0)
-                        MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning, 
+                        MySqlTrace.TraceEvent(TraceEventType.Warning, MySqlTraceEventType.UsageAdvisorWarning,
                             Resources.TraceUAWarningFieldConversion, driverId, UsageAdvisorWarningFlags.FieldConversion,
                             f.ColumnName, s.ToString());
                 }

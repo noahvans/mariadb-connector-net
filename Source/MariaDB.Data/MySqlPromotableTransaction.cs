@@ -1,22 +1,22 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Transactions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
+using System.Transactions;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -30,7 +30,7 @@ namespace MariaDB.Data.MySqlClient
         public MySqlTransaction simpleTransaction;
         public int rollbackThreadId;
 
-        public MySqlTransactionScope(MySqlConnection con, Transaction trans, 
+        public MySqlTransactionScope(MySqlConnection con, Transaction trans,
             MySqlTransaction simpleTransaction)
         {
             connection = con;
@@ -47,7 +47,7 @@ namespace MariaDB.Data.MySqlClient
                 rollbackThreadId = Thread.CurrentThread.ManagedThreadId;
                 while (connection.Reader != null)
                 {
-                    // wait for reader to finish. Maybe we should not wait 
+                    // wait for reader to finish. Maybe we should not wait
                     // forever and cancel it after some time?
                     System.Threading.Thread.Sleep(100);
                 }
@@ -79,12 +79,11 @@ namespace MariaDB.Data.MySqlClient
     {
         // Per-thread stack to manage nested transaction scopes
         [ThreadStatic]
-        static Stack<MySqlTransactionScope> globalScopeStack;
+        private static Stack<MySqlTransactionScope> globalScopeStack;
 
-        MySqlConnection connection;
-        Transaction baseTransaction;
-        Stack<MySqlTransactionScope> scopeStack;
-
+        private MySqlConnection connection;
+        private Transaction baseTransaction;
+        private Stack<MySqlTransactionScope> scopeStack;
 
         public MySqlPromotableTransaction(MySqlConnection connection, Transaction baseTransaction)
         {
@@ -94,7 +93,7 @@ namespace MariaDB.Data.MySqlClient
 
         public Transaction BaseTransaction
         {
-            get 
+            get
             {
                 if (scopeStack.Count > 0)
                     return scopeStack.Peek().baseTransaction;
@@ -118,30 +117,30 @@ namespace MariaDB.Data.MySqlClient
                 return false;
             }
         }
+
         void IPromotableSinglePhaseNotification.Initialize()
         {
-           string valueName = Enum.GetName(
-           typeof(System.Transactions.IsolationLevel), baseTransaction.IsolationLevel);
-           System.Data.IsolationLevel dataLevel = (System.Data.IsolationLevel)Enum.Parse(
-                typeof(System.Data.IsolationLevel), valueName);
-           MySqlTransaction simpleTransaction = connection.BeginTransaction(dataLevel);
+            string valueName = Enum.GetName(
+            typeof(System.Transactions.IsolationLevel), baseTransaction.IsolationLevel);
+            System.Data.IsolationLevel dataLevel = (System.Data.IsolationLevel)Enum.Parse(
+                 typeof(System.Data.IsolationLevel), valueName);
+            MySqlTransaction simpleTransaction = connection.BeginTransaction(dataLevel);
 
-           // We need to save the per-thread scope stack locally.
-           // We cannot always use thread static variable in rollback: when scope
-           // times out, rollback is issued by another thread.
-           if (globalScopeStack == null)
-           {
-               globalScopeStack = new Stack<MySqlTransactionScope>();
-           }
+            // We need to save the per-thread scope stack locally.
+            // We cannot always use thread static variable in rollback: when scope
+            // times out, rollback is issued by another thread.
+            if (globalScopeStack == null)
+            {
+                globalScopeStack = new Stack<MySqlTransactionScope>();
+            }
 
-           scopeStack = globalScopeStack;
-           scopeStack.Push(new MySqlTransactionScope(connection, baseTransaction, 
-              simpleTransaction));
+            scopeStack = globalScopeStack;
+            scopeStack.Push(new MySqlTransactionScope(connection, baseTransaction,
+               simpleTransaction));
         }
 
         void IPromotableSinglePhaseNotification.Rollback(SinglePhaseEnlistment singlePhaseEnlistment)
         {
-
             MySqlTransactionScope current = scopeStack.Peek();
             current.Rollback(singlePhaseEnlistment);
             scopeStack.Pop();
@@ -188,4 +187,3 @@ namespace MariaDB.Data.MySqlClient
         }
     }
 }
-

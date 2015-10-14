@@ -1,24 +1,19 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Collections;
-using System.IO;
-using System.Text;
-using MariaDB.Data.Common;
-using System.Data;
 using MariaDB.Data.MySqlClient.Properties;
-using System.Collections.Generic;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -61,7 +56,7 @@ namespace MariaDB.Data.MySqlClient
             get { return command.Parameters; }
         }
 
-        #endregion
+        #endregion Properties
 
         public virtual void Close(MySqlDataReader reader)
         {
@@ -109,7 +104,7 @@ namespace MariaDB.Data.MySqlClient
 
                     // now we make a guess if this statement will fit in our current stream
                     long estimatedCmdSize = batchedCmd.EstimatedSize();
-                    if (((packet.Length-4) + estimatedCmdSize) > Connection.driver.MaxPacketSize)
+                    if (((packet.Length - 4) + estimatedCmdSize) > Connection.driver.MaxPacketSize)
                     {
                         // it won't, so we setup to start a new run from here
                         parameters = batchedCmd.Parameters;
@@ -127,7 +122,7 @@ namespace MariaDB.Data.MySqlClient
                     else
                         packet.WriteStringNoNull("; ");
                     InternalBindParameters(text, batchedCmd.Parameters, packet);
-                    if ((packet.Length-4) > Connection.driver.MaxPacketSize)
+                    if ((packet.Length - 4) > Connection.driver.MaxPacketSize)
                     {
                         //TODO
                         //stream.InternalBuffer.SetLength(originalLength);
@@ -140,7 +135,7 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        private void InternalBindParameters(string sql, MySqlParameterCollection parameters, 
+        private void InternalBindParameters(string sql, MySqlParameterCollection parameters,
             MySqlPacket packet)
         {
             bool sqlServerMode = command.Connection.Settings.SqlServerMode;
@@ -183,7 +178,7 @@ namespace MariaDB.Data.MySqlClient
         {
             if (Connection.Settings.AllowUserVariables)
                 return true;
-            if (parameterName.StartsWith("@" +StoredProcedure.ParameterPrefix))
+            if (parameterName.StartsWith("@" + StoredProcedure.ParameterPrefix))
                 return true;
             if (parameterName.Length > 1 &&
                 (parameterName[1] == '`' || parameterName[1] == '\''))

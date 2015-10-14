@@ -1,27 +1,23 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
+using System.ComponentModel;
 using System.IO;
-using MariaDB.Data.MySqlClient;
+using System.Runtime.InteropServices;
+using System.Threading;
 using MariaDB.Data.MySqlClient.Properties;
 using Microsoft.Win32.SafeHandles;
-using System.Threading;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.ComponentModel;
-
-
 
 namespace MariaDB.Data.Common
 {
@@ -30,28 +26,29 @@ namespace MariaDB.Data.Common
     /// </summary>
     internal class NamedPipeStream : Stream
     {
-        SafeFileHandle handle;
-        Stream fileStream;
-        int readTimeout = Timeout.Infinite;
-        int writeTimeout = Timeout.Infinite;
-        const int ERROR_PIPE_BUSY = 231;
-        const int ERROR_SEM_TIMEOUT = 121;
+        private SafeFileHandle handle;
+        private Stream fileStream;
+        private int readTimeout = Timeout.Infinite;
+        private int writeTimeout = Timeout.Infinite;
+        private const int ERROR_PIPE_BUSY = 231;
+        private const int ERROR_SEM_TIMEOUT = 121;
 
         public NamedPipeStream(string path, FileAccess mode, uint timeout)
         {
             Open(path, mode, timeout);
         }
 
-        void CancelIo()
+        private void CancelIo()
         {
             bool ok = NativeMethods.CancelIo(handle.DangerousGetHandle());
             if (!ok)
                 throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
         }
-        public void Open( string path, FileAccess mode ,uint timeout )
+
+        public void Open(string path, FileAccess mode, uint timeout)
         {
             IntPtr nativeHandle;
-            for (; ; )
+            for (;;)
             {
                 nativeHandle = NativeMethods.CreateFile(path, NativeMethods.GENERIC_READ | NativeMethods.GENERIC_WRITE,
                              0, null, NativeMethods.OPEN_EXISTING, NativeMethods.FILE_FLAG_OVERLAPPED, 0);
@@ -68,14 +65,14 @@ namespace MariaDB.Data.Common
                 sw.Stop();
                 if (!success)
                 {
-                    if (timeout < sw.ElapsedMilliseconds || 
+                    if (timeout < sw.ElapsedMilliseconds ||
                         Marshal.GetLastWin32Error() == ERROR_SEM_TIMEOUT)
                     {
                         throw new TimeoutException("Timeout waiting for named pipe");
                     }
                     else
                     {
-                        throw new Win32Exception(Marshal.GetLastWin32Error(), 
+                        throw new Win32Exception(Marshal.GetLastWin32Error(),
                             "Error waiting for pipe");
                     }
                 }
@@ -105,20 +102,20 @@ namespace MariaDB.Data.Common
             get { throw new NotSupportedException(Resources.NamedPipeNoSeek); }
         }
 
-        public override long Position 
+        public override long Position
         {
             get { throw new NotSupportedException(Resources.NamedPipeNoSeek); }
             set { }
         }
 
-        public override void Flush() 
+        public override void Flush()
         {
             fileStream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if(readTimeout == Timeout.Infinite)
+            if (readTimeout == Timeout.Infinite)
             {
                 return fileStream.Read(buffer, offset, count);
             }
@@ -133,7 +130,6 @@ namespace MariaDB.Data.Common
             }
             return fileStream.EndRead(result);
         }
-
 
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -176,7 +172,6 @@ namespace MariaDB.Data.Common
             throw new NotSupportedException(Resources.NamedPipeNoSetLength);
         }
 
-
         public override bool CanTimeout
         {
             get
@@ -197,7 +192,7 @@ namespace MariaDB.Data.Common
             }
         }
 
-        public override  int WriteTimeout
+        public override int WriteTimeout
         {
             get
             {
@@ -209,11 +204,11 @@ namespace MariaDB.Data.Common
             }
         }
 
-        public override long Seek( long offset, SeekOrigin origin )
+        public override long Seek(long offset, SeekOrigin origin)
         {
             throw new NotSupportedException(Resources.NamedPipeNoSeek);
         }
-     
+
         internal static Stream Create(string pipeName, string hostname, uint timeout)
         {
             string pipePath;
@@ -225,5 +220,3 @@ namespace MariaDB.Data.Common
         }
     }
 }
-
-

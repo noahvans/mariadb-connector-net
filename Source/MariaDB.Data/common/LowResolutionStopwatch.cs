@@ -1,14 +1,14 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
@@ -22,10 +22,10 @@ namespace MariaDB.Data.Common
     /// when high-precision is not required (e.g for measuring IO timeouts),
     /// but not for other tasks.
     /// </summary>
-    class LowResolutionStopwatch
+    internal class LowResolutionStopwatch
     {
-        long millis;
-        long startTime;
+        private long millis;
+        private long startTime;
         public static readonly long Frequency = 1000; // measure in milliseconds
         public static readonly bool isHighResolution = false;
 
@@ -33,10 +33,12 @@ namespace MariaDB.Data.Common
         {
             millis = 0;
         }
+
         public long ElapsedMilliseconds
         {
             get { return millis; }
         }
+
         public void Start()
         {
             startTime = Environment.TickCount;
@@ -46,7 +48,7 @@ namespace MariaDB.Data.Common
         {
             long now = Environment.TickCount;
             // Calculate time different, handle possible overflow
-            long elapsed = (now < startTime)?Int32.MaxValue - startTime + now : now - startTime;
+            long elapsed = (now < startTime) ? Int32.MaxValue - startTime + now : now - startTime;
             millis += elapsed;
         }
 
@@ -76,7 +78,7 @@ namespace MariaDB.Data.Common
             return Environment.TickCount;
         }
 
-        bool IsRunning()
+        private bool IsRunning()
         {
             return (startTime != 0);
         }

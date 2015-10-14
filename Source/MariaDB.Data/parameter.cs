@@ -1,14 +1,14 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
@@ -20,8 +20,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Collections;
+
 #if !CF
+
 using System.ComponentModel.Design.Serialization;
+
 #endif
 
 namespace MariaDB.Data.MySqlClient
@@ -30,6 +33,7 @@ namespace MariaDB.Data.MySqlClient
     /// Represents a parameter to a <see cref="MySqlCommand"/>, and optionally, its mapping to <see cref="DataSet"/> columns. This class cannot be inherited.
     /// </summary>
 #if !CF
+
     [TypeConverter(typeof(MySqlParameterConverter))]
 #endif
     public sealed class MySqlParameter : DbParameter, IDataParameter, IDbDataParameter, ICloneable
@@ -49,7 +53,7 @@ namespace MariaDB.Data.MySqlClient
         private bool inferType;
         private bool sourceColumnNullMapping;
         private MySqlParameterCollection collection;
-        IMySqlValue valueObject;
+        private IMySqlValue valueObject;
         private Encoding encoding;
         private IList possibleValues;
 
@@ -150,7 +154,7 @@ namespace MariaDB.Data.MySqlClient
             Value = value;
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Properties
 
@@ -199,6 +203,7 @@ namespace MariaDB.Data.MySqlClient
         /// As of MySql version 4.1 and earlier, input-only is the only valid choice.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
         public override ParameterDirection Direction
@@ -211,6 +216,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a value indicating whether the parameter accepts null values.
         /// </summary>
 #if !CF
+
         [Browsable(false)]
 #endif
         public override Boolean IsNullable
@@ -223,6 +229,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the MySqlDbType of the parameter.
         /// </summary>
 #if !CF
+
         [Category("Data")]
         [DbProviderSpecificTypeProperty(true)]
 #endif
@@ -240,6 +247,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the name of the MySqlParameter.
         /// </summary>
 #if !CF
+
         [Category("Misc")]
 #endif
         public override String ParameterName
@@ -257,9 +265,14 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the maximum number of digits used to represent the <see cref="Value"/> property.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
+#if DNX
+        public override byte Precision
+#else
         public byte Precision
+#endif
         {
             get { return precision; }
             set { precision = value; }
@@ -269,9 +282,14 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the number of decimal places to which <see cref="Value"/> is resolved.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
+#if DNX
+        public override byte Scale
+#else
         public byte Scale
+#endif
         {
             get { return scale; }
             set { scale = value; }
@@ -281,6 +299,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the maximum size, in bytes, of the data within the column.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
         public override int Size
@@ -293,6 +312,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the name of the source column that is mapped to the <see cref="DataSet"/> and used for loading or returning the <see cref="Value"/>.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
         public override String SourceColumn
@@ -305,6 +325,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the <see cref="DataRowVersion"/> to use when loading <see cref="Value"/>.
         /// </summary>
 #if !CF
+
         [Category("Data")]
 #endif
         public override DataRowVersion SourceVersion
@@ -317,7 +338,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the value of the parameter.
         /// </summary>
 #if !CF
-        [TypeConverter(typeof (StringConverter))]
+
+        [TypeConverter(typeof(StringConverter))]
         [Category("Data")]
 #endif
         public override object Value
@@ -353,7 +375,7 @@ namespace MariaDB.Data.MySqlClient
             internal set { possibleValues = value; }
         }
 
-        #endregion
+        #endregion Properties
 
         /// <summary>
         /// Overridden. Gets a string containing the <see cref="ParameterName"/>.
@@ -369,19 +391,25 @@ namespace MariaDB.Data.MySqlClient
             switch (mySqlDbType)
             {
                 case MySqlDbType.Bit:
-                    return (int) MySqlDbType.Int64 | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Int64 | UNSIGNED_MASK;
+
                 case MySqlDbType.UByte:
-                    return (int) MySqlDbType.Byte | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Byte | UNSIGNED_MASK;
+
                 case MySqlDbType.UInt64:
-                    return (int) MySqlDbType.Int64 | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Int64 | UNSIGNED_MASK;
+
                 case MySqlDbType.UInt32:
-                    return (int) MySqlDbType.Int32 | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Int32 | UNSIGNED_MASK;
+
                 case MySqlDbType.UInt24:
-                    return (int) MySqlDbType.Int32 | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Int32 | UNSIGNED_MASK;
+
                 case MySqlDbType.UInt16:
-                    return (int) MySqlDbType.Int16 | UNSIGNED_MASK;
+                    return (int)MySqlDbType.Int16 | UNSIGNED_MASK;
+
                 default:
-                    return (int) mySqlDbType;
+                    return (int)mySqlDbType;
             }
         }
 
@@ -411,67 +439,85 @@ namespace MariaDB.Data.MySqlClient
                 case MySqlDbType.Decimal:
                     dbType = DbType.Decimal;
                     break;
+
                 case MySqlDbType.Byte:
                     dbType = DbType.SByte;
                     break;
+
                 case MySqlDbType.UByte:
                     dbType = DbType.Byte;
                     break;
+
                 case MySqlDbType.Int16:
                     dbType = DbType.Int16;
                     break;
+
                 case MySqlDbType.UInt16:
                     dbType = DbType.UInt16;
                     break;
+
                 case MySqlDbType.Int24:
                 case MySqlDbType.Int32:
                     dbType = DbType.Int32;
                     break;
+
                 case MySqlDbType.UInt24:
                 case MySqlDbType.UInt32:
                     dbType = DbType.UInt32;
                     break;
+
                 case MySqlDbType.Int64:
                     dbType = DbType.Int64;
                     break;
+
                 case MySqlDbType.UInt64:
                     dbType = DbType.UInt64;
                     break;
+
                 case MySqlDbType.Bit:
                     dbType = DbType.UInt64;
                     break;
+
                 case MySqlDbType.Float:
                     dbType = DbType.Single;
                     break;
+
                 case MySqlDbType.Double:
                     dbType = DbType.Double;
                     break;
+
                 case MySqlDbType.Timestamp:
                 case MySqlDbType.DateTime:
                     dbType = DbType.DateTime;
                     break;
+
                 case MySqlDbType.Date:
                 case MySqlDbType.Newdate:
                 case MySqlDbType.Year:
                     dbType = DbType.Date;
                     break;
+
                 case MySqlDbType.Time:
                     dbType = DbType.Time;
                     break;
+
                 case MySqlDbType.Enum:
                 case MySqlDbType.Set:
                 case MySqlDbType.VarChar:
                     dbType = DbType.String;
                     break;
+
                 case MySqlDbType.TinyBlob:
                 case MySqlDbType.MediumBlob:
                 case MySqlDbType.LongBlob:
                 case MySqlDbType.Blob:
                     dbType = DbType.Object;
                     break;
+
                 case MySqlDbType.String:
                     dbType = DbType.StringFixedLength;
                     break;
+
                 case MySqlDbType.Guid:
                     dbType = DbType.Guid;
                     break;
@@ -509,6 +555,7 @@ namespace MariaDB.Data.MySqlClient
                 case DbType.Date:
                     mySqlDbType = MySqlDbType.Date;
                     break;
+
                 case DbType.DateTime:
                     mySqlDbType = MySqlDbType.DateTime;
                     break;
@@ -516,9 +563,11 @@ namespace MariaDB.Data.MySqlClient
                 case DbType.Time:
                     mySqlDbType = MySqlDbType.Time;
                     break;
+
                 case DbType.Single:
                     mySqlDbType = MySqlDbType.Float;
                     break;
+
                 case DbType.Double:
                     mySqlDbType = MySqlDbType.Double;
                     break;
@@ -526,6 +575,7 @@ namespace MariaDB.Data.MySqlClient
                 case DbType.Int16:
                     mySqlDbType = MySqlDbType.Int16;
                     break;
+
                 case DbType.UInt16:
                     mySqlDbType = MySqlDbType.UInt16;
                     break;
@@ -533,6 +583,7 @@ namespace MariaDB.Data.MySqlClient
                 case DbType.Int32:
                     mySqlDbType = MySqlDbType.Int32;
                     break;
+
                 case DbType.UInt32:
                     mySqlDbType = MySqlDbType.UInt32;
                     break;
@@ -540,6 +591,7 @@ namespace MariaDB.Data.MySqlClient
                 case DbType.Int64:
                     mySqlDbType = MySqlDbType.Int64;
                     break;
+
                 case DbType.UInt64:
                     mySqlDbType = MySqlDbType.UInt64;
                     break;
@@ -577,42 +629,55 @@ namespace MariaDB.Data.MySqlClient
                     case TypeCode.SByte:
                         DbType = DbType.SByte;
                         break;
+
                     case TypeCode.Byte:
                         DbType = DbType.Byte;
                         break;
+
                     case TypeCode.Int16:
                         DbType = DbType.Int16;
                         break;
+
                     case TypeCode.UInt16:
                         DbType = DbType.UInt16;
                         break;
+
                     case TypeCode.Int32:
                         DbType = DbType.Int32;
                         break;
+
                     case TypeCode.UInt32:
                         DbType = DbType.UInt32;
                         break;
+
                     case TypeCode.Int64:
                         DbType = DbType.Int64;
                         break;
+
                     case TypeCode.UInt64:
                         DbType = DbType.UInt64;
                         break;
+
                     case TypeCode.DateTime:
                         DbType = DbType.DateTime;
                         break;
+
                     case TypeCode.String:
                         DbType = DbType.String;
                         break;
+
                     case TypeCode.Single:
                         DbType = DbType.Single;
                         break;
+
                     case TypeCode.Double:
                         DbType = DbType.Double;
                         break;
+
                     case TypeCode.Decimal:
                         DbType = DbType.Decimal;
                         break;
+
                     case TypeCode.Object:
                     default:
                         DbType = DbType.Object;
@@ -637,10 +702,10 @@ namespace MariaDB.Data.MySqlClient
             return this.Clone();
         }
 
-        #endregion
+        #endregion ICloneable
 
         /// <summary>
-        /// Resets the <b>DbType</b> property to its original settings. 
+        /// Resets the <b>DbType</b> property to its original settings.
         /// </summary>
         public override void ResetDbType()
         {
@@ -648,9 +713,9 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Sets or gets a value which indicates whether the source column is nullable. 
-        /// This allows <see cref="DbCommandBuilder"/> to correctly generate Update statements 
-        /// for nullable columns. 
+        /// Sets or gets a value which indicates whether the source column is nullable.
+        /// This allows <see cref="DbCommandBuilder"/> to correctly generate Update statements
+        /// for nullable columns.
         /// </summary>
         public override bool SourceColumnNullMapping
         {
@@ -675,6 +740,7 @@ namespace MariaDB.Data.MySqlClient
     }
 
 #if !CF
+
     internal class MySqlParameterConverter : TypeConverter
     {
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
@@ -713,5 +779,6 @@ namespace MariaDB.Data.MySqlClient
             return base.ConvertTo(context, culture, value, destinationType);
         }
     }
+
 #endif
 }

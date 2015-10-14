@@ -125,7 +125,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\MySql.Data\MariaDB.Data.csproj">
+    <ProjectReference Include="..\..\Source\MariaDB.Data\MariaDB.Data.csproj">
       <Project>{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}</Project>
       <Name>MariaDB.Data</Name>
     </ProjectReference>

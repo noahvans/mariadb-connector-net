@@ -1,0 +1,21 @@
+{
+    "version": "1.0.1.0",
+    "description": "ADO.Net driver for MariaDB and MySQL",
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
+    "compilationOptions": {
+        "define": [ "DNX" ]
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Data.DataSetExtensions": "4.0.0.0",
+                "System.Data.Entity": "4.0.0.0"
+            }
+        }
+    },
+    "dependencies": {
+        "MariaDB.Data": "1.0.1.0"
+    }
+}

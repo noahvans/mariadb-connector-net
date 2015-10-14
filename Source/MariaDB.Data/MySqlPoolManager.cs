@@ -1,185 +1,183 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System.Collections;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
+    /// <summary>
+    /// Summary description for MySqlPoolManager.
+    /// </summary>
+    internal class MySqlPoolManager
+    {
+        private static Hashtable pools = new Hashtable();
+        private static List<MySqlPool> clearingPools = new List<MySqlPool>();
 
+        // Timeout in seconds, after which an unused (idle) connection
+        // should be closed.
+        static internal int maxConnectionIdleTime = 180;
 
-	/// <summary>
-	/// Summary description for MySqlPoolManager.
-	/// </summary>
-	internal class MySqlPoolManager
-	{
-		private static Hashtable pools = new Hashtable();
-		private static List<MySqlPool> clearingPools = new List<MySqlPool>();
+        private static Timer timer = new Timer(new TimerCallback(CleanIdleConnections),
+            null, maxConnectionIdleTime * 1000, maxConnectionIdleTime * 1000);
 
-		// Timeout in seconds, after which an unused (idle) connection 
-		// should be closed.
-		static internal int maxConnectionIdleTime = 180;
-
-
-		private static Timer timer = new Timer(new TimerCallback(CleanIdleConnections),
-			null, maxConnectionIdleTime*1000, maxConnectionIdleTime*1000);
-
-		private static string GetKey(MySqlConnectionStringBuilder settings)
-		{
-			string key  = settings.ConnectionString;
+        private static string GetKey(MySqlConnectionStringBuilder settings)
+        {
+            string key = settings.ConnectionString;
 #if !CF
-			if(settings.IntegratedSecurity && !settings.ConnectionReset)
-			{
-				try
-				{
-					// Append SID to the connection string to generate a key
-					// With Integrated security different Windows users with the same
-					// connection string may be mapped to different MySQL accounts.
-					System.Security.Principal.WindowsIdentity id =
-						System.Security.Principal.WindowsIdentity.GetCurrent();
+            if (settings.IntegratedSecurity && !settings.ConnectionReset)
+            {
+                try
+                {
+                    // Append SID to the connection string to generate a key
+                    // With Integrated security different Windows users with the same
+                    // connection string may be mapped to different MySQL accounts.
+                    System.Security.Principal.WindowsIdentity id =
+                        System.Security.Principal.WindowsIdentity.GetCurrent();
 
-					key += ";" + id.User;
-				}
-				catch (System.Security.SecurityException ex)
-				{
-					// Documentation for WindowsIdentity.GetCurrent() states 
-					// SecurityException can be thrown. In this case the 
-					// connection can only be pooled if reset is done.
-					throw new MySqlException(Resources.NoWindowsIdentity, ex );
-				}
-			}
+                    key += ";" + id.User;
+                }
+                catch (System.Security.SecurityException ex)
+                {
+                    // Documentation for WindowsIdentity.GetCurrent() states
+                    // SecurityException can be thrown. In this case the
+                    // connection can only be pooled if reset is done.
+                    throw new MySqlException(Resources.NoWindowsIdentity, ex);
+                }
+            }
 #endif
-			return key;
-		}
-		public static MySqlPool GetPool(MySqlConnectionStringBuilder settings)
-		{
-			string text = GetKey(settings);
+            return key;
+        }
 
-			lock (pools.SyncRoot)
-			{
-				MySqlPool pool = (pools[text] as MySqlPool);
+        public static MySqlPool GetPool(MySqlConnectionStringBuilder settings)
+        {
+            string text = GetKey(settings);
 
-				if (pool == null)
-				{
-					pool = new MySqlPool(settings);
-					pools.Add(text, pool);
-				}
-				else
-					pool.Settings = settings;
+            lock (pools.SyncRoot)
+            {
+                MySqlPool pool = (pools[text] as MySqlPool);
 
-				return pool;
-			}
-		}
+                if (pool == null)
+                {
+                    pool = new MySqlPool(settings);
+                    pools.Add(text, pool);
+                }
+                else
+                    pool.Settings = settings;
 
-		public static void RemoveConnection(Driver driver)
-		{
-			Debug.Assert(driver != null);
+                return pool;
+            }
+        }
 
-			MySqlPool pool = driver.Pool;
-			if (pool == null) return;
+        public static void RemoveConnection(Driver driver)
+        {
+            Debug.Assert(driver != null);
 
-			pool.RemoveConnection(driver);
-		}
+            MySqlPool pool = driver.Pool;
+            if (pool == null) return;
 
-		public static void ReleaseConnection(Driver driver)
-		{
-			Debug.Assert(driver != null);
+            pool.RemoveConnection(driver);
+        }
 
-			MySqlPool pool = driver.Pool;
-			if (pool == null) return;
-			
-			pool.ReleaseConnection(driver);
-		}
+        public static void ReleaseConnection(Driver driver)
+        {
+            Debug.Assert(driver != null);
 
-		public static void ClearPool(MySqlConnectionStringBuilder settings)
-		{
-			Debug.Assert(settings != null);
-			string text;
-			try
-			{
-				text = GetKey(settings);
-			}
-			catch (MySqlException)
-			{
-				// Cannot retrieve windows identity for IntegratedSecurity=true
-				// This can be ignored.
-				return;
-			}
-			ClearPoolByText(text);
-		}
+            MySqlPool pool = driver.Pool;
+            if (pool == null) return;
 
-		private static void ClearPoolByText(string key)
-		{
-			lock (pools.SyncRoot)
-			{
-				// if pools doesn't have it, then this pool must already have been cleared
-				if (!pools.ContainsKey(key)) return;
+            pool.ReleaseConnection(driver);
+        }
 
-				// add the pool to our list of pools being cleared
-				MySqlPool pool = (pools[key] as MySqlPool);
-				clearingPools.Add(pool);
+        public static void ClearPool(MySqlConnectionStringBuilder settings)
+        {
+            Debug.Assert(settings != null);
+            string text;
+            try
+            {
+                text = GetKey(settings);
+            }
+            catch (MySqlException)
+            {
+                // Cannot retrieve windows identity for IntegratedSecurity=true
+                // This can be ignored.
+                return;
+            }
+            ClearPoolByText(text);
+        }
 
-				// now tell the pool to clear itself
-				pool.Clear();
+        private static void ClearPoolByText(string key)
+        {
+            lock (pools.SyncRoot)
+            {
+                // if pools doesn't have it, then this pool must already have been cleared
+                if (!pools.ContainsKey(key)) return;
 
-				// and then remove the pool from the active pools list
-				pools.Remove(key);
-			}
-		}
+                // add the pool to our list of pools being cleared
+                MySqlPool pool = (pools[key] as MySqlPool);
+                clearingPools.Add(pool);
 
-		public static void ClearAllPools()
-		{
-			lock (pools.SyncRoot)
-			{
-				// Create separate keys list.
-				List<string> keys = new	List<string>(pools.Count);
+                // now tell the pool to clear itself
+                pool.Clear();
 
-				foreach (string key in pools.Keys)
-					keys.Add(key);
+                // and then remove the pool from the active pools list
+                pools.Remove(key);
+            }
+        }
 
-				// Remove all pools by key.
-				foreach (string key in keys)
-					ClearPoolByText(key);
-			}
-		}
+        public static void ClearAllPools()
+        {
+            lock (pools.SyncRoot)
+            {
+                // Create separate keys list.
+                List<string> keys = new List<string>(pools.Count);
 
-		public static void RemoveClearedPool(MySqlPool pool)
-		{
-			Debug.Assert(clearingPools.Contains(pool));
-			clearingPools.Remove(pool);
-		}
+                foreach (string key in pools.Keys)
+                    keys.Add(key);
 
-		/// <summary>
-		/// Remove drivers that have been idle for too long.
-		/// </summary>
-		public static void CleanIdleConnections(object obj)
-		{
-			List<Driver> oldDrivers = new List<Driver>();
-			lock (pools.SyncRoot)
-			{
-				foreach (string key in pools.Keys)
-				{
-					MySqlPool pool = (pools[key] as MySqlPool);
-					oldDrivers.AddRange(pool.RemoveOldIdleConnections());
-				}
-			}
-			foreach(Driver driver in oldDrivers)
-			{
-				driver.Close();
-			}
-		}
-	}
+                // Remove all pools by key.
+                foreach (string key in keys)
+                    ClearPoolByText(key);
+            }
+        }
+
+        public static void RemoveClearedPool(MySqlPool pool)
+        {
+            Debug.Assert(clearingPools.Contains(pool));
+            clearingPools.Remove(pool);
+        }
+
+        /// <summary>
+        /// Remove drivers that have been idle for too long.
+        /// </summary>
+        public static void CleanIdleConnections(object obj)
+        {
+            List<Driver> oldDrivers = new List<Driver>();
+            lock (pools.SyncRoot)
+            {
+                foreach (string key in pools.Keys)
+                {
+                    MySqlPool pool = (pools[key] as MySqlPool);
+                    oldDrivers.AddRange(pool.RemoveOldIdleConnections());
+                }
+            }
+            foreach (Driver driver in oldDrivers)
+            {
+                driver.Close();
+            }
+        }
+    }
 }

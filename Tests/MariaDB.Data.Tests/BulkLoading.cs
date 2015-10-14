@@ -1,27 +1,25 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Data;
-using MariaDB.Data.MySqlClient;
-using NUnit.Framework;
 using System.IO;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
-	[TestFixture]
-	public class BulkLoading : BaseTest
-	{
+    [TestFixture]
+    public class BulkLoading : BaseTest
+    {
         [Test]
         public void BulkLoadSimple()
         {
@@ -48,7 +46,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual(200, dt.Rows.Count);
             Assert.AreEqual("'Test'", dt.Rows[0][1].ToString().Trim());
         }
-        
+
         [Test]
         public void BulkLoadReadOnlyFile()
         {
@@ -322,7 +320,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         [Test]
         public void BulkLoadColumnOrder()
         {
-            execSQL(@"CREATE TABLE Test (id INT NOT NULL, n1 VARCHAR(250), n2 VARCHAR(250), 
+            execSQL(@"CREATE TABLE Test (id INT NOT NULL, n1 VARCHAR(250), n2 VARCHAR(250),
                         n3 VARCHAR(250), PRIMARY KEY(id))");
 
             // first create the external file
@@ -354,6 +352,5 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual("col2", dt.Rows[0][2]);
             Assert.AreEqual("col3", dt.Rows[0][3].ToString().Trim());
         }
-
     }
 }

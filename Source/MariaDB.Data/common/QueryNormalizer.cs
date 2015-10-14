@@ -1,22 +1,20 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Diagnostics;
-using System.Collections;
+using System.Text;
 using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.Common
@@ -97,7 +95,7 @@ namespace MariaDB.Data.Common
                 if (t.Type == TokenType.Symbol &&
                     (t.Text == "-" || t.Text == "+"))
                 {
-                    if (lastToken != null && 
+                    if (lastToken != null &&
                         lastToken.Type != TokenType.Number &&
                         lastToken.Type != TokenType.Identifier &&
                         (lastToken.Type != TokenType.Symbol || lastToken.Text != ")"))
@@ -150,7 +148,7 @@ namespace MariaDB.Data.Common
                 {
                     if (tok[pos].Type == TokenType.Symbol && tok[pos].Text == ")")
                         break;
-                    if (pos == tok.Count-1)
+                    if (pos == tok.Count - 1)
                         break;
                 }
                 parenIndices.Add(pos);
@@ -207,7 +205,7 @@ namespace MariaDB.Data.Common
             if (t == null)
                 return;
 
-            // if the first token is a keyword then we likely have a 
+            // if the first token is a keyword then we likely have a
             // SELECT .. IN (SELECT ...)
             t = GetNextRealToken(tok, ref pos);
             if (t == null || t.Type == TokenType.Keyword) return;
@@ -260,7 +258,8 @@ namespace MariaDB.Data.Common
         private bool IsSpecialCharacter(char c)
         {
             if (Char.IsLetterOrDigit(c) ||
-                c == '$' || c == '_' || c == '.') return false;
+                c == '$' || c == '_' || c == '.')
+                return false;
             return true;
         }
 
@@ -368,12 +367,13 @@ namespace MariaDB.Data.Common
 
         public bool IsRealToken
         {
-            get 
-            { 
-                return Type != TokenType.Comment && 
-                       Type != TokenType.CommandComment && 
+            get
+            {
+                return Type != TokenType.Comment &&
+                       Type != TokenType.CommandComment &&
                        Type != TokenType.Whitespace &&
-                       Output; }
+                       Output;
+            }
         }
     }
 

@@ -1,7 +1,9 @@
-{
+﻿{
     "version": "1.0.1.0",
     "description": "Test ADO.Net driver for MariaDB and MySQL",
-    "tags": [ "" ],
+    "tags": [
+        ""
+    ],
     "projectUrl": "",
     "licenseUrl": "",
     "frameworks": {
@@ -12,7 +14,7 @@
         }
     },
     "dependencies": {
-        "MySql.Data": "1.0.1.0",
+        "MariaDB.Data": "1.0.1.0",
         "NUnit": "2.6.4"
     }
 }

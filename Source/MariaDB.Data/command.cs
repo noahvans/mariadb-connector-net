@@ -1,49 +1,50 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.Data;
 using System.Data.Common;
 using System.IO;
-using System.Collections;
-using System.Text;
-using MariaDB.Data.Common;
 using System.ComponentModel;
 using System.Threading;
 using System.Diagnostics;
 using System.Globalization;
 using System.Collections.Generic;
 using MariaDB.Data.MySqlClient.Properties;
+
 #if !CF
+
 using System.Transactions;
+
 #endif
 
 namespace MariaDB.Data.MySqlClient
 {
-    /// <include file='docs/mysqlcommand.xml' path='docs/ClassSummary/*'/> 
+    /// <include file='docs/mysqlcommand.xml' path='docs/ClassSummary/*'/>
 #if !CF
+
     [System.Drawing.ToolboxBitmap(typeof(MySqlCommand), "MySqlClient.resources.command.bmp")]
     [System.ComponentModel.DesignerCategory("Code")]
 #endif
     public sealed class MySqlCommand : DbCommand, ICloneable
     {
-        MySqlConnection connection;
-        MySqlTransaction curTransaction;
-        string cmdText;
-        CommandType cmdType;
-        long updatedRowCount;
-        UpdateRowSource updatedRowSource;
-        MySqlParameterCollection parameters;
+        private MySqlConnection connection;
+        private MySqlTransaction curTransaction;
+        private string cmdText;
+        private CommandType cmdType;
+        private long updatedRowCount;
+        private UpdateRowSource updatedRowSource;
+        private MySqlParameterCollection parameters;
         private IAsyncResult asyncResult;
         private bool designTimeVisible;
         internal Int64 lastInsertedId;
@@ -51,9 +52,9 @@ namespace MariaDB.Data.MySqlClient
         private int commandTimeout;
         private bool canceled;
         private bool resetSqlSelect;
-        List<MySqlCommand> batch;
+        private List<MySqlCommand> batch;
         private string batchableCommandText;
-        CommandTimer commandTimer;
+        private CommandTimer commandTimer;
         private bool useDefaultTimeout;
         private bool shouldCache;
         private int cacheAge;
@@ -95,9 +96,9 @@ namespace MariaDB.Data.MySqlClient
 
         #region Properties
 
-
         /// <include file='docs/mysqlcommand.xml' path='docs/LastInseredId/*'/>
 #if !CF
+
         [Browsable(false)]
 #endif
         public Int64 LastInsertedId
@@ -107,6 +108,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandText/*'/>
 #if !CF
+
         [Category("Data")]
         [Description("Command text to execute")]
         [Editor("MySql.Data.Common.Design.SqlCommandTextEditor,MySqlClient.Design", typeof(System.Drawing.Design.UITypeEditor))]
@@ -129,6 +131,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandTimeout/*'/>
 #if !CF
+
         [Category("Misc")]
         [Description("Time to wait for command to execute")]
         [DefaultValue(30)]
@@ -136,7 +139,7 @@ namespace MariaDB.Data.MySqlClient
         public override int CommandTimeout
         {
             get { return useDefaultTimeout ? 30 : commandTimeout; }
-            set 
+            set
             {
                 if (commandTimeout < 0)
                     throw new ArgumentException("Command timeout must not be negative");
@@ -150,7 +153,7 @@ namespace MariaDB.Data.MySqlClient
                 {
                     MySqlTrace.LogWarning(connection.ServerThread,
                     "Command timeout value too large ("
-                    + value + " seconds). Changed to max. possible value (" 
+                    + value + " seconds). Changed to max. possible value ("
                     + timeout + " seconds)");
                 }
                 commandTimeout = timeout;
@@ -160,6 +163,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandType/*'/>
 #if !CF
+
         [Category("Data")]
 #endif
         public override CommandType CommandType
@@ -170,6 +174,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/IsPrepared/*'/>
 #if !CF
+
         [Browsable(false)]
 #endif
         public bool IsPrepared
@@ -179,6 +184,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Connection/*'/>
 #if !CF
+
         [Category("Behavior")]
         [Description("Connection used by the command")]
 #endif
@@ -189,7 +195,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 /*
                 * The connection is associated with the transaction
-                * so set the transaction object to return a null reference if the connection 
+                * so set the transaction object to return a null reference if the connection
                 * is reset.
                 */
                 if (connection != value)
@@ -206,7 +212,7 @@ namespace MariaDB.Data.MySqlClient
                         commandTimeout = (int)connection.Settings.DefaultCommandTimeout;
                         useDefaultTimeout = false;
                     }
-                    
+
                     EnableCaching = connection.Settings.TableCaching;
                     CacheAge = connection.Settings.DefaultTableCacheAge;
                 }
@@ -215,6 +221,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Parameters/*'/>
 #if !CF
+
         [Category("Data")]
         [Description("The parameters collection")]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
@@ -224,9 +231,9 @@ namespace MariaDB.Data.MySqlClient
             get { return parameters; }
         }
 
-
         /// <include file='docs/mysqlcommand.xml' path='docs/Transaction/*'/>
 #if !CF
+
         [Browsable(false)]
 #endif
         public new MySqlTransaction Transaction
@@ -278,7 +285,7 @@ namespace MariaDB.Data.MySqlClient
             set { internallyCreated = value; }
         }
 
-        #endregion
+        #endregion Properties
 
         #region Methods
 
@@ -301,7 +308,7 @@ namespace MariaDB.Data.MySqlClient
         /// This method is a strongly-typed version of <see cref="IDbCommand.CreateParameter"/>.
         /// </remarks>
         /// <returns>A <see cref="MySqlParameter"/> object.</returns>
-        /// 
+        ///
         public new MySqlParameter CreateParameter()
         {
             return (MySqlParameter)CreateDbParameter();
@@ -390,153 +397,150 @@ namespace MariaDB.Data.MySqlClient
             return ExecuteReader(CommandBehavior.Default);
         }
 
-
         /// <include file='docs/mysqlcommand.xml' path='docs/ExecuteReader1/*'/>
-        public new MySqlDataReader ExecuteReader (CommandBehavior behavior)
+        public new MySqlDataReader ExecuteReader(CommandBehavior behavior)
         {
             bool success = false;
             CheckState();
             Driver driver = connection.driver;
             lock (driver)
             {
-
-            // We have to recheck that there is no reader, after we got the lock
-            if (connection.Reader != null)
-            {
-               throw new  MySqlException(Resources.DataReaderOpen);
-            }
-#if !CF
-            System.Transactions.Transaction curTrans = System.Transactions.Transaction.Current;
-
-            if (curTrans != null)
-            {
-                bool  inRollback = false;
-                if (driver.CurrentTransaction!= null)
-                    inRollback = driver.CurrentTransaction.InRollback;
-                if (!inRollback)
+                // We have to recheck that there is no reader, after we got the lock
+                if (connection.Reader != null)
                 {
-                    TransactionStatus status = TransactionStatus.InDoubt;
-                    try
-                    {
-                        // in some cases (during state transitions) this throws
-                        // an exception. Ignore exceptions, we're only interested 
-                        // whether transaction was aborted or not.
-                        status = curTrans.TransactionInformation.Status;
-                    }
-                    catch (TransactionException)
-                    {
-                    }
-                    if (status == TransactionStatus.Aborted)
-                        throw new TransactionAbortedException();
+                    throw new MySqlException(Resources.DataReaderOpen);
                 }
-            }
+#if !CF
+                System.Transactions.Transaction curTrans = System.Transactions.Transaction.Current;
+
+                if (curTrans != null)
+                {
+                    bool inRollback = false;
+                    if (driver.CurrentTransaction != null)
+                        inRollback = driver.CurrentTransaction.InRollback;
+                    if (!inRollback)
+                    {
+                        TransactionStatus status = TransactionStatus.InDoubt;
+                        try
+                        {
+                            // in some cases (during state transitions) this throws
+                            // an exception. Ignore exceptions, we're only interested
+                            // whether transaction was aborted or not.
+                            status = curTrans.TransactionInformation.Status;
+                        }
+                        catch (TransactionException)
+                        {
+                        }
+                        if (status == TransactionStatus.Aborted)
+                            throw new TransactionAbortedException();
+                    }
+                }
 #endif
-            commandTimer = new CommandTimer(connection, CommandTimeout);
+                commandTimer = new CommandTimer(connection, CommandTimeout);
 
-            lastInsertedId = -1;
-            cmdText = cmdText.Trim();
-            if (String.IsNullOrEmpty(cmdText))
-                throw new InvalidOperationException(Resources.CommandTextNotInitialized);
+                lastInsertedId = -1;
+                cmdText = cmdText.Trim();
+                if (String.IsNullOrEmpty(cmdText))
+                    throw new InvalidOperationException(Resources.CommandTextNotInitialized);
 
-            string sql = cmdText.Trim(';');
+                string sql = cmdText.Trim(';');
 
-            if (CommandType == CommandType.TableDirect)
-                sql = "SELECT * FROM " + sql;
+                if (CommandType == CommandType.TableDirect)
+                    sql = "SELECT * FROM " + sql;
 
-            // if we are on a replicated connection, we are only allow readonly statements
-            if (connection.Settings.Replication && !InternallyCreated)
-                EnsureCommandIsReadOnly(sql);
+                // if we are on a replicated connection, we are only allow readonly statements
+                if (connection.Settings.Replication && !InternallyCreated)
+                    EnsureCommandIsReadOnly(sql);
 
-            if (statement == null || !statement.IsPrepared)
-            {
-                if (CommandType == CommandType.StoredProcedure)
-                    statement = new StoredProcedure(this, sql);
-                else
-                    statement = new PreparableStatement(this, sql);
-            }
+                if (statement == null || !statement.IsPrepared)
+                {
+                    if (CommandType == CommandType.StoredProcedure)
+                        statement = new StoredProcedure(this, sql);
+                    else
+                        statement = new PreparableStatement(this, sql);
+                }
 
-            // stored procs are the only statement type that need do anything during resolve
-            statement.Resolve(false);
+                // stored procs are the only statement type that need do anything during resolve
+                statement.Resolve(false);
 
-            // Now that we have completed our resolve step, we can handle our
-            // command behaviors
-            HandleCommandBehaviors(behavior);
+                // Now that we have completed our resolve step, we can handle our
+                // command behaviors
+                HandleCommandBehaviors(behavior);
 
-            updatedRowCount = -1;
-            try
-            {
-                MySqlDataReader reader = new MySqlDataReader(this, statement, behavior);
-                connection.Reader = reader;
-                canceled = false;
-                // execute the statement
-                statement.Execute();
-                // wait for data to return
-                reader.NextResult();
-                success = true;
-                return reader;
-            }
-            catch (TimeoutException tex)
-            {
-                connection.HandleTimeoutOrThreadAbort(tex);
-                throw; //unreached
-            }
-            catch (ThreadAbortException taex)
-            {
-                connection.HandleTimeoutOrThreadAbort(taex);
-                throw;
-            }
-            catch (IOException ioex)
-            {
-                connection.Abort(); // Closes connection without returning it to the pool
-                throw new MySqlException(Resources.FatalErrorDuringExecute, ioex);
-            }
-            catch (MySqlException ex)
-            {
-
-                if (ex.InnerException is TimeoutException)
-                    throw; // already handled
-
+                updatedRowCount = -1;
                 try
                 {
-                    ResetReader();
-                    ResetSqlSelectLimit();
+                    MySqlDataReader reader = new MySqlDataReader(this, statement, behavior);
+                    connection.Reader = reader;
+                    canceled = false;
+                    // execute the statement
+                    statement.Execute();
+                    // wait for data to return
+                    reader.NextResult();
+                    success = true;
+                    return reader;
                 }
-                catch (Exception)
+                catch (TimeoutException tex)
                 {
-                    // Reset SqlLimit did not work, connection is hosed.
-                    Connection.Abort();
-                    throw new MySqlException(ex.Message, true, ex);
+                    connection.HandleTimeoutOrThreadAbort(tex);
+                    throw; //unreached
                 }
+                catch (ThreadAbortException taex)
+                {
+                    connection.HandleTimeoutOrThreadAbort(taex);
+                    throw;
+                }
+                catch (IOException ioex)
+                {
+                    connection.Abort(); // Closes connection without returning it to the pool
+                    throw new MySqlException(Resources.FatalErrorDuringExecute, ioex);
+                }
+                catch (MySqlException ex)
+                {
+                    if (ex.InnerException is TimeoutException)
+                        throw; // already handled
 
-                // if we caught an exception because of a cancel, then just return null
-                if (ex.IsQueryAborted)
-                    return null;
-                if (ex.IsFatal)
-                    Connection.Close();
-                if (ex.Number == 0)
-                    throw new MySqlException(Resources.FatalErrorDuringExecute, ex);
-                throw;
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    if (connection.Reader == null)
+                    try
                     {
-                        // Something went seriously wrong,  and reader would not
-                        // be able to clear timeout on closing.
-                        // So we clear timeout here.
-                        ClearCommandTimer();
-                    }
-                    if (!success)
-                    {
-                        // ExecuteReader failed.Close Reader and set to null to 
-                        // prevent subsequent errors with DataReaderOpen
                         ResetReader();
+                        ResetSqlSelectLimit();
+                    }
+                    catch (Exception)
+                    {
+                        // Reset SqlLimit did not work, connection is hosed.
+                        Connection.Abort();
+                        throw new MySqlException(ex.Message, true, ex);
+                    }
+
+                    // if we caught an exception because of a cancel, then just return null
+                    if (ex.IsQueryAborted)
+                        return null;
+                    if (ex.IsFatal)
+                        Connection.Close();
+                    if (ex.Number == 0)
+                        throw new MySqlException(Resources.FatalErrorDuringExecute, ex);
+                    throw;
+                }
+                finally
+                {
+                    if (connection != null)
+                    {
+                        if (connection.Reader == null)
+                        {
+                            // Something went seriously wrong,  and reader would not
+                            // be able to clear timeout on closing.
+                            // So we clear timeout here.
+                            ClearCommandTimer();
+                        }
+                        if (!success)
+                        {
+                            // ExecuteReader failed.Close Reader and set to null to
+                            // prevent subsequent errors with DataReaderOpen
+                            ResetReader();
+                        }
                     }
                 }
             }
-        }
         }
 
         private void EnsureCommandIsReadOnly(string sql)
@@ -547,7 +551,6 @@ namespace MariaDB.Data.MySqlClient
             if (sql.EndsWith("for update") || sql.EndsWith("lock in share mode"))
                 throw new MySqlException(Resources.ReplicatedConnectionsAllowOnlyReadonlyStatements);
         }
- 
 
         /// <include file='docs/mysqlcommand.xml' path='docs/ExecuteScalar/*'/>
         public override object ExecuteScalar()
@@ -611,11 +614,13 @@ namespace MariaDB.Data.MySqlClient
 
             Prepare(0);
         }
-        #endregion
+
+        #endregion Methods
 
         #region Async Methods
 
         internal delegate object AsyncDelegate(int type, CommandBehavior behavior);
+
         internal AsyncDelegate caller = null;
         internal Exception thrownException;
 
@@ -636,13 +641,13 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Initiates the asynchronous execution of the SQL statement or stored procedure 
-        /// that is described by this <see cref="MySqlCommand"/>, and retrieves one or more 
-        /// result sets from the server. 
+        /// Initiates the asynchronous execution of the SQL statement or stored procedure
+        /// that is described by this <see cref="MySqlCommand"/>, and retrieves one or more
+        /// result sets from the server.
         /// </summary>
-        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll, wait for results, 
-        /// or both; this value is also needed when invoking EndExecuteReader, 
-        /// which returns a <see cref="MySqlDataReader"/> instance that can be used to retrieve 
+        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll, wait for results,
+        /// or both; this value is also needed when invoking EndExecuteReader,
+        /// which returns a <see cref="MySqlDataReader"/> instance that can be used to retrieve
         /// the returned rows. </returns>
         public IAsyncResult BeginExecuteReader()
         {
@@ -650,15 +655,15 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Initiates the asynchronous execution of the SQL statement or stored procedure 
-        /// that is described by this <see cref="MySqlCommand"/> using one of the 
-        /// <b>CommandBehavior</b> values. 
+        /// Initiates the asynchronous execution of the SQL statement or stored procedure
+        /// that is described by this <see cref="MySqlCommand"/> using one of the
+        /// <b>CommandBehavior</b> values.
         /// </summary>
-        /// <param name="behavior">One of the <see cref="CommandBehavior"/> values, indicating 
+        /// <param name="behavior">One of the <see cref="CommandBehavior"/> values, indicating
         /// options for statement execution and data retrieval.</param>
-        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll, wait for results, 
-        /// or both; this value is also needed when invoking EndExecuteReader, 
-        /// which returns a <see cref="MySqlDataReader"/> instance that can be used to retrieve 
+        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll, wait for results,
+        /// or both; this value is also needed when invoking EndExecuteReader,
+        /// which returns a <see cref="MySqlDataReader"/> instance that can be used to retrieve
         /// the returned rows. </returns>
         public IAsyncResult BeginExecuteReader(CommandBehavior behavior)
         {
@@ -671,10 +676,10 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Finishes asynchronous execution of a SQL statement, returning the requested 
+        /// Finishes asynchronous execution of a SQL statement, returning the requested
         /// <see cref="MySqlDataReader"/>.
         /// </summary>
-        /// <param name="result">The <see cref="IAsyncResult"/> returned by the call to 
+        /// <param name="result">The <see cref="IAsyncResult"/> returned by the call to
         /// <see cref="BeginExecuteReader()"/>.</param>
         /// <returns>A <b>MySqlDataReader</b> object that can be used to retrieve the requested rows. </returns>
         public MySqlDataReader EndExecuteReader(IAsyncResult result)
@@ -688,18 +693,18 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Initiates the asynchronous execution of the SQL statement or stored procedure 
-        /// that is described by this <see cref="MySqlCommand"/>. 
+        /// Initiates the asynchronous execution of the SQL statement or stored procedure
+        /// that is described by this <see cref="MySqlCommand"/>.
         /// </summary>
         /// <param name="callback">
-        /// An <see cref="AsyncCallback"/> delegate that is invoked when the command's 
-        /// execution has completed. Pass a null reference (<b>Nothing</b> in Visual Basic) 
+        /// An <see cref="AsyncCallback"/> delegate that is invoked when the command's
+        /// execution has completed. Pass a null reference (<b>Nothing</b> in Visual Basic)
         /// to indicate that no callback is required.</param>
-        /// <param name="stateObject">A user-defined state object that is passed to the 
-        /// callback procedure. Retrieve this object from within the callback procedure 
+        /// <param name="stateObject">A user-defined state object that is passed to the
+        /// callback procedure. Retrieve this object from within the callback procedure
         /// using the <see cref="IAsyncResult.AsyncState"/> property.</param>
-        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll or wait for results, 
-        /// or both; this value is also needed when invoking <see cref="EndExecuteNonQuery"/>, 
+        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll or wait for results,
+        /// or both; this value is also needed when invoking <see cref="EndExecuteNonQuery"/>,
         /// which returns the number of affected rows. </returns>
         public IAsyncResult BeginExecuteNonQuery(AsyncCallback callback, object stateObject)
         {
@@ -707,17 +712,17 @@ namespace MariaDB.Data.MySqlClient
                 throw new MySqlException(Resources.UnableToStartSecondAsyncOp);
 
             caller = new AsyncDelegate(AsyncExecuteWrapper);
-            asyncResult = caller.BeginInvoke(2, CommandBehavior.Default, 
+            asyncResult = caller.BeginInvoke(2, CommandBehavior.Default,
                 callback, stateObject);
             return asyncResult;
         }
 
         /// <summary>
-        /// Initiates the asynchronous execution of the SQL statement or stored procedure 
-        /// that is described by this <see cref="MySqlCommand"/>. 
+        /// Initiates the asynchronous execution of the SQL statement or stored procedure
+        /// that is described by this <see cref="MySqlCommand"/>.
         /// </summary>
-        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll or wait for results, 
-        /// or both; this value is also needed when invoking <see cref="EndExecuteNonQuery"/>, 
+        /// <returns>An <see cref="IAsyncResult"/> that can be used to poll or wait for results,
+        /// or both; this value is also needed when invoking <see cref="EndExecuteNonQuery"/>,
         /// which returns the number of affected rows. </returns>
         public IAsyncResult BeginExecuteNonQuery()
         {
@@ -730,9 +735,9 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Finishes asynchronous execution of a SQL statement. 
+        /// Finishes asynchronous execution of a SQL statement.
         /// </summary>
-        /// <param name="asyncResult">The <see cref="IAsyncResult"/> returned by the call 
+        /// <param name="asyncResult">The <see cref="IAsyncResult"/> returned by the call
         /// to <see cref="BeginExecuteNonQuery()"/>.</param>
         /// <returns></returns>
         public int EndExecuteNonQuery(IAsyncResult asyncResult)
@@ -745,7 +750,7 @@ namespace MariaDB.Data.MySqlClient
             return (int)c.EndInvoke(asyncResult);
         }
 
-        #endregion
+        #endregion Async Methods
 
         #region Private Methods
 
@@ -781,7 +786,7 @@ namespace MariaDB.Data.MySqlClient
                             writer.Version = connection.driver.Version;
                             continue;
                         }
-                        else if (token[0] == parameters.ParameterMarker) 
+                        else if (token[0] == parameters.ParameterMarker)
                         {
                             if (SerializeParameter(writer, token)) continue;
                         }
@@ -806,7 +811,7 @@ namespace MariaDB.Data.MySqlClient
             return size;
         }
 
-        #endregion
+        #endregion Private Methods
 
         #region ICloneable
 
@@ -838,7 +843,7 @@ namespace MariaDB.Data.MySqlClient
             return this.Clone();
         }
 
-        #endregion
+        #endregion ICloneable
 
         #region Batching support
 
@@ -865,13 +870,13 @@ namespace MariaDB.Data.MySqlClient
                     string token = tokenizer.NextToken().ToLower(CultureInfo.InvariantCulture);
                     while (token != null)
                     {
-                        if (token.ToUpper(CultureInfo.InvariantCulture) == "VALUES" && 
+                        if (token.ToUpper(CultureInfo.InvariantCulture) == "VALUES" &&
                             !tokenizer.Quoted)
                         {
                             token = tokenizer.NextToken();
                             Debug.Assert(token == "(");
 
-                            // find matching right paren, and ensure that parens 
+                            // find matching right paren, and ensure that parens
                             // are balanced.
                             int openParenCount = 1;
                             while (token != null)
@@ -891,7 +896,7 @@ namespace MariaDB.Data.MySqlClient
                             if (token != null)
                                 batchableCommandText += token;
                             token = tokenizer.NextToken();
-                            if (token != null && (token == "," || 
+                            if (token != null && (token == "," ||
                                 token.ToUpper(CultureInfo.InvariantCulture) == "ON"))
                             {
                                 batchableCommandText = null;
@@ -908,7 +913,7 @@ namespace MariaDB.Data.MySqlClient
             return batchableCommandText;
         }
 
-        #endregion
+        #endregion Batching support
 
         protected override void Dispose(bool disposing)
         {
@@ -921,9 +926,10 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the command object should be visible in a Windows Form Designer control. 
+        /// Gets or sets a value indicating whether the command object should be visible in a Windows Form Designer control.
         /// </summary>
 #if !CF
+
         [Browsable(false)]
 #endif
         public override bool DesignTimeVisible
@@ -939,8 +945,8 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets how command results are applied to the DataRow when used by the 
-        /// Update method of the DbDataAdapter. 
+        /// Gets or sets how command results are applied to the DataRow when used by the
+        /// Update method of the DbDataAdapter.
         /// </summary>
         public override UpdateRowSource UpdatedRowSource
         {
@@ -982,4 +988,3 @@ namespace MariaDB.Data.MySqlClient
         }
     }
 }
-

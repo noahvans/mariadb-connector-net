@@ -1,36 +1,39 @@
-﻿// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+﻿// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Text;
-using System.IO;
-using System.Data;
 using System.Collections.Specialized;
+using System.Data;
+using System.IO;
+using System.Text;
 using MariaDB.Data.MySqlClient.Properties;
+
 namespace MariaDB.Data.MySqlClient
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class MySqlBulkLoader
     {
         // constant values
         private const string defaultFieldTerminator = "\t";
+
         private const string defaultLineTerminator = "\n";
         private const char defaultEscapeCharacter = '\\';
 
         // fields
         private string fieldTerminator;
+
         private string lineTerminator;
         private string charSet;
         private string tableName;
@@ -233,7 +236,7 @@ namespace MariaDB.Data.MySqlClient
             get { return expressions; }
         }
 
-        #endregion
+        #endregion Properties
 
         /// <summary>
         /// Execute the load operation
@@ -297,7 +300,7 @@ namespace MariaDB.Data.MySqlClient
             if (FieldTerminator != defaultFieldTerminator)
                 optionSql.AppendFormat("TERMINATED BY '{0}' ", FieldTerminator);
             if (FieldQuotationCharacter != Char.MinValue)
-                optionSql.AppendFormat("{0} ENCLOSED BY '{1}' ", 
+                optionSql.AppendFormat("{0} ENCLOSED BY '{1}' ",
                     FieldQuotationOptional ? "OPTIONALLY" : "", FieldQuotationCharacter);
             if (EscapeCharacter != defaultEscapeCharacter &&
                 EscapeCharacter != Char.MinValue)
@@ -338,7 +341,7 @@ namespace MariaDB.Data.MySqlClient
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum MySqlBulkLoaderPriority
     {
@@ -346,12 +349,14 @@ namespace MariaDB.Data.MySqlClient
         /// This is the default and indicates normal priority
         /// </summary>
         None,
+
         /// <summary>
         /// Low priority will cause the load operation to wait until all readers of the table
         /// have finished.  This only affects storage engines that use only table-level locking
         /// such as MyISAM, Memory, and Merge.
         /// </summary>
         Low,
+
         /// <summary>
         /// Concurrent priority is only relevant for MyISAM tables and signals that if the table
         /// has no free blocks in the middle that other readers can retrieve data from the table
@@ -361,7 +366,7 @@ namespace MariaDB.Data.MySqlClient
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum MySqlBulkLoaderConflictOption
     {
@@ -371,14 +376,15 @@ namespace MariaDB.Data.MySqlClient
         /// cause an error to be thrown and the rest of the data file ignored.
         /// </summary>
         None,
+
         /// <summary>
         /// Replace column values when a key conflict occurs.
         /// </summary>
         Replace,
+
         /// <summary>
         /// Ignore any rows where the primary key conflicts.
         /// </summary>
         Ignore
     }
-
 }

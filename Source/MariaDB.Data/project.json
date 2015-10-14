@@ -6,7 +6,7 @@
     "licenseUrl": "",
 
     "compilationOptions": {
-        "define": [ "CLR4" ]
+        "define": [ "DNX" ]
     },
 
     "frameworks": {

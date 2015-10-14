@@ -1,21 +1,20 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Text;
-using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -116,7 +115,7 @@ namespace MariaDB.Data.MySqlClient
             set { returnComments = value; }
         }
 
-        #endregion
+        #endregion Properties
 
         public List<string> GetAllTokens()
         {
@@ -154,10 +153,10 @@ namespace MariaDB.Data.MySqlClient
             {
                 if ((stopIndex - startIndex) < 2) continue;
                 char c1 = sql[startIndex];
-                char c2 = sql[startIndex+1];
+                char c2 = sql[startIndex + 1];
                 if (c1 == '?' ||
                     (c1 == '@' && c2 != '@'))
-                return sql.Substring(startIndex, stopIndex - startIndex);
+                    return sql.Substring(startIndex, stopIndex - startIndex);
             }
             return null;
         }
@@ -171,7 +170,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 char c = sql[pos++];
                 if (Char.IsWhiteSpace(c)) continue;
-                
+
                 if (c == '`' || c == '\'' || c == '"' || (c == '[' && SqlServerMode))
                     ReadQuotedToken(c);
                 else if (c == '#' || c == '-' || c == '/')
@@ -212,14 +211,14 @@ namespace MariaDB.Data.MySqlClient
             if (sql[pos] == '*')
                 endingPattern = "*/";
 
-            int startingIndex = pos-1;
+            int startingIndex = pos - 1;
 
             int index = sql.IndexOf(endingPattern, pos);
             if (endingPattern == "\n")
                 index = sql.IndexOf('\n', pos);
-            if (index == -1) 
+            if (index == -1)
                 index = sql.Length - 1;
-            else 
+            else
                 index += endingPattern.Length;
 
             pos = index;
@@ -241,7 +240,7 @@ namespace MariaDB.Data.MySqlClient
 
         private void ReadUnquotedToken()
         {
-            startIndex = pos-1;
+            startIndex = pos - 1;
 
             if (!IsSpecialCharacter(sql[startIndex]))
             {
@@ -277,7 +276,7 @@ namespace MariaDB.Data.MySqlClient
         {
             if (quoteChar == '[')
                 quoteChar = ']';
-            startIndex = pos-1;
+            startIndex = pos - 1;
             bool escaped = false;
 
             bool found = false;
@@ -309,13 +308,14 @@ namespace MariaDB.Data.MySqlClient
 
         private bool IsParameterMarker(char c)
         {
-            return c == '@' || c == '?'; 
+            return c == '@' || c == '?';
         }
 
         private bool IsSpecialCharacter(char c)
         {
-            if (Char.IsLetterOrDigit(c) || 
-                c == '$' || c == '_' || c == '.') return false;
+            if (Char.IsLetterOrDigit(c) ||
+                c == '$' || c == '_' || c == '.')
+                return false;
             if (IsParameterMarker(c)) return false;
             return true;
         }

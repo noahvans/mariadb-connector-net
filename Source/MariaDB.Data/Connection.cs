@@ -1,35 +1,38 @@
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU Lesser General Public License as published 
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; version 3 of the License.
 //
-// This program is distributed in the hope that it will be useful, but 
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License 
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
 //
-// You should have received a copy of the GNU Lesser General Public License along 
-// with this program; if not, write to the Free Software Foundation, Inc., 
+// You should have received a copy of the GNU Lesser General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+
 #if !CF
+
 using System.Drawing;
 using System.Drawing.Design;
 using System.Transactions;
+
 #endif
-using System.Text;
+
 using IsolationLevel = System.Data.IsolationLevel;
 using MariaDB.Data.Common;
-using System.Diagnostics;
 using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
     /// <include file='docs/MySqlConnection.xml' path='docs/ClassSummary/*'/>
 #if !CF
+
     [ToolboxBitmap(typeof(MySqlConnection), "MySqlClient.resources.connection.bmp")]
     [DesignerCategory("Code")]
     [ToolboxItem(true)]
@@ -74,6 +77,7 @@ namespace MariaDB.Data.MySqlClient
         #region Interal Methods & Properties
 
 #if !CF
+
         internal PerformanceMonitor PerfMonitor
         {
             get { return perfMonitor; }
@@ -123,7 +127,7 @@ namespace MariaDB.Data.MySqlClient
                     driver != null &&
                     driver.CurrentTransaction != null;
 #else
-                return false;            
+                return false;
 #endif
             }
         }
@@ -134,7 +138,7 @@ namespace MariaDB.Data.MySqlClient
             set { isInUse = value; }
         }
 
-        #endregion
+        #endregion Interal Methods & Properties
 
         #region Properties
 
@@ -142,6 +146,7 @@ namespace MariaDB.Data.MySqlClient
         /// Returns the id of the server thread this connection is executing on
         /// </summary>
 #if !CF
+
         [Browsable(false)]
 #endif
         public int ServerThread
@@ -153,6 +158,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets the name of the MySQL server to which to connect.
         /// </summary>
 #if !CF
+
         [Browsable(true)]
 #endif
         public override string DataSource
@@ -162,6 +168,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ConnectionTimeout/*'/>
 #if !CF
+
         [Browsable(true)]
 #endif
         public override int ConnectionTimeout
@@ -171,6 +178,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/MySqlConnection.xml' path='docs/Database/*'/>
 #if !CF
+
         [Browsable(true)]
 #endif
         public override string Database
@@ -182,6 +190,7 @@ namespace MariaDB.Data.MySqlClient
         /// Indicates if this connection should use compression when communicating with the server.
         /// </summary>
 #if !CF
+
         [Browsable(false)]
 #endif
         public bool UseCompression
@@ -191,6 +200,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/MySqlConnection.xml' path='docs/State/*'/>
 #if !CF
+
         [Browsable(false)]
 #endif
         public override ConnectionState State
@@ -200,6 +210,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ServerVersion/*'/>
 #if !CF
+
         [Browsable(false)]
 #endif
         public override string ServerVersion
@@ -209,6 +220,7 @@ namespace MariaDB.Data.MySqlClient
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ConnectionString/*'/>
 #if !CF
+
         [Editor("MySql.Data.MySqlClient.Design.ConnectionStringTypeEditor,MySqlClient.Design", typeof(UITypeEditor))]
         [Browsable(true)]
         [Category("Data")]
@@ -268,13 +280,14 @@ namespace MariaDB.Data.MySqlClient
 
 #endif
 
-        #endregion
+        #endregion Properties
 
         #region Transactions
 
 #if !MONO && !CF
+
         /// <summary>
-        /// Enlists in the specified transaction. 
+        /// Enlists in the specified transaction.
         /// </summary>
         /// <param name="transaction">
         /// A reference to an existing <see cref="System.Transactions.Transaction"/> in which to enlist.
@@ -328,6 +341,7 @@ namespace MariaDB.Data.MySqlClient
                 driver.IsInActiveUse = true;
             }
         }
+
 #endif
 
         /// <include file='docs/MySqlConnection.xml' path='docs/BeginTransaction/*'/>
@@ -357,15 +371,19 @@ namespace MariaDB.Data.MySqlClient
                 case IsolationLevel.ReadCommitted:
                     cmd.CommandText += "READ COMMITTED";
                     break;
+
                 case IsolationLevel.ReadUncommitted:
                     cmd.CommandText += "READ UNCOMMITTED";
                     break;
+
                 case IsolationLevel.RepeatableRead:
                     cmd.CommandText += "REPEATABLE READ";
                     break;
+
                 case IsolationLevel.Serializable:
                     cmd.CommandText += "SERIALIZABLE";
                     break;
+
                 case IsolationLevel.Chaos:
                     throw new NotSupportedException(Resources.ChaosNotSupported);
                 case IsolationLevel.Snapshot:
@@ -380,7 +398,7 @@ namespace MariaDB.Data.MySqlClient
             return t;
         }
 
-        #endregion
+        #endregion Transactions
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ChangeDatabase/*'/>
         public override void ChangeDatabase(string databaseName)
@@ -465,7 +483,6 @@ namespace MariaDB.Data.MySqlClient
                     if (driver == null || !driver.IsOpen)
                         driver = pool.GetConnection();
                     procedureCache = pool.ProcedureCache;
-
                 }
                 else
                 {
@@ -531,7 +548,7 @@ namespace MariaDB.Data.MySqlClient
             return this.Clone();
         }
 
-        #endregion
+        #endregion ICloneable
 
         #region IDisposeable
 
@@ -542,7 +559,7 @@ namespace MariaDB.Data.MySqlClient
             base.Dispose(disposing);
         }
 
-        #endregion
+        #endregion IDisposeable
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
@@ -624,8 +641,6 @@ namespace MariaDB.Data.MySqlClient
             return cmd.ExecuteScalar().ToString();
         }
 
-
-
         internal void HandleTimeoutOrThreadAbort(Exception ex)
         {
             bool isFatal = false;
@@ -647,11 +662,10 @@ namespace MariaDB.Data.MySqlClient
 
             try
             {
-
                 // Do a fast cancel.The reason behind small values for connection
                 // and command timeout is that we do not want user to wait longer
                 // after command has already expired.
-                // Microsoft's SqlClient seems to be using 5 seconds timeouts 
+                // Microsoft's SqlClient seems to be using 5 seconds timeouts
                 // here as well.
                 // Read the  error packet with "interrupted" message.
                 CancelQuery(5);
@@ -698,23 +712,22 @@ namespace MariaDB.Data.MySqlClient
 
         // Problem description:
         // Sometimes, ExecuteReader is called recursively. This is the case if
-        // command behaviors are used and we issue "set sql_select_limit" 
-        // before and after command. This is also the case with prepared 
-        // statements , where we set session variables. In these situations, we 
-        // have to prevent  recursive ExecuteReader calls from overwriting 
+        // command behaviors are used and we issue "set sql_select_limit"
+        // before and after command. This is also the case with prepared
+        // statements , where we set session variables. In these situations, we
+        // have to prevent  recursive ExecuteReader calls from overwriting
         // timeouts set by the top level command.
 
-        // To solve the problem, SetCommandTimeout() and ClearCommandTimeout() are 
-        // introduced . Query timeout here is  "sticky", that is once set with 
-        // SetCommandTimeout, it only be overwritten after ClearCommandTimeout 
-        // (SetCommandTimeout would return false if it timeout has not been 
+        // To solve the problem, SetCommandTimeout() and ClearCommandTimeout() are
+        // introduced . Query timeout here is  "sticky", that is once set with
+        // SetCommandTimeout, it only be overwritten after ClearCommandTimeout
+        // (SetCommandTimeout would return false if it timeout has not been
         // cleared).
 
-        // The proposed usage pattern of there routines is following: 
-        // When timed operations starts, issue SetCommandTimeout(). When it 
-        // finishes, issue ClearCommandTimeout(), but _only_ if call to 
+        // The proposed usage pattern of there routines is following:
+        // When timed operations starts, issue SetCommandTimeout(). When it
+        // finishes, issue ClearCommandTimeout(), but _only_ if call to
         // SetCommandTimeout() was successful.
-
 
         /// <summary>
         /// Sets query timeout. If timeout has been set prior and not
@@ -756,13 +769,13 @@ namespace MariaDB.Data.MySqlClient
                 driver.ResetTimeout(0);
             }
         }
-        #endregion
 
+        #endregion Routines for timeout support.
 
         #region GetSchema Support
 
         /// <summary>
-        /// Returns schema information for the data source of this <see cref="DbConnection"/>. 
+        /// Returns schema information for the data source of this <see cref="DbConnection"/>.
         /// </summary>
         /// <returns>A <see cref="DataTable"/> that contains schema information. </returns>
         public override DataTable GetSchema()
@@ -771,8 +784,8 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Returns schema information for the data source of this 
-        /// <see cref="DbConnection"/> using the specified string for the schema name. 
+        /// Returns schema information for the data source of this
+        /// <see cref="DbConnection"/> using the specified string for the schema name.
         /// </summary>
         /// <param name="collectionName">Specifies the name of the schema to return. </param>
         /// <returns>A <see cref="DataTable"/> that contains schema information. </returns>
@@ -786,8 +799,8 @@ namespace MariaDB.Data.MySqlClient
 
         /// <summary>
         /// Returns schema information for the data source of this <see cref="DbConnection"/>
-        /// using the specified string for the schema name and the specified string array 
-        /// for the restriction values. 
+        /// using the specified string for the schema name and the specified string array
+        /// for the restriction values.
         /// </summary>
         /// <param name="collectionName">Specifies the name of the schema to return.</param>
         /// <param name="restrictionValues">Specifies a set of restriction values for the requested schema.</param>
@@ -802,7 +815,7 @@ namespace MariaDB.Data.MySqlClient
             return dt;
         }
 
-        #endregion
+        #endregion GetSchema Support
 
         #region Pool Routines
 
@@ -818,11 +831,11 @@ namespace MariaDB.Data.MySqlClient
             MySqlPoolManager.ClearAllPools();
         }
 
-        #endregion
+        #endregion Pool Routines
     }
 
     /// <summary>
-    /// Represents the method that will handle the <see cref="MySqlConnection.InfoMessage"/> event of a 
+    /// Represents the method that will handle the <see cref="MySqlConnection.InfoMessage"/> event of a
     /// <see cref="MySqlConnection"/>.
     /// </summary>
     public delegate void MySqlInfoMessageEventHandler(object sender, MySqlInfoMessageEventArgs args);
@@ -833,7 +846,7 @@ namespace MariaDB.Data.MySqlClient
     public class MySqlInfoMessageEventArgs : EventArgs
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public MySqlError[] errors;
     }
@@ -844,8 +857,8 @@ namespace MariaDB.Data.MySqlClient
     /// </summary>
     internal class CommandTimer : IDisposable
     {
-        bool timeoutSet;
-        MySqlConnection connection;
+        private bool timeoutSet;
+        private MySqlConnection connection;
 
         public CommandTimer(MySqlConnection connection, int timeout)
         {
@@ -857,6 +870,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
         #region IDisposable Members
+
         public void Dispose()
         {
             if (timeoutSet)
@@ -866,6 +880,7 @@ namespace MariaDB.Data.MySqlClient
                 connection = null;
             }
         }
-        #endregion
+
+        #endregion IDisposable Members
     }
 }
