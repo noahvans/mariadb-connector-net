@@ -70,13 +70,6 @@ namespace MariaDB.Data.Common
                 if (t.Type == TokenType.Keyword)
                 {
                     queryType = t.Text.ToUpperInvariant();
-                    //string s = t.Text.ToLowerInvariant();
-                    //if (s == "select")
-                    //    queryType = "SELECT";
-                    //else if (s == "update" || s == "insert")
-                    //    queryType = "UPSERT";
-                    //else
-                    //    queryType = "OTHER";
                     break;
                 }
             }

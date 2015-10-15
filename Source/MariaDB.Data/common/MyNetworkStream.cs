@@ -25,40 +25,31 @@ internal class MyNetworkStream : NetworkStream
     /// shared memory). This property comes handy in TimedStream.
     ///
     /// 2. It implements workarounds for WSAEWOULDBLOCK errors, that can start
-    /// occuring after stream has times out. For a discussion about the CLR bug,
+    /// occurring after stream has times out. For a discussion about the CLR bug,
     /// refer to  http://tinyurl.com/lhgpyf. This error should never occur, as
-    /// we're not using asynchronous operations, but apparerntly it does occur
+    /// we're not using asynchronous operations, but apparently it does occur
     /// directly after timeout has expired.
     /// The workaround is hinted in the URL above and implemented like this:
-    /// For each IO operation, if it throws WSAEWOULDBLOCK, we explicitely set
+    /// For each IO operation, if it throws WSAEWOULDBLOCK, we explicatively set
     /// the socket to Blocking and retry the operation once again.
-    /// </summary>
-    private const int MaxRetryCount = 2;
-
-    private Socket socket;
-
+    /// </summary>    
     public MyNetworkStream(Socket socket, bool ownsSocket)
         : base(socket, ownsSocket)
     {
         this.socket = socket;
     }
 
+    private const int MaxRetryCount = 2;
+    private Socket socket;
+
     private bool IsTimeoutException(SocketException e)
     {
-#if CF
-       return (e.NativeErrorCode == 10060);
-#else
         return (e.SocketErrorCode == SocketError.TimedOut);
-#endif
     }
 
     private bool IsWouldBlockException(SocketException e)
     {
-#if CF
-      return (e.NativeErrorCode == 10035);
-#else
         return (e.SocketErrorCode == SocketError.WouldBlock);
-#endif
     }
 
     private void HandleOrRethrowException(Exception e)

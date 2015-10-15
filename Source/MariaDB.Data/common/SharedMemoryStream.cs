@@ -20,8 +20,6 @@ using MariaDB.Data.MySqlClient;
 
 namespace MariaDB.Data.Common
 {
-#if !PocketPC
-
     /// <summary>
     /// Helper class to encapsulate shared memory functionality
     /// Also cares of proper cleanup of file mapping object and cew
@@ -183,8 +181,6 @@ namespace MariaDB.Data.Common
             serverRead.Set();
         }
 
-        #region Properties
-
         public override bool CanRead
         {
             get { return true; }
@@ -210,8 +206,6 @@ namespace MariaDB.Data.Common
             get { throw new NotSupportedException("SharedMemoryStream does not support seeking - position"); }
             set { }
         }
-
-        #endregion Properties
 
         public override void Flush()
         {
@@ -338,6 +332,4 @@ namespace MariaDB.Data.Common
             }
         }
     }
-
-#endif
 }

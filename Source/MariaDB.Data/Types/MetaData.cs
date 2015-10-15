@@ -36,7 +36,8 @@ namespace MariaDB.Data.Types
                 case "double":
                 case "float":
                 case "serial":
-                case "smallint": return true;
+                case "smallint":
+                    return true;
             }
             return false;
         }
@@ -69,7 +70,8 @@ namespace MariaDB.Data.Types
                 case "numeric":
                 case "decimal":
                 case "dec":
-                case "real": return true;
+                case "real":
+                    return true;
             }
             return false;
         }
@@ -79,87 +81,71 @@ namespace MariaDB.Data.Types
         {
             switch (typeName.ToUpper(CultureInfo.InvariantCulture))
             {
-                case "CHAR": return MySqlDbType.String;
-                case "VARCHAR": return MySqlDbType.VarChar;
-                case "DATE": return MySqlDbType.Date;
-                case "DATETIME": return MySqlDbType.DateTime;
+                case "CHAR":
+                    return MySqlDbType.String;
+                case "VARCHAR":
+                    return MySqlDbType.VarChar;
+                case "DATE":
+                    return MySqlDbType.Date;
+                case "DATETIME":
+                    return MySqlDbType.DateTime;
                 case "NUMERIC":
                 case "DECIMAL":
                 case "DEC":
                 case "FIXED":
-                    if (connection.driver.Version.isAtLeast(5, 0, 3))
-                        return MySqlDbType.NewDecimal;
-                    else
-                        return MySqlDbType.Decimal;
-
+                    return connection.driver.Version.isAtLeast(5, 0, 3) ? MySqlDbType.NewDecimal : MySqlDbType.Decimal;
                 case "YEAR":
                     return MySqlDbType.Year;
-
                 case "TIME":
                     return MySqlDbType.Time;
-
                 case "TIMESTAMP":
                     return MySqlDbType.Timestamp;
-
-                case "SET": return MySqlDbType.Set;
-                case "ENUM": return MySqlDbType.Enum;
-                case "BIT": return MySqlDbType.Bit;
-
+                case "SET":
+                    return MySqlDbType.Set;
+                case "ENUM":
+                    return MySqlDbType.Enum;
+                case "BIT":
+                    return MySqlDbType.Bit;
                 case "TINYINT":
                     return unsigned ? MySqlDbType.UByte : MySqlDbType.Byte;
-
                 case "BOOL":
                 case "BOOLEAN":
                     return MySqlDbType.Byte;
-
                 case "SMALLINT":
                     return unsigned ? MySqlDbType.UInt16 : MySqlDbType.Int16;
-
                 case "MEDIUMINT":
                     return unsigned ? MySqlDbType.UInt24 : MySqlDbType.Int24;
-
                 case "INT":
                 case "INTEGER":
                     return unsigned ? MySqlDbType.UInt32 : MySqlDbType.Int32;
-
                 case "SERIAL":
                     return MySqlDbType.UInt64;
-
                 case "BIGINT":
                     return unsigned ? MySqlDbType.UInt64 : MySqlDbType.Int64;
-
-                case "FLOAT": return MySqlDbType.Float;
-                case "DOUBLE": return MySqlDbType.Double;
+                case "FLOAT":
+                    return MySqlDbType.Float;
+                case "DOUBLE":
+                    return MySqlDbType.Double;
                 case "REAL":
-                    return
-            realAsFloat ? MySqlDbType.Float : MySqlDbType.Double;
+                    return realAsFloat ? MySqlDbType.Float : MySqlDbType.Double;
                 case "TEXT":
                     return MySqlDbType.Text;
-
                 case "BLOB":
                     return MySqlDbType.Blob;
-
                 case "LONGBLOB":
                     return MySqlDbType.LongBlob;
-
                 case "LONGTEXT":
                     return MySqlDbType.LongText;
-
                 case "MEDIUMBLOB":
                     return MySqlDbType.MediumBlob;
-
                 case "MEDIUMTEXT":
                     return MySqlDbType.MediumText;
-
                 case "TINYBLOB":
                     return MySqlDbType.TinyBlob;
-
                 case "TINYTEXT":
                     return MySqlDbType.TinyText;
-
                 case "BINARY":
                     return MySqlDbType.Binary;
-
                 case "VARBINARY":
                     return MySqlDbType.VarBinary;
             }

@@ -27,13 +27,11 @@ namespace MariaDB.Data.MySqlClient
     {
         // constant values
         private const string defaultFieldTerminator = "\t";
-
         private const string defaultLineTerminator = "\n";
         private const char defaultEscapeCharacter = '\\';
 
         // fields
         private string fieldTerminator;
-
         private string lineTerminator;
         private string charSet;
         private string tableName;
@@ -62,8 +60,6 @@ namespace MariaDB.Data.MySqlClient
             columns = new StringCollection();
             expressions = new StringCollection();
         }
-
-        #region Properties
 
         /// <summary>
         /// Gets or sets the connection.
@@ -236,8 +232,6 @@ namespace MariaDB.Data.MySqlClient
             get { return expressions; }
         }
 
-        #endregion Properties
-
         /// <summary>
         /// Execute the load operation
         /// </summary>
@@ -249,7 +243,7 @@ namespace MariaDB.Data.MySqlClient
             if (Connection == null)
                 throw new InvalidOperationException(Resources.ConnectionNotSet);
 
-            // next we open up the connetion if it is not already open
+            // next we open up the connection if it is not already open
             if (connection.State != ConnectionState.Open)
             {
                 openedConnection = true;

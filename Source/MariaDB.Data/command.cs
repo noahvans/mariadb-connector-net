@@ -21,21 +21,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Collections.Generic;
 using MariaDB.Data.MySqlClient.Properties;
-
-#if !CF
-
 using System.Transactions;
-
-#endif
 
 namespace MariaDB.Data.MySqlClient
 {
     /// <include file='docs/mysqlcommand.xml' path='docs/ClassSummary/*'/>
-#if !CF
-
     [System.Drawing.ToolboxBitmap(typeof(MySqlCommand), "MySqlClient.resources.command.bmp")]
     [System.ComponentModel.DesignerCategory("Code")]
-#endif
     public sealed class MySqlCommand : DbCommand, ICloneable
     {
         private MySqlConnection connection;
@@ -94,25 +86,17 @@ namespace MariaDB.Data.MySqlClient
             curTransaction = transaction;
         }
 
-        #region Properties
-
         /// <include file='docs/mysqlcommand.xml' path='docs/LastInseredId/*'/>
-#if !CF
-
         [Browsable(false)]
-#endif
         public Int64 LastInsertedId
         {
             get { return lastInsertedId; }
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandText/*'/>
-#if !CF
-
         [Category("Data")]
         [Description("Command text to execute")]
         [Editor("MySql.Data.Common.Design.SqlCommandTextEditor,MySqlClient.Design", typeof(System.Drawing.Design.UITypeEditor))]
-#endif
         public override string CommandText
         {
             get { return cmdText; }
@@ -130,12 +114,9 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandTimeout/*'/>
-#if !CF
-
         [Category("Misc")]
         [Description("Time to wait for command to execute")]
         [DefaultValue(30)]
-#endif
         public override int CommandTimeout
         {
             get { return useDefaultTimeout ? 30 : commandTimeout; }
@@ -162,10 +143,7 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandType/*'/>
-#if !CF
-
         [Category("Data")]
-#endif
         public override CommandType CommandType
         {
             get { return cmdType; }
@@ -173,21 +151,15 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/IsPrepared/*'/>
-#if !CF
-
         [Browsable(false)]
-#endif
         public bool IsPrepared
         {
             get { return statement != null && statement.IsPrepared; }
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Connection/*'/>
-#if !CF
-
         [Category("Behavior")]
         [Description("Connection used by the command")]
-#endif
         public new MySqlConnection Connection
         {
             get { return connection; }
@@ -220,22 +192,16 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Parameters/*'/>
-#if !CF
-
         [Category("Data")]
         [Description("The parameters collection")]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-#endif
         public new MySqlParameterCollection Parameters
         {
             get { return parameters; }
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Transaction/*'/>
-#if !CF
-
         [Browsable(false)]
-#endif
         public new MySqlTransaction Transaction
         {
             get { return curTransaction; }
@@ -252,17 +218,7 @@ namespace MariaDB.Data.MySqlClient
         {
             get { return cacheAge; }
             set { cacheAge = value; }
-        }
-
-        /*		/// <include file='docs/mysqlcommand.xml' path='docs/UpdatedRowSource/*'/>
-        #if !CF
-                [Category("Behavior")]
-        #endif
-                public override UpdateRowSource UpdatedRowSource
-                {
-                    get { return updatedRowSource;  }
-                    set { updatedRowSource = value; }
-                }*/
+        }        
 
         internal List<MySqlCommand> Batch
         {
@@ -284,10 +240,6 @@ namespace MariaDB.Data.MySqlClient
             get { return internallyCreated; }
             set { internallyCreated = value; }
         }
-
-        #endregion Properties
-
-        #region Methods
 
         /// <summary>
         /// Attempts to cancel the execution of a currently active command
@@ -410,9 +362,7 @@ namespace MariaDB.Data.MySqlClient
                 {
                     throw new MySqlException(Resources.DataReaderOpen);
                 }
-#if !CF
                 System.Transactions.Transaction curTrans = System.Transactions.Transaction.Current;
-
                 if (curTrans != null)
                 {
                     bool inRollback = false;
@@ -435,7 +385,7 @@ namespace MariaDB.Data.MySqlClient
                             throw new TransactionAbortedException();
                     }
                 }
-#endif
+
                 commandTimer = new CommandTimer(connection, CommandTimeout);
 
                 lastInsertedId = -1;
@@ -615,10 +565,6 @@ namespace MariaDB.Data.MySqlClient
             Prepare(0);
         }
 
-        #endregion Methods
-
-        #region Async Methods
-
         internal delegate object AsyncDelegate(int type, CommandBehavior behavior);
 
         internal AsyncDelegate caller = null;
@@ -750,59 +696,6 @@ namespace MariaDB.Data.MySqlClient
             return (int)c.EndInvoke(asyncResult);
         }
 
-        #endregion Async Methods
-
-        #region Private Methods
-
-        /*		private ArrayList PrepareSqlBuffers(string sql)
-                {
-                    ArrayList buffers = new ArrayList();
-                    MySqlStreamWriter writer = new MySqlStreamWriter(new MemoryStream(), connection.Encoding);
-                    writer.Version = connection.driver.Version;
-
-                    // if we are executing as a stored procedure, then we need to add the call
-                    // keyword.
-                    if (CommandType == CommandType.StoredProcedure)
-                    {
-                        if (storedProcedure == null)
-                            storedProcedure = new StoredProcedure(this);
-                        sql = storedProcedure.Prepare( CommandText );
-                    }
-
-                    // tokenize the SQL
-                    sql = sql.TrimStart(';').TrimEnd(';');
-                    ArrayList tokens = TokenizeSql( sql );
-
-                    foreach (string token in tokens)
-                    {
-                        if (token.Trim().Length == 0) continue;
-                        if (token == ";" && ! connection.driver.SupportsBatch)
-                        {
-                            MemoryStream ms = (MemoryStream)writer.Stream;
-                            if (ms.Length > 0)
-                                buffers.Add( ms );
-
-                            writer = new MySqlStreamWriter(new MemoryStream(), connection.Encoding);
-                            writer.Version = connection.driver.Version;
-                            continue;
-                        }
-                        else if (token[0] == parameters.ParameterMarker)
-                        {
-                            if (SerializeParameter(writer, token)) continue;
-                        }
-
-                        // our fall through case is to write the token to the byte stream
-                        writer.WriteStringNoNull(token);
-                    }
-
-                    // capture any buffer that is left over
-                    MemoryStream mStream = (MemoryStream)writer.Stream;
-                    if (mStream.Length > 0)
-                        buffers.Add( mStream );
-
-                    return buffers;
-                }*/
-
         internal long EstimatedSize()
         {
             long size = CommandText.Length;
@@ -810,10 +703,6 @@ namespace MariaDB.Data.MySqlClient
                 size += parameter.EstimatedSize();
             return size;
         }
-
-        #endregion Private Methods
-
-        #region ICloneable
 
         /// <summary>
         /// Creates a clone of this MySqlCommand object.  CommandText, Connection, and Transaction properties
@@ -842,10 +731,6 @@ namespace MariaDB.Data.MySqlClient
         {
             return this.Clone();
         }
-
-        #endregion ICloneable
-
-        #region Batching support
 
         internal void AddToBatch(MySqlCommand command)
         {
@@ -876,7 +761,7 @@ namespace MariaDB.Data.MySqlClient
                             token = tokenizer.NextToken();
                             Debug.Assert(token == "(");
 
-                            // find matching right paren, and ensure that parens
+                            // find matching right parameter, and ensure that pares
                             // are balanced.
                             int openParenCount = 1;
                             while (token != null)
@@ -913,8 +798,6 @@ namespace MariaDB.Data.MySqlClient
             return batchableCommandText;
         }
 
-        #endregion Batching support
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -928,10 +811,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a value indicating whether the command object should be visible in a Windows Form Designer control.
         /// </summary>
-#if !CF
-
         [Browsable(false)]
-#endif
         public override bool DesignTimeVisible
         {
             get

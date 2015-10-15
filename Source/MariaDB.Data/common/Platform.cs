@@ -23,9 +23,7 @@ namespace MariaDB.Data.Common
         /// <summary>
         /// By creating a private ctor, we keep the compiler from creating a default ctor
         /// </summary>
-        private Platform()
-        {
-        }
+        private Platform() { }
 
         public static bool IsWindows()
         {

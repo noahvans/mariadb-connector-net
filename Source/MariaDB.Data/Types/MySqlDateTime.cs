@@ -40,17 +40,14 @@ namespace MariaDB.Data.Types
         /// <param name="second">The second to use.</param>
         public MySqlDateTime(int year, int month, int day, int hour, int minute, int second)
             : this(MySqlDbType.DateTime, year, month, day, hour, minute, second)
-        {
-        }
+        { }
 
         /// <summary>
-        /// Constructs a new <b>MySqlDateTime</b> object by using values from the given <see cref="DateTime"/> object.
+        /// Constructs a new <b>MySqlDateTime</b> object by 
+        /// using values from the given <see cref="DateTime"/> object.
         /// </summary>
         /// <param name="dt">The <see cref="DateTime"/> object to copy.</param>
-        public MySqlDateTime(DateTime dt)
-            : this(MySqlDbType.DateTime, dt)
-        {
-        }
+        public MySqlDateTime(DateTime dt) : this(MySqlDbType.DateTime, dt) { }
 
         /// <summary>
         /// Constructs a new <b>MySqlDateTime</b> object by copying the current value of the given object.
@@ -70,12 +67,9 @@ namespace MariaDB.Data.Types
         }
 
         /// <summary>
-        /// Enables the contruction of a <b>MySqlDateTime</b> object by parsing a string.
+        /// Enables the construction of a <b>MySqlDateTime</b> object by parsing a string.
         /// </summary>
-        public MySqlDateTime(string dateTime)
-            : this(MySqlDateTime.Parse(dateTime))
-        {
-        }
+        public MySqlDateTime(string dateTime) : this(MySqlDateTime.Parse(dateTime)) { }
 
         internal MySqlDateTime(MySqlDbType type, int year, int month, int day, int hour, int minute,
             int second)
@@ -91,14 +85,12 @@ namespace MariaDB.Data.Types
             this.millisecond = 0;
         }
 
-        internal MySqlDateTime(MySqlDbType type, bool isNull)
-            : this(type, 0, 0, 0, 0, 0, 0)
+        internal MySqlDateTime(MySqlDbType type, bool isNull) : this(type, 0, 0, 0, 0, 0, 0)
         {
             this.isNull = isNull;
         }
 
-        internal MySqlDateTime(MySqlDbType type, DateTime val)
-            : this(type, 0, 0, 0, 0, 0, 0)
+        internal MySqlDateTime(MySqlDbType type, DateTime val) : this(type, 0, 0, 0, 0, 0, 0)
         {
             this.isNull = false;
             year = val.Year;
@@ -109,8 +101,6 @@ namespace MariaDB.Data.Types
             second = val.Second;
             millisecond = val.Millisecond;
         }
-
-        #region Properties
 
         /// <summary>
         /// Indicates if this object contains a value that can be represented as a DateTime
@@ -173,10 +163,6 @@ namespace MariaDB.Data.Types
             get { return millisecond; }
             set { millisecond = value; }
         }
-
-        #endregion Properties
-
-        #region IMySqlValue Members
 
         /// <summary>
         /// Returns true if this datetime object has a null value
@@ -362,8 +348,6 @@ namespace MariaDB.Data.Types
             packet.Position += len;
         }
 
-        #endregion IMySqlValue Members
-
         /// <summary>Returns this value as a DateTime</summary>
         public DateTime GetDateTime()
         {
@@ -457,8 +441,6 @@ namespace MariaDB.Data.Types
             }
         }
 
-        #region IConvertible Members
-
         ulong IConvertible.ToUInt64(IFormatProvider provider)
         {
             return 0;
@@ -545,10 +527,6 @@ namespace MariaDB.Data.Types
             return 0;
         }
 
-        #endregion IConvertible Members
-
-        #region IComparable Members
-
         int IComparable.CompareTo(object obj)
         {
             MySqlDateTime otherDate = (MySqlDateTime)obj;
@@ -577,6 +555,5 @@ namespace MariaDB.Data.Types
             return 0;
         }
 
-        #endregion IComparable Members
     }
 }

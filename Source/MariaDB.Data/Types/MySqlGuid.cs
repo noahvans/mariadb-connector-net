@@ -199,7 +199,7 @@ namespace MariaDB.Data.Types
         {
             // we use name indexing because this method will only be called
             // when GetSchema is called for the DataSourceInformation
-            // collection and then it wil be cached.
+            // collection and then it will be cached.
             DataRow row = dsTable.NewRow();
             row["TypeName"] = "GUID";
             row["ProviderDbType"] = MySqlDbType.Guid;
