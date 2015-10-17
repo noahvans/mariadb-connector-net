@@ -50,15 +50,20 @@ namespace MariaDB.Data.Common
             public bool inheritHandle;
         }
 
-        [DllImport("Kernel32", CharSet = CharSet.Unicode)]
-        static extern public IntPtr CreateFile(
-            String fileName,
-            uint desiredAccess,
-            uint shareMode,
-            SecurityAttributes securityAttributes,
-            uint creationDisposition,
-            uint flagsAndAttributes,
-            uint templateFile);
+        //[DllImport("Kernel32", CharSet = CharSet.Unicode)]
+        //static extern public IntPtr CreateFile(
+        //    String fileName,
+        //    uint desiredAccess,
+        //    uint shareMode,
+        //    SecurityAttributes securityAttributes,
+        //    uint creationDisposition,
+        //    uint flagsAndAttributes,
+        //    uint templateFile);
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("Kernel32")]
+        public static extern bool WriteFile(IntPtr hFile, [In]byte[] buffer,
+            uint numberOfBytesToWrite, out uint numberOfBytesWritten, IntPtr lpOverlapped);
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll", EntryPoint = "PeekNamedPipe", SetLastError = true)]
@@ -73,11 +78,6 @@ namespace MariaDB.Data.Common
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern public bool ReadFile(IntPtr hFile, [Out] byte[] lpBuffer, uint nNumberOfBytesToRead,
             out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [DllImport("Kernel32")]
-        public static extern bool WriteFile(IntPtr hFile, [In]byte[] buffer,
-            uint numberOfBytesToWrite, out uint numberOfBytesWritten, IntPtr lpOverlapped);
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll", SetLastError = true)]

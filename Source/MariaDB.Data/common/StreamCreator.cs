@@ -27,47 +27,55 @@ namespace MariaDB.Data.Common
 	{
 		private string hostList;
 		private uint port;
-		private string pipeName;
 		private uint timeOut;
 		private uint keepalive;
 
+#if !DNX
+		private string pipeName;
+
 		public StreamCreator(string hosts, uint port, string pipeName, uint keepalive)
+#else
+		public StreamCreator(string hosts, uint port, uint keepalive)
+#endif
 		{
 			hostList = hosts;
 			if (hostList == null || hostList.Length == 0)
 				hostList = "localhost";
 			this.port = port;
+#if !DNX
 			this.pipeName = pipeName;
+#endif
 			this.keepalive = keepalive;
 		}
 
+#if !DNX
 		private Stream GetStreamFromHost(string pipeName, string hostName, uint timeout)
 		{
-			Stream stream = null;
 			if (pipeName != null && pipeName.Length != 0)
+				return NamedPipeStream.Create(pipeName, hostName, timeout);
+#else
+		private Stream GetStreamFromHost(string hostName, uint timeout)
+		{
+#endif
+			Stream stream = null;
+			IPHostEntry ipHE = GetHostEntry(hostName);
+			foreach (IPAddress address in ipHE.AddressList)
 			{
-				stream = NamedPipeStream.Create(pipeName, hostName, timeout);
-			}
-			else
-			{
-				IPHostEntry ipHE = GetHostEntry(hostName);
-				foreach (IPAddress address in ipHE.AddressList)
+				try
 				{
-					try
-					{
-						stream = CreateSocketStream(address, false);
-						if (stream != null) break;
-					}
-					catch (Exception ex)
-					{
-						SocketException socketException = ex as SocketException;
-						// if the exception is a ConnectionRefused then we eat it as we may have other address
-						// to attempt
-						if (socketException == null) throw;
-						if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
-					}
+					stream = CreateSocketStream(address, false);
+					if (stream != null) break;
+				}
+				catch (Exception ex)
+				{
+					SocketException socketException = ex as SocketException;
+					// if the exception is a ConnectionRefused then we eat it as we may have other address
+					// to attempt
+					if (socketException == null) throw;
+					if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
 				}
 			}
+
 			return stream;
 		}
 
@@ -87,7 +95,11 @@ namespace MariaDB.Data.Common
 
 			while (stream == null && pos < dnsHosts.Length)
 			{
+#if !DNX
 				stream = GetStreamFromHost(pipeName, dnsHosts[index++], timeout);
+#else
+				stream = GetStreamFromHost(dnsHosts[index++], timeout);
+#endif
 				if (index == dnsHosts.Length) index = 0;
 				pos++;
 			}
@@ -138,6 +150,7 @@ namespace MariaDB.Data.Common
 
 		private static EndPoint CreateUnixEndPoint(string host)
 		{
+#if !DNX
 			// first we need to load the Mono.posix assembly
 			Assembly a = Assembly.Load(@"Mono.Posix, Version=2.0.0.0,
 				Culture=neutral, PublicKeyToken=0738eb9f132ed756");
@@ -147,6 +160,9 @@ namespace MariaDB.Data.Common
 				false, BindingFlags.CreateInstance, null,
 				new object[1] { host }, null, null);
 			return ep;
+#else
+			return null;
+#endif
 		}
 
 		private Stream CreateSocketStream(IPAddress ip, bool unix)
@@ -200,7 +216,7 @@ namespace MariaDB.Data.Common
 				timeMilliseconds = UInt32.MaxValue;
 			else
 				timeMilliseconds = time * 1000;
-						
+
 			byte[] inOptionValues = new byte[12];
 			BitConverter.GetBytes(on).CopyTo(inOptionValues, 0);
 			BitConverter.GetBytes(time).CopyTo(inOptionValues, 4);

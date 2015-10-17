@@ -21,6 +21,8 @@ using Microsoft.Win32.SafeHandles;
 
 namespace MariaDB.Data.Common
 {
+    /* NamedPipeStream is temporary not supported.
+
     /// <summary>
     /// Summary description for API.
     /// </summary>
@@ -56,26 +58,18 @@ namespace MariaDB.Data.Common
                     break;
 
                 if (Marshal.GetLastWin32Error() != ERROR_PIPE_BUSY)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(),
-                        "Error opening pipe");
-                }
+                    throw new Win32Exception(Marshal.GetLastWin32Error(), "Error opening pipe");
+
                 LowResolutionStopwatch sw = LowResolutionStopwatch.StartNew();
                 bool success = NativeMethods.WaitNamedPipe(path, timeout);
                 sw.Stop();
                 if (!success)
-                {
                     if (timeout < sw.ElapsedMilliseconds ||
                         Marshal.GetLastWin32Error() == ERROR_SEM_TIMEOUT)
-                    {
                         throw new TimeoutException("Timeout waiting for named pipe");
-                    }
                     else
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error(),
-                            "Error waiting for pipe");
-                    }
-                }
+                        throw new Win32Exception(Marshal.GetLastWin32Error(), "Error waiting for pipe");
+
                 timeout -= (uint)sw.ElapsedMilliseconds;
             }
             handle = new SafeFileHandle(nativeHandle, true);
@@ -219,4 +213,5 @@ namespace MariaDB.Data.Common
             return new NamedPipeStream(pipePath, FileAccess.ReadWrite, timeout);
         }
     }
+    */
 }

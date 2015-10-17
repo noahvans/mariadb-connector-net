@@ -163,7 +163,6 @@ namespace MariaDB.Data.MySqlClient
 			// connect to one of our specified hosts
 			try
 			{
-#if !CF
 				if (Settings.ConnectionProtocol == MySqlConnectionProtocol.SharedMemory)
 				{
 					SharedMemoryStream str = new SharedMemoryStream(Settings.SharedMemoryName);
@@ -172,16 +171,16 @@ namespace MariaDB.Data.MySqlClient
 				}
 				else
 				{
-#endif
 					string pipeName = Settings.PipeName;
 					if (Settings.ConnectionProtocol != MySqlConnectionProtocol.NamedPipe)
 						pipeName = null;
-					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, pipeName,
-						Settings.Keepalive);
-					baseStream = sc.GetStream(Settings.ConnectionTimeout);
-#if !CF
-				}
+#if !DNX
+					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, pipeName,Settings.Keepalive);
+#else
+					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, Settings.Keepalive);
 #endif
+					baseStream = sc.GetStream(Settings.ConnectionTimeout);
+				}
 			}
 			catch (Exception ex)
 			{
