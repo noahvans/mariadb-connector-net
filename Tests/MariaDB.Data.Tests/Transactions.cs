@@ -19,7 +19,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Transactions;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {

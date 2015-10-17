@@ -14,7 +14,6 @@
 using System;
 using System.Data;
 using System.Globalization;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {

@@ -13,7 +13,6 @@
 
 using System.Data;
 using System.Data.Common;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {

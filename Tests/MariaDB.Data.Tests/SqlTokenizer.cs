@@ -12,7 +12,6 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System.Reflection;
-using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {

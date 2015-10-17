@@ -5,6 +5,6 @@ Build Status
 ------------
 [![Travis](https://travis-ci.org/noahvans/mariadb-connector-net.svg?branch=master)](https://travis-ci.org/noahvans/mariadb-connector-net)
 
-About .NET Core
+Get .NET Core
 -------------
-In order to build the cross-platform .Net binaries, please refer to https://github.com/dotnet/coreclr/ to get the DNX SDKs for your target platforms.You also need to install MS ASP.NET and Web Tools for Visual Studio 2015, which is still in Beta,to open the .Net Core Project Files(.xproj).
+In order to build the cross-platform binaries, please refer to https://github.com/dotnet/coreclr/ to get the DNX SDKs for your target platforms.
