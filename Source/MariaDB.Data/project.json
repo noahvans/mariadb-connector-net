@@ -1,25 +1,30 @@
 {
     "version": "1.0.1.0",
     "description": "ADO.Net driver for MariaDB and MySQL",
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/noahvans/mariadb-connector-net"
+    },
 
     "compilationOptions": {
         "define": [ "DNX" ]
     },
 
+    "namedResource": {
+        "MariaDB.Data.MySqlClient.Properties.Resources": "Properties/SqlServerStrings.resx"
+    },
+    "resource": [ "Properties/keyword.txt", "Properties/ReservedWords.txt" ],
+    "dependencies": {
+        "EntityFramework.Relational": "7.0.0-*"
+    },
+
     "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Configuration.Install": "4.0.0.0",
-                "System.Data": "4.0.0.0",
-                "System.Design": "4.0.0.0",
-                "System.Drawing": "4.0.0.0",
-                "System.Management": "4.0.0.0",
-                "System.Security": "4.0.0.0",
-                "System.Transactions": "4.0.0.0",
-                "System.XML": "4.0.0.0"
+        "dnxcore50": {
+            "dependencies": {
+                "System.Data.SqlClient": "4.0.0-*",
+                "System.Text.Encoding.CodePages": "4.0.1-beta-*",
+                "System.Threading.Thread": "4.0.0-*",
+                "System.Threading.ThreadPool": "4.0.10-*"
             }
         }
     }

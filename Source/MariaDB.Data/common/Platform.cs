@@ -12,6 +12,7 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace MariaDB.Data.Common
 {
@@ -23,9 +24,7 @@ namespace MariaDB.Data.Common
         /// <summary>
         /// By creating a private ctor, we keep the compiler from creating a default ctor
         /// </summary>
-        private Platform()
-        {
-        }
+        private Platform() { }
 
         public static bool IsWindows()
         {
@@ -40,11 +39,31 @@ namespace MariaDB.Data.Common
             return false;
         }
 
+        public static bool IsUnix()
+        {
+            OperatingSystem os = Environment.OSVersion;
+            switch (os.Platform)
+            {
+                case PlatformID.Unix:
+                    return true;
+            }
+            return false;
+        }
+
         public static bool IsMono()
         {
             if (!inited)
                 Init();
             return isMono;
+        }
+
+        public static bool IsDNX()
+        {
+#if DNX
+            return true;
+#else
+            reture false;
+#endif    
         }
 
         private static void Init()
