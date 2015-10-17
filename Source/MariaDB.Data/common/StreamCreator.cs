@@ -63,6 +63,7 @@ namespace MariaDB.Data.Common
 			foreach (IPAddress address in ipHE.AddressList)
 			{
 <<<<<<< HEAD
+<<<<<<< HEAD
 				try
 				{
 					stream = CreateSocketStream(address, false);
@@ -128,6 +129,31 @@ namespace MariaDB.Data.Common
                         if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
 #endif
 <<<<<<< HEAD
+=======
+#if !CF
+				stream = NamedPipeStream.Create(pipeName, hostName, timeout);
+#endif
+			}
+			else
+			{
+				IPHostEntry ipHE = GetHostEntry(hostName);
+				foreach (IPAddress address in ipHE.AddressList)
+				{
+					try
+					{
+						stream = CreateSocketStream(address, false);
+						if (stream != null) break;
+					}
+					catch (Exception ex)
+					{
+						SocketException socketException = ex as SocketException;
+						// if the exception is a ConnectionRefused then we eat it as we may have other address
+						// to attempt
+						if (socketException == null) throw;
+#if !CF
+						if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
+#endif
+>>>>>>> parent of 529ee02... fix typo
 					}
 >>>>>>> parent of 529ee02... fix typo
 				}
@@ -199,13 +225,40 @@ namespace MariaDB.Data.Common
 #if CF
 		IPHostEntry GetDnsHostEntry(string hostname)
 		{
+<<<<<<< HEAD
+			return Dns.GetHostEntry(hostname);
+=======
+			IPHostEntry ipHE = null;
+#if !CF
+			IPAddress addr;
+			if (IPAddress.TryParse(hostname, out addr))
+			{
+				ipHE = new IPHostEntry();
+				ipHE.AddressList = new IPAddress[1];
+				ipHE.AddressList[0] = addr;
+			}
+#endif
+			return ipHE;
+>>>>>>> parent of 529ee02... fix typo
+		}
+#else
+
+<<<<<<< HEAD
+        private IPHostEntry GetDnsHostEntry(string hostname)
+        {
+            LowResolutionStopwatch stopwatch = new LowResolutionStopwatch();
+=======
+#if CF
+		IPHostEntry GetDnsHostEntry(string hostname)
+		{
 			return Dns.GetHostEntry(hostname);
 		}
 #else
 
-        private IPHostEntry GetDnsHostEntry(string hostname)
-        {
-            LowResolutionStopwatch stopwatch = new LowResolutionStopwatch();
+		private IPHostEntry GetDnsHostEntry(string hostname)
+		{
+			LowResolutionStopwatch stopwatch = new LowResolutionStopwatch();
+>>>>>>> parent of 529ee02... fix typo
 
             try
             {
@@ -227,6 +280,7 @@ namespace MariaDB.Data.Common
 
 #endif
 
+<<<<<<< HEAD
         private IPHostEntry GetHostEntry(string hostname)
         {
             IPHostEntry ipHE = ParseIPAddress(hostname);
@@ -237,6 +291,17 @@ namespace MariaDB.Data.Common
 #if !CF
 
 <<<<<<< HEAD
+=======
+		private IPHostEntry GetHostEntry(string hostname)
+		{
+			IPHostEntry ipHE = ParseIPAddress(hostname);
+			if (ipHE != null) return ipHE;
+			return GetDnsHostEntry(hostname);
+		}
+
+#if !CF
+
+>>>>>>> parent of 529ee02... fix typo
 		private static EndPoint CreateUnixEndPoint(string host)
 		{
 #if !DNX
@@ -260,6 +325,7 @@ namespace MariaDB.Data.Common
             Assembly a = Assembly.Load(@"Mono.Posix, Version=2.0.0.0,
 				Culture=neutral, PublicKeyToken=0738eb9f132ed756");
 
+<<<<<<< HEAD
             // then we need to construct a UnixEndPoint object
             EndPoint ep = (EndPoint)a.CreateInstance("Mono.Posix.UnixEndPoint",
                 false, BindingFlags.CreateInstance, null,
@@ -345,6 +411,76 @@ namespace MariaDB.Data.Common
 
 <<<<<<< HEAD
 >>>>>>> parent of 529ee02... fix typo
+=======
+#endif
+
+		private Stream CreateSocketStream(IPAddress ip, bool unix)
+		{
+			EndPoint endPoint;
+#if !CF
+			if (!Platform.IsWindows() && unix)
+				endPoint = CreateUnixEndPoint(hostList);
+			else
+#endif
+				endPoint = new IPEndPoint(ip, (int)port);
+
+			Socket socket = unix ?
+				new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP) :
+				new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			if (keepalive > 0)
+			{
+				SetKeepAlive(socket, keepalive);
+			}
+			IAsyncResult ias = socket.BeginConnect(endPoint, null, null);
+			if (!ias.AsyncWaitHandle.WaitOne((int)timeOut * 1000, false))
+			{
+				socket.Close();
+				return null;
+			}
+			try
+			{
+				socket.EndConnect(ias);
+			}
+			catch (Exception)
+			{
+				socket.Close();
+				throw;
+			}
+			MyNetworkStream stream = new MyNetworkStream(socket, true);
+			GC.SuppressFinalize(socket);
+			GC.SuppressFinalize(stream);
+			return stream;
+		}
+
+		/// <summary>
+		/// Set keepalive + timeout on socket.
+		/// </summary>
+		/// <param name="s">socket</param>
+		/// <param name="time">keepalive timeout, in seconds</param>
+		private static void SetKeepAlive(Socket s, uint time)
+		{
+#if !CF
+			uint on = 1;
+			uint interval = 1000; // default interval = 1 sec
+
+			uint timeMilliseconds;
+			if (time > UInt32.MaxValue / 1000)
+				timeMilliseconds = UInt32.MaxValue;
+			else
+				timeMilliseconds = time * 1000;
+
+			// Use Socket.IOControl to implement equivalent of
+			// WSAIoctl with  SOL_KEEPALIVE_VALS
+
+			// the native structure passed to WSAIoctl is
+			//struct tcp_keepalive {
+			//    ULONG onoff;
+			//    ULONG keepalivetime;
+			//    ULONG keepaliveinterval;
+			//};
+			// marshal the equivalent of the native structure into a byte array
+
+>>>>>>> parent of 529ee02... fix typo
 			byte[] inOptionValues = new byte[12];
 			BitConverter.GetBytes(on).CopyTo(inOptionValues, 0);
 			BitConverter.GetBytes(time).CopyTo(inOptionValues, 4);
@@ -359,6 +495,7 @@ namespace MariaDB.Data.Common
 			{
 				// Mono throws not implemented currently
 			}
+<<<<<<< HEAD
 =======
             byte[] inOptionValues = new byte[12];
             BitConverter.GetBytes(on).CopyTo(inOptionValues, 0);
@@ -382,4 +519,13 @@ namespace MariaDB.Data.Common
             s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
         }
     }
+=======
+#endif
+			// Fallback if Socket.IOControl is not available ( Compact Framework )
+			// or not implemented ( Mono ). Keepalive option will still be set, but
+			// with timeout is kept default.
+			s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
+		}
+	}
+>>>>>>> parent of 529ee02... fix typo
 }
