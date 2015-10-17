@@ -61,6 +61,7 @@ namespace MariaDB.Data.Common
 			IPHostEntry ipHE = GetHostEntry(hostName);
 			foreach (IPAddress address in ipHE.AddressList)
 			{
+<<<<<<< HEAD
 				try
 				{
 					stream = CreateSocketStream(address, false);
@@ -73,6 +74,32 @@ namespace MariaDB.Data.Common
 					// to attempt
 					if (socketException == null) throw;
 					if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
+=======
+#if !CF
+				stream = NamedPipeStream.Create(pipeName, hostName, timeout);
+#endif
+			}
+			else
+			{
+				IPHostEntry ipHE = GetHostEntry(hostName);
+				foreach (IPAddress address in ipHE.AddressList)
+				{
+					try
+					{
+						stream = CreateSocketStream(address, false);
+						if (stream != null) break;
+					}
+					catch (Exception ex)
+					{
+						SocketException socketException = ex as SocketException;
+						// if the exception is a ConnectionRefused then we eat it as we may have other address
+						// to attempt
+						if (socketException == null) throw;
+#if !CF
+						if (socketException.SocketErrorCode != SocketError.ConnectionRefused) throw;
+#endif
+					}
+>>>>>>> parent of 529ee02... fix typo
 				}
 			}
 
@@ -109,6 +136,7 @@ namespace MariaDB.Data.Common
 		private IPHostEntry ParseIPAddress(string hostname)
 		{
 			IPHostEntry ipHE = null;
+#if !CF
 			IPAddress addr;
 			if (IPAddress.TryParse(hostname, out addr))
 			{
@@ -116,8 +144,16 @@ namespace MariaDB.Data.Common
 				ipHE.AddressList = new IPAddress[1];
 				ipHE.AddressList[0] = addr;
 			}
+#endif
 			return ipHE;
 		}
+
+#if CF
+		IPHostEntry GetDnsHostEntry(string hostname)
+		{
+			return Dns.GetHostEntry(hostname);
+		}
+#else
 
 		private IPHostEntry GetDnsHostEntry(string hostname)
 		{
@@ -141,12 +177,16 @@ namespace MariaDB.Data.Common
 			}
 		}
 
+#endif
+
 		private IPHostEntry GetHostEntry(string hostname)
 		{
 			IPHostEntry ipHE = ParseIPAddress(hostname);
 			if (ipHE != null) return ipHE;
 			return GetDnsHostEntry(hostname);
 		}
+
+#if !CF
 
 		private static EndPoint CreateUnixEndPoint(string host)
 		{
@@ -165,12 +205,16 @@ namespace MariaDB.Data.Common
 #endif
 		}
 
+#endif
+
 		private Stream CreateSocketStream(IPAddress ip, bool unix)
 		{
 			EndPoint endPoint;
+#if !CF
 			if (!Platform.IsWindows() && unix)
 				endPoint = CreateUnixEndPoint(hostList);
 			else
+#endif
 				endPoint = new IPEndPoint(ip, (int)port);
 
 			Socket socket = unix ?
@@ -202,12 +246,13 @@ namespace MariaDB.Data.Common
 		}
 
 		/// <summary>
-		/// Set keep-alive + timeout on socket.
+		/// Set keepalive + timeout on socket.
 		/// </summary>
 		/// <param name="s">socket</param>
-		/// <param name="time">keep-alive timeout, in seconds</param>
+		/// <param name="time">keepalive timeout, in seconds</param>
 		private static void SetKeepAlive(Socket s, uint time)
 		{
+#if !CF
 			uint on = 1;
 			uint interval = 1000; // default interval = 1 sec
 
@@ -217,6 +262,20 @@ namespace MariaDB.Data.Common
 			else
 				timeMilliseconds = time * 1000;
 
+<<<<<<< HEAD
+=======
+			// Use Socket.IOControl to implement equivalent of
+			// WSAIoctl with  SOL_KEEPALIVE_VALS
+
+			// the native structure passed to WSAIoctl is
+			//struct tcp_keepalive {
+			//    ULONG onoff;
+			//    ULONG keepalivetime;
+			//    ULONG keepaliveinterval;
+			//};
+			// marshal the equivalent of the native structure into a byte array
+
+>>>>>>> parent of 529ee02... fix typo
 			byte[] inOptionValues = new byte[12];
 			BitConverter.GetBytes(on).CopyTo(inOptionValues, 0);
 			BitConverter.GetBytes(time).CopyTo(inOptionValues, 4);
@@ -231,8 +290,9 @@ namespace MariaDB.Data.Common
 			{
 				// Mono throws not implemented currently
 			}
-			// Fall-back if Socket.IOControl is not available ( Compact Framework )
-			// or not implemented ( Mono ). Keep-alive option will still be set, but
+#endif
+			// Fallback if Socket.IOControl is not available ( Compact Framework )
+			// or not implemented ( Mono ). Keepalive option will still be set, but
 			// with timeout is kept default.
 			s.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, 1);
 		}

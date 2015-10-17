@@ -34,6 +34,8 @@ namespace MariaDB.Data.Types
             mValue = val;
         }
 
+        #region IMySqlValue Members
+
         public bool IsNull
         {
             get { return isNull; }
@@ -136,11 +138,13 @@ namespace MariaDB.Data.Types
             packet.Position += len;
         }
 
+        #endregion IMySqlValue Members
+
         internal static void SetDSInfo(DataTable dsTable)
         {
             // we use name indexing because this method will only be called
             // when GetSchema is called for the DataSourceInformation
-            // collection and then it will be cached.
+            // collection and then it wil be cached.
             DataRow row = dsTable.NewRow();
             row["TypeName"] = "TIME";
             row["ProviderDbType"] = MySqlDbType.Time;

@@ -40,7 +40,7 @@
   HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF
   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 
-  Acknowledgment
+  Acknowledgement
   Funding for the RFC Editor function is currently provided by the
   Internet Society.
 */
@@ -64,7 +64,7 @@ namespace MariaDB.Data.Common
 		private uint[] intermediateHash;              // Message Digest
 		private bool computed;                      // Is the digest computed?
 
-		//private bool    corrupted;                     // Is the message digest corrupted?
+		//      private bool    corrupted;                     // Is the message digest corrupted?
 		private short messageBlockIndex;             // Index into message block array
 
 		private byte[] messageBlock;                  // 512-bit message blocks
@@ -78,6 +78,13 @@ namespace MariaDB.Data.Common
 
 		public void Reset()
 		{
+			/*
+			#ifndef DBUG_OFF
+						if (!context)
+							return SHA_NULL;
+			#endif
+			*/
+
 			length = 0;
 			messageBlockIndex = 0;
 
@@ -88,6 +95,7 @@ namespace MariaDB.Data.Common
 			intermediateHash[4] = sha_const_key[4];
 
 			computed = false;
+			//			corrupted  = false;
 		}
 
 		public byte[] ComputeHash(byte[] buffer)
@@ -108,10 +116,30 @@ namespace MariaDB.Data.Common
 			if ((bufLen + index) > buffer.Length)
 				throw new ArgumentException("Length + index would extend past the end of buffer", "length");
 
+			/*
+			#ifndef DBUG_OFF
+			  // We assume client konows what it is doing in non-debug mode
+			  if (!context || !message_array)
+				return SHA_NULL;
+			  if (context->Computed)
+				return (context->Corrupted= SHA_STATE_ERROR);
+			  if (context->Corrupted)
+				return context->Corrupted;
+			#endif
+			*/
 			while (bufLen-- > 0)
 			{
 				messageBlock[messageBlockIndex++] = (byte)(buffer[index++] & 0xFF);
 				length += 8;  /* Length is in bits */
+
+				/*#ifndef DBUG_OFF
+
+					//  Then we're not debugging we assume we never will get message longer
+					  //2^64 bits.
+
+					if (context->Length == 0)
+					  return (context->Corrupted= 1);	   // Message is too long
+				#endif*/
 
 				if (messageBlockIndex == 64)
 					ProcessMessageBlock();
@@ -216,18 +244,21 @@ namespace MariaDB.Data.Common
 			{
 				messageBlock[i++] = 0x80;
 				Array.Clear(messageBlock, i, 64 - i);
+				//bzero((char*) &context->Message_Block[i], sizeof(messageBlock[0])*(64-i));
 				messageBlockIndex = 64;
 
 				/* This function sets messageBlockIndex to zero	*/
 				ProcessMessageBlock();
 
 				Array.Clear(messageBlock, 0, 56);
+				//bzero((char*) &context->Message_Block[0], sizeof(messageBlock[0])*56);
 				messageBlockIndex = 56;
 			}
 			else
 			{
 				messageBlock[i++] = 0x80;
 				Array.Clear(messageBlock, i, 56 - i);
+				//bzero((char*) &messageBlock[i], sizeof(messageBlock[0])*(56-i));
 				messageBlockIndex = 56;
 			}
 
@@ -246,12 +277,21 @@ namespace MariaDB.Data.Common
 
 		public byte[] Result()
 		{
+			/*#ifndef DBUG_OFF
+			  if (!context || !Message_Digest)
+				return SHA_NULL;
+
+			  if (context->Corrupted)
+				return context->Corrupted;
+			#endif*/
+
 			if (!computed)
 			{
 				PadMessage();
 
 				// message may be sensitive, clear it out
 				Array.Clear(messageBlock, 0, 64);
+				//bzero((char*) messageBlock,64);
 				length = 0;    /* and clear length  */
 				computed = true;
 			}

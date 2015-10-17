@@ -19,7 +19,9 @@ namespace MariaDB.Data.Common
     internal class NativeMethods
     {
         // Keep the compiler from generating a default ctor
-        private NativeMethods() { }
+        private NativeMethods()
+        {
+        }
 
         //Constants for dwDesiredAccess:
         public const UInt32 GENERIC_READ = 0x80000000;
@@ -116,6 +118,8 @@ namespace MariaDB.Data.Common
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WaitNamedPipe(string namedPipeName, uint timeOut);
 
+        #region Winsock functions
+
         // SOcket routines
         [DllImport("ws2_32.dll", SetLastError = true)]
         static extern public IntPtr socket(int af, int type, int protocol);
@@ -140,5 +144,6 @@ namespace MariaDB.Data.Common
         [DllImport("ws2_32.Dll", SetLastError = true)]
         static extern public int send(IntPtr socket, byte[] buff, int len, int flags);
 
+        #endregion Winsock functions
     }
 }

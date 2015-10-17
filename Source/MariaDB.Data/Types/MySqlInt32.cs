@@ -44,6 +44,8 @@ namespace MariaDB.Data.Types
             mValue = val;
         }
 
+        #region IMySqlValue Members
+
         public bool IsNull
         {
             get { return isNull; }
@@ -107,6 +109,8 @@ namespace MariaDB.Data.Types
             packet.Position += 4;
         }
 
+        #endregion IMySqlValue Members
+
         internal static void SetDSInfo(DataTable dsTable)
         {
             string[] types = new string[] { "INT", "YEAR", "MEDIUMINT" };
@@ -115,7 +119,7 @@ namespace MariaDB.Data.Types
 
             // we use name indexing because this method will only be called
             // when GetSchema is called for the DataSourceInformation
-            // collection and then it will be cached.
+            // collection and then it wil be cached.
             for (int x = 0; x < types.Length; x++)
             {
                 DataRow row = dsTable.NewRow();

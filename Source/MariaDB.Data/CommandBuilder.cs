@@ -24,8 +24,11 @@ using MariaDB.Data.Types;
 namespace MariaDB.Data.MySqlClient
 {
     /// <include file='docs/MySqlCommandBuilder.xml' path='docs/class/*'/>
+#if !CF
+
     [ToolboxItem(false)]
     [System.ComponentModel.DesignerCategory("Code")]
+#endif
     public sealed class MySqlCommandBuilder : DbCommandBuilder
     {
         /// <include file='docs/MySqlCommandBuilder.xml' path='docs/Ctor/*'/>
@@ -47,6 +50,8 @@ namespace MariaDB.Data.MySqlClient
             get { return (MySqlDataAdapter)base.DataAdapter; }
             set { base.DataAdapter = value; }
         }
+
+        #region Public Methods
 
         /// <summary>
         /// Retrieves parameter information from the stored procedure specified
@@ -217,6 +222,8 @@ ArgumentNullException("quotedIdentifier");
 
             return quotedIdentifier;
         }
+
+        #endregion Public Methods
 
         protected override DataTable GetSchemaTable(DbCommand sourceCommand)
         {

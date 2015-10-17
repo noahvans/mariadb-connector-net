@@ -18,11 +18,16 @@ namespace MariaDB.Data.Types
     /// <summary>
     /// Summary description for MySqlConversionException.
     /// </summary>
+#if !CF
 
     [Serializable]
+#endif
     public class MySqlConversionException : Exception
     {
-        /// <summary>ctor</summary>
-        public MySqlConversionException(string msg) : base(msg) { }
+        /// <summary>Ctor</summary>
+        public MySqlConversionException(string msg)
+            : base(msg)
+        {
+        }
     }
 }
