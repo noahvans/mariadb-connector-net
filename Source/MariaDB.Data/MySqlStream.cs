@@ -196,7 +196,7 @@ namespace MariaDB.Data.MySqlClient
             }
             catch (IOException ioex)
             {
-                throw new MySqlException(Resources.ReadFromStreamFailed, true, ioex);
+                throw new MySqlException(ResourceStrings.ReadFromStreamFailed, true, ioex);
             }
         }
 
@@ -206,7 +206,7 @@ namespace MariaDB.Data.MySqlClient
             int length = packet.Position - 4;
 
             if ((ulong)length > maxPacketSize)
-                throw new MySqlException(Resources.QueryTooLarge, (int)MySqlErrorCode.PacketTooLarge);
+                throw new MySqlException(ResourceStrings.QueryTooLarge, (int)MySqlErrorCode.PacketTooLarge);
 
             int offset = 0;
             while (length > 0)

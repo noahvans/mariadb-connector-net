@@ -116,7 +116,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 if (returnParameter == null)
                     throw new InvalidOperationException(
-                        String.Format(Resources.RoutineRequiresReturnParameter, spName));
+                        String.Format(ResourceStrings.RoutineRequiresReturnParameter, spName));
                 pName = returnParameter.ParameterName;
             }
 
@@ -139,7 +139,7 @@ namespace MariaDB.Data.MySqlClient
             DataTable procTable;
             GetParameters(spName, out procTable, out parametersTable);
             if (procTable.Rows.Count == 0)
-                throw new InvalidOperationException(String.Format(Resources.RoutineNotFound, spName));
+                throw new InvalidOperationException(String.Format(ResourceStrings.RoutineNotFound, spName));
 
             bool realAsFloat = procTable.Rows[0]["SQL_MODE"].ToString().IndexOf("REAL_AS_FLOAT") != -1;
 

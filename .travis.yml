@@ -1,6 +1,6 @@
 language: csharp
-solution: MariaDBClient.CLR2.sln
+solution: Legacy/MariaDBClient.CLR2.sln
 install:
-  - nuget restore MariaDBClient.CLR2.sln
+  - nuget restore Legacy/MariaDBClient.CLR2.sln
 script:
-  - xbuild /p:Configuration=Release MariaDBClient.CLR2.sln
+  - xbuild /p:Configuration=Release Legacy/MariaDBClient.CLR2.sln

@@ -128,7 +128,7 @@ namespace MariaDB.Data.MySqlClient
             bool openedConnection = false;
 
             if (connection == null)
-                throw new InvalidOperationException(Resources.ConnectionNotSet);
+                throw new InvalidOperationException(ResourceStrings.ConnectionNotSet);
             if (query == null || query.Length == 0)
                 return 0;
 

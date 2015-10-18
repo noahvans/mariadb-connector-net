@@ -13,12 +13,7 @@
 
 using System;
 using System.Data.Common;
-
-#if !CF
-
 using System.Runtime.Serialization;
-
-#endif
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -26,10 +21,6 @@ namespace MariaDB.Data.MySqlClient
     /// The exception that is thrown when MySQL returns an error. This class cannot be inherited.
     /// </summary>
     /// <include file='docs/MySqlException.xml' path='MyDocs/MyMembers[@name="Class"]/*'/>
-#if !CF
-
-    [Serializable]
-#endif
     public sealed class MySqlException : DbException
     {
         private int errorCode;
@@ -56,23 +47,13 @@ namespace MariaDB.Data.MySqlClient
             : this(msg, inner)
         {
             errorCode = errno;
-#if !CF
             Data.Add("Server Error Code", errno);
-#endif
         }
 
         internal MySqlException(string msg, int errno)
             : this(msg, errno, null)
         {
         }
-
-#if !CF
-
-        private MySqlException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-
-#endif
 
         /// <summary>
         /// Gets a number that identifies the type of error.

@@ -422,7 +422,7 @@ namespace MariaDB.Data.MySqlClient
             if (IndexOf(value.ParameterName) >= 0)
             {
                 throw new MySqlException(
-                    String.Format(Resources.ParameterAlreadyDefined, value.ParameterName));
+                    String.Format(ResourceStrings.ParameterAlreadyDefined, value.ParameterName));
             }
             else
             {
@@ -431,7 +431,7 @@ namespace MariaDB.Data.MySqlClient
                     inComingName = inComingName.Substring(1, inComingName.Length - 1);
                 if (IndexOf(inComingName) >= 0)
                     throw new MySqlException(
-                        String.Format(Resources.ParameterAlreadyDefined, value.ParameterName));
+                        String.Format(ResourceStrings.ParameterAlreadyDefined, value.ParameterName));
             }
 
             if (index == -1)

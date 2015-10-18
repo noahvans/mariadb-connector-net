@@ -55,7 +55,7 @@ namespace MariaDB.Data.MySqlClient
 #endif
                 if (conn.Settings.Logging)
                     MySqlTrace.LogInformation(conn.ServerThread,
-                        String.Format(Resources.HardProcQuery, spName));
+                        String.Format(ResourceStrings.HardProcQuery, spName));
             }
             else
             {
@@ -64,7 +64,7 @@ namespace MariaDB.Data.MySqlClient
 #endif
                 if (conn.Settings.Logging)
                     MySqlTrace.LogInformation(conn.ServerThread,
-                        String.Format(Resources.SoftProcQuery, spName));
+                        String.Format(ResourceStrings.SoftProcQuery, spName));
             }
             return ds;
         }
@@ -136,9 +136,9 @@ namespace MariaDB.Data.MySqlClient
             restrictions[2] = name;
             DataTable procTable = connection.GetSchema("procedures", restrictions);
             if (procTable.Rows.Count > 1)
-                throw new MySqlException(Resources.ProcAndFuncSameName);
+                throw new MySqlException(ResourceStrings.ProcAndFuncSameName);
             if (procTable.Rows.Count == 0)
-                throw new MySqlException(String.Format(Resources.InvalidProcName, name, schema));
+                throw new MySqlException(String.Format(ResourceStrings.InvalidProcName, name, schema));
 
             DataSet ds = new DataSet();
             ds.Tables.Add(procTable);

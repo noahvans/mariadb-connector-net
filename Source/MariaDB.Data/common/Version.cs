@@ -13,7 +13,6 @@
 
 using System;
 using MariaDB.Data.MySqlClient;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.Common
 {
@@ -55,14 +54,14 @@ namespace MariaDB.Data.Common
             int start = 0;
             int index = versionString.IndexOf('.', start);
             if (index == -1)
-                throw new MySqlException(Resources.BadVersionFormat);
+                throw new MySqlException(ResourceStrings.BadVersionFormat);
             string val = versionString.Substring(start, index - start).Trim();
             int major = Convert.ToInt32(val, System.Globalization.NumberFormatInfo.InvariantInfo);
 
             start = index + 1;
             index = versionString.IndexOf('.', start);
             if (index == -1)
-                throw new MySqlException(Resources.BadVersionFormat);
+                throw new MySqlException(ResourceStrings.BadVersionFormat);
             val = versionString.Substring(start, index - start).Trim();
             int minor = Convert.ToInt32(val, System.Globalization.NumberFormatInfo.InvariantInfo);
 

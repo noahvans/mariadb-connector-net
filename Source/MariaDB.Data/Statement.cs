@@ -206,7 +206,7 @@ namespace MariaDB.Data.MySqlClient
                 if (parmName.StartsWith("@") && ShouldIgnoreMissingParameter(parmName))
                     return false;
                 throw new MySqlException(
-                    String.Format(Resources.ParameterMustBeDefined, parmName));
+                    String.Format(ResourceStrings.ParameterMustBeDefined, parmName));
             }
             parameter.Serialize(packet, false, Connection.Settings);
             return true;

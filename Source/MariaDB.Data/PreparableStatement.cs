@@ -77,7 +77,7 @@ namespace MariaDB.Data.MySqlClient
                 MySqlParameter p = Parameters.GetParameterFlexible(parameterName, false);
                 if (p == null)
                     throw new InvalidOperationException(
-                        String.Format(Resources.ParameterNotFoundDuringPrepare, parameterName));
+                        String.Format(ResourceStrings.ParameterNotFoundDuringPrepare, parameterName));
                 p.Encoding = paramList[i].Encoding;
                 parametersToSend.Add(p);
             }

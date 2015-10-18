@@ -48,8 +48,6 @@ namespace MariaDB.Data.MySqlClient
             sql = input;
         }
 
-        #region Properties
-
         public string Text
         {
             get { return sql; }
@@ -114,8 +112,6 @@ namespace MariaDB.Data.MySqlClient
             get { return returnComments; }
             set { returnComments = value; }
         }
-
-        #endregion Properties
 
         public List<string> GetAllTokens()
         {

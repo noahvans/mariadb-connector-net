@@ -36,9 +36,7 @@ namespace MariaDB.Data.MySqlClient
         private static CharClass[] charClassArray = makeCharClassArray();
 
         // this class provides only static methods
-        private MySqlHelper()
-        {
-        }
+        private MySqlHelper() { }
 
         #region ExecuteNonQuery
 

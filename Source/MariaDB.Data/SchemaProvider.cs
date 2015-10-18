@@ -958,7 +958,7 @@ namespace MariaDB.Data.MySqlClient
 			{
 				if (ex.Number != (int)MySqlErrorCode.TableAccessDenied)
 					throw;
-				throw new MySqlException(Resources.UnableToEnumerateUDF, ex);
+				throw new MySqlException(ResourceStrings.UnableToEnumerateUDF, ex);
 			}
 
 			return dt;

@@ -64,7 +64,7 @@ namespace MariaDB.Data.MySqlClient
             TraceListener l = (TraceListener)Activator.CreateInstance("MySql.EMTrace", "MySql.EMTrace.EMTraceListener", false, BindingFlags.CreateInstance, null, new object[] { host, postInterval }, null, null).Unwrap();
 #endif
             if (l == null)
-                throw new MySqlException(Resources.UnableToEnableQueryAnalysis);
+                throw new MySqlException(ResourceStrings.UnableToEnableQueryAnalysis);
             source.Listeners.Add(l);
             Switch.Level = SourceLevels.All;
         }

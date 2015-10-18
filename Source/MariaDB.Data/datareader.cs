@@ -15,15 +15,14 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlTypes;
 using System.Globalization;
-using MariaDB.Data.MySqlClient.Properties;
 using MariaDB.Data.Types;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
 	/// <include file='docs/MySqlDataReader.xml' path='docs/ClassSummary/*'/>
-	public sealed class MySqlDataReader : DbDataReader, IDataReader, IDataRecord
+	public sealed class MySqlDataReader : DbDataReader
 	{
 		// The DataReader should always be open when returned to the user.
 		private bool isOpen = true;
@@ -67,8 +66,6 @@ namespace MariaDB.Data.MySqlClient
 				disableZeroAffectedRows = true;
 			}
 		}
-
-		#region Properties
 
 		internal PreparableStatement Statement
 		{
@@ -129,7 +126,7 @@ namespace MariaDB.Data.MySqlClient
 		public override int RecordsAffected
 		{
 			// RecordsAffected returns the number of rows affected in batch
-			// statments from insert/delete/update statments.  This property
+			// statements from insert/delete/update statements.  This property
 			// is not completely accurate until .Close() has been called.
 			get
 			{
@@ -166,19 +163,17 @@ namespace MariaDB.Data.MySqlClient
 			get { return this[GetOrdinal(name)]; }
 		}
 
-		#endregion Properties
-
 		/// <summary>
 		/// Closes the MySqlDataReader object.
 		/// </summary>
-		public override void Close()
+		public void Close()
 		{
 			if (!isOpen) return;
 
 			bool shouldCloseConnection = (commandBehavior & CommandBehavior.CloseConnection) != 0;
 			commandBehavior = CommandBehavior.Default;
 
-			// clear all remaining resultsets
+			// clear all remaining result sets
 			try
 			{
 				while (NextResult()) { }
@@ -222,7 +217,7 @@ namespace MariaDB.Data.MySqlClient
 				connection.Reader = null;
 			}
 			// we now give the command a chance to terminate.  In the case of
-			// stored procedures it needs to update out and inout parameters
+			// stored procedures it needs to update out and in out parameters
 			command.Close(this);
 
 			if (this.command.Canceled && connection.driver.Version.isAtLeast(5, 1, 0))
@@ -239,8 +234,6 @@ namespace MariaDB.Data.MySqlClient
 			connection = null;
 			isOpen = false;
 		}
-
-		#region TypeSafe Accessors
 
 		/// <summary>
 		/// Gets the value of the specified column as a Boolean.
@@ -574,7 +567,7 @@ namespace MariaDB.Data.MySqlClient
 				if (bytes.Length == 16)
 					return new Guid(bytes);
 			}
-			throw new MySqlException(Resources.ValueNotSupportedForGuid);
+			throw new MySqlException(ResourceStrings.ValueNotSupportedForGuid);
 		}
 
 		/// <include file='docs/MySqlDataReader.xml' path='docs/GetInt16S/*'/>
@@ -651,6 +644,12 @@ namespace MariaDB.Data.MySqlClient
 			return resultSet.GetOrdinal(name);
 		}
 
+		/*
+		// Due to the DNXCore replacement for DataReader.GetSchemaTable()
+		// haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+		// this method should be remove till GetSchema is back.
+		//
+
 		/// <summary>
 		/// Returns a DataTable that describes the column metadata of the MySqlDataReader.
 		/// </summary>
@@ -722,6 +721,7 @@ namespace MariaDB.Data.MySqlClient
 
 			return dataTableSchema;
 		}
+		*/
 
 		/// <include file='docs/MySqlDataReader.xml' path='docs/GetStringS/*'/>
 		public string GetString(string column)
@@ -849,13 +849,6 @@ namespace MariaDB.Data.MySqlClient
 			return (UInt64)ChangeType(v, column, typeof(UInt64));
 		}
 
-		#endregion TypeSafe Accessors
-
-		IDataReader IDataRecord.GetData(int i)
-		{
-			return base.GetData(i);
-		}
-
 		/// <summary>
 		/// Gets a value indicating whether the column contains non-existent or missing values.
 		/// </summary>
@@ -873,7 +866,7 @@ namespace MariaDB.Data.MySqlClient
 		public override bool NextResult()
 		{
 			if (!isOpen)
-				throw new MySqlException(Resources.NextResultIsClosed);
+				throw new MySqlException(ResourceStrings.NextResultIsClosed);
 
 			bool isCaching = command.CommandType == CommandType.TableDirect && command.EnableCaching &&
 				(commandBehavior & CommandBehavior.SequentialAccess) == 0;
@@ -886,7 +879,7 @@ namespace MariaDB.Data.MySqlClient
 					TableCache.AddToCache(command.CommandText, resultSet);
 			}
 
-			// single result means we only return a single resultset.  If we have already
+			// single result means we only return a single result set.  If we have already
 			// returned one, then we return false
 			// TableDirect is basically a select * from a single table so it will generate
 			// a single result also
@@ -894,7 +887,7 @@ namespace MariaDB.Data.MySqlClient
 				((commandBehavior & CommandBehavior.SingleResult) != 0 || isCaching))
 				return false;
 
-			// next load up the next resultset if any
+			// next load up the next result set if any
 			try
 			{
 				do
@@ -916,7 +909,7 @@ namespace MariaDB.Data.MySqlClient
 							resultSet.Close();
 							if (!sp.ServerProvidingOutputParameters) return false;
 							// if we are using server side output parameters then we will get our ok packet
-							// *after* the output parameters resultset
+							// *after* the output parameters result set
 							resultSet = driver.NextResult(Statement.StatementId, true);
 						}
 						resultSet.Cached = isCaching;
@@ -939,7 +932,7 @@ namespace MariaDB.Data.MySqlClient
 				if (ex.IsFatal)
 					connection.Abort();
 				if (ex.Number == 0)
-					throw new MySqlException(Resources.FatalErrorReadingResult, ex);
+					throw new MySqlException(ResourceStrings.FatalErrorReadingResult, ex);
 				if ((commandBehavior & CommandBehavior.CloseConnection) != 0)
 					Close();
 				throw;
@@ -981,19 +974,19 @@ namespace MariaDB.Data.MySqlClient
 					throw;
 				}
 
-				throw new MySqlException(Resources.FatalErrorDuringRead, ex);
+				throw new MySqlException(ResourceStrings.FatalErrorDuringRead, ex);
 			}
 		}
 
 		private IMySqlValue GetFieldValue(int index, bool checkNull)
 		{
 			if (index < 0 || index >= FieldCount)
-				throw new ArgumentException(Resources.InvalidColumnOrdinal);
+				throw new ArgumentException(ResourceStrings.InvalidColumnOrdinal);
 
 			IMySqlValue v = resultSet[index];
 
 			if (checkNull && v.IsNull)
-				throw new SqlNullValueException();
+				throw new Exception();
 
 			return v;
 		}
@@ -1002,11 +995,11 @@ namespace MariaDB.Data.MySqlClient
 		{
 			// This query will silently crash because of the Kill call that happened before.
 			string dummyStatement = "SELECT * FROM bogus_table LIMIT 0"; /* dummy query used to clear kill flag */
-			MySqlCommand dummyCommand = new MySqlCommand(dummyStatement, connection);
+		MySqlCommand dummyCommand = new MySqlCommand(dummyStatement, connection);
 			dummyCommand.InternallyCreated = true;
 			try
 			{
-				IDataReader reader = dummyCommand.ExecuteReader(); // ExecuteReader catches the exception and returns null, which is expected.
+				var reader = dummyCommand.ExecuteReader(); // ExecuteReader catches the exception and returns null, which is expected.
 			}
 			catch (MySqlException ex)
 			{
@@ -1062,8 +1055,6 @@ namespace MariaDB.Data.MySqlClient
 			}
 		}
 
-		#region IEnumerator
-
 		/// <summary>
 		/// Returns an <see cref="IEnumerator"/> that iterates through the <see cref="MySqlDataReader"/>.
 		/// </summary>
@@ -1072,7 +1063,5 @@ namespace MariaDB.Data.MySqlClient
 		{
 			return new DbEnumerator(this, (commandBehavior & CommandBehavior.CloseConnection) != 0);
 		}
-
-		#endregion IEnumerator
 	}
 }

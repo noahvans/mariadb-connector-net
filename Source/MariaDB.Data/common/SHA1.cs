@@ -46,10 +46,11 @@
 */
 
 using System;
+using System.Security.Cryptography;
 
 namespace MariaDB.Data.Common
 {
-	internal class SHA1Hash
+	internal class SHA1Hash: SHA1
 	{
 		private const int SHA1_HASH_SIZE = 20;          // Hash size in bytes
 
@@ -73,49 +74,7 @@ namespace MariaDB.Data.Common
 		{
 			intermediateHash = new uint[SHA1_HASH_SIZE / 4];
 			messageBlock = new byte[64];
-			Reset();
-		}
-
-		public void Reset()
-		{
-			length = 0;
-			messageBlockIndex = 0;
-
-			intermediateHash[0] = sha_const_key[0];
-			intermediateHash[1] = sha_const_key[1];
-			intermediateHash[2] = sha_const_key[2];
-			intermediateHash[3] = sha_const_key[3];
-			intermediateHash[4] = sha_const_key[4];
-
-			computed = false;
-		}
-
-		public byte[] ComputeHash(byte[] buffer)
-		{
-			Reset();
-			Input(buffer, 0, buffer.Length);
-			return Result();
-		}
-
-		public void Input(byte[] buffer, int index, int bufLen)
-		{
-			if (buffer == null || bufLen == 0) return;
-
-			if (index < 0 || index > buffer.Length - 1)
-				throw new ArgumentException("Index must be a value between 0 and buffer.Length-1", "index");
-			if (bufLen < 0)
-				throw new ArgumentException("Length must be a value > 0", "length");
-			if ((bufLen + index) > buffer.Length)
-				throw new ArgumentException("Length + index would extend past the end of buffer", "length");
-
-			while (bufLen-- > 0)
-			{
-				messageBlock[messageBlockIndex++] = (byte)(buffer[index++] & 0xFF);
-				length += 8;  /* Length is in bits */
-
-				if (messageBlockIndex == 64)
-					ProcessMessageBlock();
-			}
+			Initialize();
 		}
 
 		private void ProcessMessageBlock()
@@ -244,7 +203,28 @@ namespace MariaDB.Data.Common
 			ProcessMessageBlock();
 		}
 
-		public byte[] Result()
+		protected override void HashCore(byte[] array, int ibStart, int cbSize)
+		{
+			if (array == null || cbSize == 0) return;
+
+			if (ibStart < 0 || ibStart > array.Length - 1)
+				throw new ArgumentException("Index must be a value between 0 and buffer.Length-1", "index");
+			if (cbSize < 0)
+				throw new ArgumentException("Length must be a value > 0", "length");
+			if ((cbSize + ibStart) > array.Length)
+				throw new ArgumentException("Length + index would extend past the end of buffer", "length");
+
+			while (cbSize-- > 0)
+			{
+				messageBlock[messageBlockIndex++] = (byte)(array[ibStart++] & 0xFF);
+				length += 8;  /* Length is in bits */
+
+				if (messageBlockIndex == 64)
+					ProcessMessageBlock();
+			}
+		}
+
+		protected override byte[] HashFinal()
 		{
 			if (!computed)
 			{
@@ -260,6 +240,20 @@ namespace MariaDB.Data.Common
 			for (int i = 0; i < SHA1_HASH_SIZE; i++)
 				messageDigest[i] = (byte)((intermediateHash[i >> 2] >> 8 * (3 - (i & 0x03))));
 			return messageDigest;
+		}
+
+		public override void Initialize()
+		{
+			length = 0;
+			messageBlockIndex = 0;
+
+			intermediateHash[0] = sha_const_key[0];
+			intermediateHash[1] = sha_const_key[1];
+			intermediateHash[2] = sha_const_key[2];
+			intermediateHash[3] = sha_const_key[3];
+			intermediateHash[4] = sha_const_key[4];
+
+			computed = false;
 		}
 	}
 }

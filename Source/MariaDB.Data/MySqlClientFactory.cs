@@ -22,7 +22,7 @@ namespace MariaDB.Data.MySqlClient
     /// <summary>
     /// DBProviderFactory implementation for MysqlClient.
     /// </summary>
-    public sealed class MySqlClientFactory : DbProviderFactory, IServiceProvider
+    public sealed class MySqlClientFactory : DbProviderFactory
     {
         /// <summary>
         /// Gets an instance of the <see cref="MySqlClientFactory"/>.
@@ -32,15 +32,6 @@ namespace MariaDB.Data.MySqlClient
 
         private Type dbServicesType;
         private FieldInfo mySqlDbProviderServicesInstance;
-
-        /// <summary>
-        /// Returns a strongly typed <see cref="DbCommandBuilder"/> instance.
-        /// </summary>
-        /// <returns>A new strongly typed instance of <b>DbCommandBuilder</b>.</returns>
-        public override DbCommandBuilder CreateCommandBuilder()
-        {
-            return new MySqlCommandBuilder();
-        }
 
         /// <summary>
         /// Returns a strongly typed <see cref="DbCommand"/> instance.
@@ -58,15 +49,6 @@ namespace MariaDB.Data.MySqlClient
         public override DbConnection CreateConnection()
         {
             return new MySqlConnection();
-        }
-
-        /// <summary>
-        /// Returns a strongly typed <see cref="DbDataAdapter"/> instance.
-        /// </summary>
-        /// <returns>A new strongly typed instance of <b>DbDataAdapter</b>. </returns>
-        public override DbDataAdapter CreateDataAdapter()
-        {
-            return new MySqlDataAdapter();
         }
 
         /// <summary>
@@ -88,17 +70,6 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Returns true if a <b>MySqlDataSourceEnumerator</b> can be created;
-        /// otherwise false.
-        /// </summary>
-        public override bool CanCreateDataSourceEnumerator
-        {
-            get { return false; }
-        }
-
-        #region IServiceProvider Members
-
-        /// <summary>
         /// Provide a simple caching layer
         /// </summary>
         private Type DbServicesType
@@ -117,36 +88,6 @@ namespace MariaDB.Data.MySqlClient
                 return dbServicesType;
             }
         }
-
-        private FieldInfo MySqlDbProviderServicesInstance
-        {
-            get
-            {
-                if (mySqlDbProviderServicesInstance == null)
-                {
-                    string fullName = Assembly.GetExecutingAssembly().FullName;
-                    fullName = fullName.Replace("MySql.Data", "MySql.Data.Entity");
-                    fullName = String.Format("MySql.Data.MySqlClient.MySqlProviderServices, {0}", fullName);
-
-                    Type providerServicesType = Type.GetType(fullName, false);
-                    mySqlDbProviderServicesInstance = providerServicesType.GetField("Instance",
-                        BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
-                }
-                return mySqlDbProviderServicesInstance;
-            }
-        }
-
-        object IServiceProvider.GetService(Type serviceType)
-        {
-            // DbProviderServices is the only service we offer up right now
-            if (serviceType != DbServicesType) return null;
-
-            if (MySqlDbProviderServicesInstance == null) return null;
-
-            return MySqlDbProviderServicesInstance.GetValue(null);
-        }
-
-        #endregion IServiceProvider Members
     }
 }
 

@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.Common
 {
@@ -29,7 +28,7 @@ namespace MariaDB.Data.Common
 
         static QueryNormalizer()
         {
-            StringReader sr = new StringReader(Resources.keywords);
+            StringReader sr = new StringReader(ResourceStrings.keywords);
             string keyword = sr.ReadLine();
             while (keyword != null)
             {

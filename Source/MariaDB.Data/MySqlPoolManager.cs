@@ -55,7 +55,7 @@ namespace MariaDB.Data.MySqlClient
                     // Documentation for WindowsIdentity.GetCurrent() states
                     // SecurityException can be thrown. In this case the
                     // connection can only be pooled if reset is done.
-                    throw new MySqlException(Resources.NoWindowsIdentity, ex);
+                    throw new MySqlException(ResourceStrings.NoWindowsIdentity, ex);
                 }
             }
 #endif

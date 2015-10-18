@@ -11,15 +11,16 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -57,11 +58,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the name of the server.
         /// </summary>
         /// <value>The server.</value>
-        [Category("Connection")]
-        [Description("Server to connect to")]
         [DefaultValue("")]
         [ValidKeywords("host, data source, datasource, address, addr, network address")]
-        [RefreshProperties(RefreshProperties.All)]
         public string Server
         {
             get { return values["server"] as string; }
@@ -72,11 +70,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the name of the database the connection should
         /// initially connect to.
         /// </summary>
-        [Category("Connection")]
-        [Description("Database to use initially")]
         [DefaultValue("")]
         [ValidKeywords("initial catalog")]
-        [RefreshProperties(RefreshProperties.All)]
         public string Database
         {
             get { return values["database"] as string; }
@@ -87,12 +82,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the protocol that should be used for communicating
         /// with MySQL.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Connection Protocol")]
-        [Description("Protocol to use for connection to MySQL")]
         [DefaultValue(MySqlConnectionProtocol.Sockets)]
         [ValidKeywords("protocol")]
-        [RefreshProperties(RefreshProperties.All)]
         public MySqlConnectionProtocol ConnectionProtocol
         {
             get { return (MySqlConnectionProtocol)values["Connection Protocol"]; }
@@ -103,12 +94,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the name of the named pipe that should be used
         /// for communicating with MySQL.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Pipe Name")]
-        [Description("Name of pipe to use when connecting with named pipes (Win32 only)")]
         [DefaultValue("MYSQL")]
         [ValidKeywords("pipe")]
-        [RefreshProperties(RefreshProperties.All)]
         public string PipeName
         {
             get { return (string)values["Pipe Name"]; }
@@ -119,12 +106,8 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a boolean value that indicates whether this connection
         /// should use compression.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Use Compression")]
-        [Description("Should the connection ues compression")]
         [DefaultValue(false)]
         [ValidKeywords("compress")]
-        [RefreshProperties(RefreshProperties.All)]
         public bool UseCompression
         {
             get { return (bool)values["Use Compression"]; }
@@ -135,11 +118,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a boolean value that indicates whether this connection will allow
         /// commands to send multiple SQL statements in one execution.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Allow Batch")]
-        [Description("Allows execution of multiple SQL commands in a single statement")]
         [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool AllowBatch
         {
             get { return (bool)values["Allow Batch"]; }
@@ -149,10 +128,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a boolean value that indicates whether logging is enabled.
         /// </summary>
-        [Category("Connection")]
-        [Description("Enables output of diagnostic messages")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool Logging
         {
             get { return (bool)values["Logging"]; }
@@ -163,11 +139,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the base name of the shared memory objects used to
         /// communicate with MySQL when the shared memory protocol is being used.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Shared Memory Name")]
-        [Description("Name of the shared memory object to use")]
         [DefaultValue("MYSQL")]
-        [RefreshProperties(RefreshProperties.All)]
         public string SharedMemoryName
         {
             get { return (string)values["Shared Memory Name"]; }
@@ -178,10 +150,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets the port number that is used when the socket
         /// protocol is being used.
         /// </summary>
-        [Category("Connection")]
-        [Description("Port to use for TCP/IP connections")]
         [DefaultValue(3306)]
-        [RefreshProperties(RefreshProperties.All)]
         public uint Port
         {
             get { return (uint)values["Port"]; }
@@ -191,13 +160,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the connection timeout.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Connect Timeout")]
-        [Description("The length of time (in seconds) to wait for a connection " +
-                     "to the server before terminating the attempt and generating an error.")]
         [DefaultValue(15)]
         [ValidKeywords("connection timeout")]
-        [RefreshProperties(RefreshProperties.All)]
         public uint ConnectionTimeout
         {
             get { return (uint)values["Connect Timeout"]; }
@@ -221,13 +185,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the default command timeout.
         /// </summary>
-        [Category("Connection")]
-        [DisplayName("Default Command Timeout")]
-        [Description(@"The default timeout that MySqlCommand objects will use
-                     unless changed.")]
         [DefaultValue(30)]
         [ValidKeywords("command timeout")]
-        [RefreshProperties(RefreshProperties.All)]
         public uint DefaultCommandTimeout
         {
             get { return (uint)values["Default Command Timeout"]; }
@@ -237,12 +196,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the user id that should be used to connect with.
         /// </summary>
-        [Category("Security")]
-        [DisplayName("User Id")]
-        [Description("Indicates the user ID to be used when connecting to the data source.")]
         [DefaultValue("")]
         [ValidKeywords("uid, username, user name, user")]
-        [RefreshProperties(RefreshProperties.All)]
         public string UserID
         {
             get { return (string)values["User Id"]; }
@@ -252,12 +207,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the password that should be used to connect with.
         /// </summary>
-        [Category("Security")]
-        [Description("Indicates the password to be used when connecting to the data source.")]
-        [PasswordPropertyText(true)]
         [DefaultValue("")]
         [ValidKeywords("pwd")]
-        [RefreshProperties(RefreshProperties.All)]
         public string Password
         {
             get { return (string)values["Password"]; }
@@ -268,24 +219,13 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a boolean value that indicates if the password should be persisted
         /// in the connection string.
         /// </summary>
-        [Category("Security")]
-        [DisplayName("Persist Security Info")]
-        [Description("When false, security-sensitive information, such as the password, " +
-                     "is not returned as part of the connection if the connection is open or " +
-                     "has ever been in an open state.")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool PersistSecurityInfo
         {
             get { return (bool)values["Persist Security Info"]; }
             set { SetValue("Persist Security Info", value); }
         }
 
-#if !CF
-
-        [Category("Authentication")]
-        [DisplayName("Certificate File")]
-        [Description("Certificate file in PKCS#12 format (.pfx)")]
         [DefaultValue(null)]
         public string CertificateFile
         {
@@ -296,9 +236,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        [Category("Authentication")]
-        [DisplayName("Certificate Password")]
-        [Description("Password for certificate file")]
         [DefaultValue(null)]
         public string CertificatePassword
         {
@@ -309,9 +246,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        [Category("Authentication")]
-        [DisplayName("Certificate Store Location")]
-        [Description("Certificate Store Location for client certificates")]
         [DefaultValue(MySqlCertificateStoreLocation.None)]
         public MySqlCertificateStoreLocation CertificateStoreLocation
         {
@@ -322,11 +256,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        [Category("Authentication")]
-        [DisplayName("Certificate Thumbprint")]
-        [Description("Certificate thumbprint. Can be used together with Certificate " +
-            "Store Location parameter to uniquely identify certificate to be used " +
-            "for SSL authentication.")]
         [DefaultValue(null)]
         public string CertificateThumbprint
         {
@@ -337,11 +266,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-#endif
-
-        [Category("Authentication")]
-        [DisplayName("Integrated Security")]
-        [Description("Use windows authentication when connecting to server")]
         [DefaultValue(false)]
         public bool IntegratedSecurity
         {
@@ -352,7 +276,7 @@ namespace MariaDB.Data.MySqlClient
             }
             set
             {
-                if (!MariaDB.Data.Common.Platform.IsWindows())
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     throw new MySqlException("IntegratedSecurity is supported on Windows only");
 
                 SetValue("Integrated Security", value);
@@ -362,11 +286,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a boolean value that indicates if zero date time values are supported.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Allow Zero Datetime")]
-        [Description("Should zero datetimes be supported")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool AllowZeroDateTime
         {
             get { return (bool)values["Allow Zero Datetime"]; }
@@ -377,11 +297,7 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a boolean value indicating if zero datetime values should be
         /// converted to DateTime.MinValue.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Convert Zero Datetime")]
-        [Description("Should illegal datetime values be converted to DateTime.MinValue")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool ConvertZeroDateTime
         {
             get { return (bool)values["Convert Zero Datetime"]; }
@@ -391,12 +307,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a boolean value indicating if the Usage Advisor should be enabled.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Use Usage Advisor")]
-        [Description("Logs inefficient database operations")]
         [DefaultValue(false)]
         [ValidKeywords("usage advisor")]
-        [RefreshProperties(RefreshProperties.All)]
         public bool UseUsageAdvisor
         {
             get { return (bool)values["Use Usage Advisor"]; }
@@ -406,13 +318,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the size of the stored procedure cache.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Procedure Cache Size")]
-        [Description("Indicates how many stored procedures can be cached at one time. " +
-                     "A value of 0 effectively disables the procedure cache.")]
         [DefaultValue(25)]
         [ValidKeywords("procedure cache, procedurecache")]
-        [RefreshProperties(RefreshProperties.All)]
         public uint ProcedureCacheSize
         {
             get { return (uint)values["Procedure Cache Size"]; }
@@ -420,14 +327,10 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <summary>
-        /// Gets or sets a boolean value indicating if the permon hooks should be enabled.
+        /// Gets or sets a boolean value indicating if the perfmon hooks should be enabled.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Use Performance Monitor")]
-        [Description("Indicates that performance counters should be updated during execution.")]
         [DefaultValue(false)]
         [ValidKeywords("userperfmon, perfmon")]
-        [RefreshProperties(RefreshProperties.All)]
         public bool UsePerformanceMonitor
         {
             get { return (bool)values["Use Performance Monitor"]; }
@@ -437,88 +340,49 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a boolean value indicating if calls to Prepare() should be ignored.
         /// </summary>
-        [Category("Advanced")]
-        [DisplayName("Ignore Prepare")]
-        [Description("Instructs the provider to ignore any attempts to prepare a command.")]
         [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool IgnorePrepare
         {
             get { return (bool)values["Ignore Prepare"]; }
             set { SetValue("Ignore Prepare", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Use Procedure Bodies")]
-        [Description("Indicates if stored procedure bodies will be available for parameter detection.")]
         [DefaultValue(true)]
-        [ValidKeywords("procedure bodies")]
-        [Obsolete("Use CheckParameters instead")]
-        public bool UseProcedureBodies
-        {
-            get { return (bool)values["Check Parameters"]; }
-            set { SetValue("Check Parameters", value); }
-        }
-
-        [Category("Advanced")]
-        [DisplayName("Auto Enlist")]
-        [Description("Should the connetion automatically enlist in the active connection, if there are any.")]
-        [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool AutoEnlist
         {
             get { return (bool)values["Auto Enlist"]; }
             set { SetValue("Auto Enlist", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Respect Binary Flags")]
-        [Description("Should binary flags on column metadata be respected.")]
         [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool RespectBinaryFlags
         {
             get { return (bool)values["Respect Binary Flags"]; }
             set { SetValue("Respect Binary Flags", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Treat Tiny As Boolean")]
-        [Description("Should the provider treat TINYINT(1) columns as boolean.")]
         [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool TreatTinyAsBoolean
         {
             get { return (bool)values["Treat Tiny As Boolean"]; }
             set { SetValue("Treat Tiny As Boolean", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Allow User Variables")]
-        [Description("Should the provider expect user variables to appear in the SQL.")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool AllowUserVariables
         {
             get { return (bool)values["Allow User Variables"]; }
             set { SetValue("Allow User Variables", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Interactive Session")]
-        [Description("Should this session be considered interactive?")]
         [DefaultValue(false)]
         [ValidKeywords("interactive")]
-        [RefreshProperties(RefreshProperties.All)]
         public bool InteractiveSession
         {
             get { return (bool)values["Interactive Session"]; }
             set { SetValue("Interactive Session", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Functions Return String")]
-        [Description("Should all server functions be treated as returning string?")]
         [DefaultValue(false)]
         public bool FunctionsReturnString
         {
@@ -526,9 +390,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Functions Return String", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Use Affected Rows")]
-        [Description("Should the returned affected row count reflect affected rows instead of found rows?")]
         [DefaultValue(false)]
         public bool UseAffectedRows
         {
@@ -536,9 +397,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Use Affected Rows", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Old Guids")]
-        [Description("Treat binary(16) columns as guids")]
         [DefaultValue(false)]
         public bool OldGuids
         {
@@ -546,9 +404,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Old Guids", value); }
         }
 
-        [DisplayName("Keep Alive")]
-        [Description("For TCP connections, idle connection time measured in seconds, before the first keepalive packet is sent." +
-            "A value of 0 indicates that keepalive is not used.")]
         [DefaultValue(0)]
         public uint Keepalive
         {
@@ -556,11 +411,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Keep Alive", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Sql Server Mode")]
-        [Description("Allow Sql Server syntax.  " +
-            "A value of yes allows symbols to be enclosed with [] instead of ``.  This does incur " +
-            "a performance hit so only use when necessary.")]
         [DefaultValue(false)]
         [ValidKeywords("sqlservermode, sql server mode")]
         public bool SqlServerMode
@@ -569,10 +419,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Sql Server Mode", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Table Cache")]
-        [Description(@"Enables or disables caching of TableDirect command.
-            A value of yes enables the cache while no disables it.")]
         [DefaultValue(false)]
         [ValidKeywords("tablecache, table cache")]
         public bool TableCaching
@@ -581,9 +427,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Table Cache", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Default Table Cache Age")]
-        [Description(@"Specifies how long a TableDirect result should be cached in seconds.")]
         [DefaultValue(60)]
         public int DefaultTableCacheAge
         {
@@ -591,9 +434,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Default Table Cache Age", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Check Parameters")]
-        [Description("Indicates if stored routine parameters should be checked against the server.")]
         [DefaultValue(true)]
         public bool CheckParameters
         {
@@ -601,9 +441,6 @@ namespace MariaDB.Data.MySqlClient
             set { SetValue("Check Parameters", value); }
         }
 
-        [Category("Advanced")]
-        [DisplayName("Replication")]
-        [Description("Indicates if this connection is to use replicated servers.")]
         [DefaultValue(false)]
         public bool Replication
         {
@@ -614,12 +451,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the lifetime of a pooled connection.
         /// </summary>
-        [Category("Pooling")]
-        [DisplayName("Connection Lifetime")]
-        [Description("The minimum amount of time (in seconds) for this connection to " +
-                     "live in the pool before being destroyed.")]
         [DefaultValue(0)]
-        [RefreshProperties(RefreshProperties.All)]
         public uint ConnectionLifeTime
         {
             get { return (uint)values["Connection LifeTime"]; }
@@ -629,11 +461,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a boolean value indicating if connection pooling is enabled.
         /// </summary>
-        [Category("Pooling")]
-        [Description("When true, the connection object is drawn from the appropriate " +
-                     "pool, or if necessary, is created and added to the appropriate pool.")]
         [DefaultValue(true)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool Pooling
         {
             get { return (bool)values["Pooling"]; }
@@ -643,12 +471,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets the minimum connection pool size.
         /// </summary>
-        [Category("Pooling")]
-        [DisplayName("Minimum Pool Size")]
-        [Description("The minimum number of connections allowed in the pool.")]
         [DefaultValue(0)]
         [ValidKeywords("min pool size")]
-        [RefreshProperties(RefreshProperties.All)]
         public uint MinimumPoolSize
         {
             get { return (uint)values["Minimum Pool Size"]; }
@@ -658,12 +482,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the maximum connection pool setting.
         /// </summary>
-        [Category("Pooling")]
-        [DisplayName("Maximum Pool Size")]
-        [Description("The maximum number of connections allowed in the pool.")]
         [DefaultValue(100)]
         [ValidKeywords("max pool size")]
-        [RefreshProperties(RefreshProperties.All)]
         public uint MaximumPoolSize
         {
             get { return (uint)values["Maximum Pool Size"]; }
@@ -674,23 +494,14 @@ namespace MariaDB.Data.MySqlClient
         /// Gets or sets a boolean value indicating if the connection should be reset when retrieved
         /// from the pool.
         /// </summary>
-        [Category("Pooling")]
-        [DisplayName("Connection Reset")]
-        [Description("When true, indicates the connection state is reset when " +
-                     "removed from the pool.")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool ConnectionReset
         {
             get { return (bool)values["Connection Reset"]; }
             set { SetValue("Connection Reset", value); }
         }
 
-        [Category("Pooling")]
-        [DisplayName("Cache Server Properties")]
-        [Description("When true, server properties will be cached after the first server in the pool is created")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool CacheServerProperties
         {
             get { return (bool)values["Cache Server Properties"]; }
@@ -700,12 +511,8 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the character set that should be used for sending queries to the server.
         /// </summary>
-        [DisplayName("Character Set")]
-        [Category("Advanced")]
-        [Description("Character set this connection should use")]
         [DefaultValue("")]
         [ValidKeywords("charset")]
-        [RefreshProperties(RefreshProperties.All)]
         public string CharacterSet
         {
             get { return (string)values["Character Set"]; }
@@ -715,11 +522,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Indicates whether the driver should treat binary blobs as UTF8
         /// </summary>
-        [DisplayName("Treat Blobs As UTF8")]
-        [Category("Advanced")]
-        [Description("Should binary blobs be treated as UTF8")]
         [DefaultValue(false)]
-        [RefreshProperties(RefreshProperties.All)]
         public bool TreatBlobsAsUTF8
         {
             get { return (bool)values["Treat Blobs As UTF8"]; }
@@ -729,10 +532,7 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the pattern that matches the columns that should be treated as UTF8
         /// </summary>
-        [Category("Advanced")]
-        [Description("Pattern that matches columns that should be treated as UTF8")]
         [DefaultValue("")]
-        [RefreshProperties(RefreshProperties.All)]
         public string BlobAsUTF8IncludePattern
         {
             get { return (string)values["BlobAsUTF8IncludePattern"]; }
@@ -742,32 +542,22 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets the pattern that matches the columns that should not be treated as UTF8
         /// </summary>
-        [Category("Advanced")]
-        [Description("Pattern that matches columns that should not be treated as UTF8")]
         [DefaultValue("")]
-        [RefreshProperties(RefreshProperties.All)]
         public string BlobAsUTF8ExcludePattern
         {
             get { return (string)values["BlobAsUTF8ExcludePattern"]; }
             set { SetValue("BlobAsUTF8ExcludePattern", value); }
         }
 
-#if !CF
-
         /// <summary>
         /// Indicates whether to use SSL connections and how to handle server certificate errors.
         /// </summary>
-        [DisplayName("Ssl Mode")]
-        [Category("Security")]
-        [Description("SSL properties for connection")]
         [DefaultValue(MySqlSslMode.None)]
         public MySqlSslMode SslMode
         {
             get { return (MySqlSslMode)values["Ssl Mode"]; }
             set { SetValue("Ssl Mode", value); }
         }
-
-#endif
 
         internal bool HasProcAccess
         {
@@ -787,8 +577,6 @@ namespace MariaDB.Data.MySqlClient
             return new Regex(BlobAsUTF8ExcludePattern);
         }
 
-#if !CF
-
         public override bool ContainsKey(string keyword)
         {
             try
@@ -802,8 +590,6 @@ namespace MariaDB.Data.MySqlClient
                 return false;
             }
         }
-
-#endif
 
         public override object this[string keyword]
         {
@@ -827,8 +613,6 @@ namespace MariaDB.Data.MySqlClient
                 values[key] = defaultValues[key].DefaultValue;
         }
 
-#if !CF
-
         public override bool Remove(string keyword)
         {
             ValidateKeyword(keyword);
@@ -846,8 +630,6 @@ namespace MariaDB.Data.MySqlClient
             ValidateKeyword(keyword);
             return values.TryGetValue(validKeywords[keyword], out value);
         }
-
-#endif
 
         public string GetConnectionString(bool includePass)
         {
@@ -894,7 +676,7 @@ namespace MariaDB.Data.MySqlClient
             // Integrated Security is a logically bool parameter, SSPI value
             // for it is the same as "true" (SSPI is SQL Server legacy value
             if (keyword == "Integrated Security" && value is string &&
-                ((string)value).ToLower(CultureInfo.InvariantCulture) == "sspi")
+                ((string)value).ToLower() == "sspi")
             {
                 value = true;
             }
@@ -920,7 +702,7 @@ namespace MariaDB.Data.MySqlClient
             catch (ArgumentException)
             {
                 throw new InvalidOperationException(String.Format(
-                    Resources.InvalidConnectionStringValue, requestedValue, key));
+                    ResourceStrings.InvalidConnectionStringValue, requestedValue, key));
             }
         }
 
@@ -928,11 +710,11 @@ namespace MariaDB.Data.MySqlClient
         {
             if (t == typeof(bool) && value is string)
             {
-                string s = value.ToString().ToLower(CultureInfo.InvariantCulture);
+                string s = value.ToString().ToLower();
                 if (s == "yes" || s == "true") return true;
                 if (s == "no" || s == "false") return false;
 
-                throw new FormatException(String.Format(Resources.InvalidValueForBoolean, value));
+                throw new FormatException(String.Format(ResourceStrings.InvalidValueForBoolean, value));
             }
             else
                 return Convert.ChangeType(value, t, CultureInfo.CurrentCulture);
@@ -940,14 +722,9 @@ namespace MariaDB.Data.MySqlClient
 
         private void ValidateKeyword(string keyword)
         {
-            string key = keyword.ToLower(CultureInfo.InvariantCulture);
+            string key = keyword.ToLower();
             if (!validKeywords.ContainsKey(key))
-                throw new ArgumentException(Resources.KeywordNotSupported, keyword);
-#if CF
-            if (validKeywords[key] == "Certificate File" || validKeywords[key] == "Certificate Password" || validKeywords[key] == "SSL Mode"
-                || validKeywords[key] == "Encrypt" || validKeywords[key] == "Certificate Store Location" || validKeywords[key] == "Certificate Thumbprint")
-                throw new ArgumentException(Resources.KeywordNotSupported, validKeywords[key]);
-#endif
+                throw new ArgumentException(ResourceStrings.KeywordNotSupported, keyword);
         }
 
         private static void Initialize()
@@ -955,29 +732,17 @@ namespace MariaDB.Data.MySqlClient
             PropertyInfo[] properties = typeof(MySqlConnectionStringBuilder).GetProperties();
             foreach (PropertyInfo pi in properties)
                 AddKeywordFromProperty(pi);
-
-#if !CF
             // remove this starting with 6.4
             PropertyInfo encrypt = typeof(MySqlConnectionStringBuilder).GetProperty(
                 "Encrypt", BindingFlags.Instance | BindingFlags.NonPublic);
             AddKeywordFromProperty(encrypt);
-#endif
         }
 
         private static void AddKeywordFromProperty(PropertyInfo pi)
         {
-            string name = pi.Name.ToLower(CultureInfo.InvariantCulture);
+            string name = pi.Name.ToLower();
             string displayName = name;
-
-            // now see if we have defined a display name for this property
-            object[] attr = pi.GetCustomAttributes(false);
-            foreach (Attribute a in attr)
-                if (a is DisplayNameAttribute)
-                {
-                    displayName = (a as DisplayNameAttribute).DisplayName;
-                    break;
-                }
-
+            var attr = pi.GetCustomAttributes(false);
             validKeywords[name] = displayName;
             validKeywords[displayName] = displayName;
 
@@ -986,7 +751,7 @@ namespace MariaDB.Data.MySqlClient
                 if (a is ValidKeywordsAttribute)
                 {
                     foreach (string keyword in (a as ValidKeywordsAttribute).Keywords)
-                        validKeywords[keyword.ToLower(CultureInfo.InvariantCulture).Trim()] = displayName;
+                        validKeywords[keyword.ToLower().Trim()] = displayName;
                 }
                 else if (a is DefaultValueAttribute)
                 {
@@ -1015,7 +780,7 @@ namespace MariaDB.Data.MySqlClient
 
         public ValidKeywordsAttribute(string keywords)
         {
-            this.keywords = keywords.ToLower(CultureInfo.InvariantCulture);
+            this.keywords = keywords.ToLower();
         }
 
         public string[] Keywords

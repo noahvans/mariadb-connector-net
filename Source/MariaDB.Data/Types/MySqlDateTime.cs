@@ -389,7 +389,7 @@ namespace MariaDB.Data.Types
                 return dateString;
 
             DateTime dt = new DateTime(1, 2, 3, hour, minute, second);
-            dateString = String.Format("{0} {1}", dateString, dt.ToLongTimeString());
+            dateString = String.Format("{0} {1}", dateString, dt.ToString(CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern));
             return dateString;
         }
 
@@ -402,6 +402,11 @@ namespace MariaDB.Data.Types
             return val.GetDateTime();
         }
 
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
         internal static void SetDSInfo(DataTable dsTable)
         {
             string[] types = new string[] { "DATE", "DATETIME", "TIMESTAMP" };
@@ -440,6 +445,7 @@ namespace MariaDB.Data.Types
                 dsTable.Rows.Add(row);
             }
         }
+        */
 
         ulong IConvertible.ToUInt64(IFormatProvider provider)
         {
@@ -557,3 +563,4 @@ namespace MariaDB.Data.Types
 
     }
 }
+ 

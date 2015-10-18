@@ -16,17 +16,13 @@ using System.Collections;
 using System.IO;
 using MariaDB.Data.Common;
 using MariaDB.Data.Types;
-using System.Security.Cryptography.X509Certificates;
-using MariaDB.Data.MySqlClient.Properties;
 using System.Text;
-
-#if !CF
-
 using System.Net.Security;
 using System.Security.Authentication;
 
-#endif
-
+/// <summary>
+/// 
+/// </summary>
 namespace MariaDB.Data.MySqlClient
 {
 	/// <summary>
@@ -50,7 +46,7 @@ namespace MariaDB.Data.MySqlClient
 		// Also known as "client plugin name".
 		private const string AuthenticationWindowsPlugin = "authentication_windows_client";
 
-		// Predefined username for IntegratedSecurity
+		// Predefined user name for IntegratedSecurity
 		private const string AuthenticationWindowsUser = "auth_windows";
 
 		public NativeDriver(Driver owner)
@@ -175,7 +171,7 @@ namespace MariaDB.Data.MySqlClient
 					if (Settings.ConnectionProtocol != MySqlConnectionProtocol.NamedPipe)
 						pipeName = null;
 #if !DNX
-					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, pipeName,Settings.Keepalive);
+					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, pipeName, Settings.Keepalive);
 #else
 					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, Settings.Keepalive);
 #endif
@@ -184,12 +180,12 @@ namespace MariaDB.Data.MySqlClient
 			}
 			catch (Exception ex)
 			{
-				throw new MySqlException(Resources.UnableToConnectToHost,
+				throw new MySqlException(ResourceStrings.UnableToConnectToHost,
 					(int)MySqlErrorCode.UnableToConnectToHost, ex);
 			}
 
 			if (baseStream == null)
-				throw new MySqlException(Resources.UnableToConnectToHost,
+				throw new MySqlException(ResourceStrings.UnableToConnectToHost,
 					(int)MySqlErrorCode.UnableToConnectToHost);
 
 			int maxSinglePacket = 255 * 255 * 255;
@@ -203,7 +199,7 @@ namespace MariaDB.Data.MySqlClient
 			string versionString = packet.ReadString();
 			version = DBVersion.Parse(versionString);
 			if (!version.isAtLeast(5, 0, 0))
-				throw new NotSupportedException(Resources.ServerTooOld);
+				throw new NotSupportedException(ResourceStrings.ServerTooOld);
 			threadId = packet.ReadInteger(4);
 			encryptionSeed = packet.ReadString();
 
@@ -247,7 +243,7 @@ namespace MariaDB.Data.MySqlClient
 				&& (Settings.SslMode != MySqlSslMode.Preferred))
 				{
 					// Client requires SSL connections.
-					string message = String.Format(Resources.NoServerSSLSupport,
+					string message = String.Format(ResourceStrings.NoServerSSLSupport,
 						Settings.Server);
 					throw new MySqlException(message);
 				}
@@ -279,10 +275,6 @@ namespace MariaDB.Data.MySqlClient
 			stream.MaxBlockSize = maxSinglePacket;
 		}
 
-#if !CF
-
-		#region SSL
-
 		/// <summary>
 		/// Retrieve client SSL certificates. Dependent on connection string
 		/// settings we use either file or store based certificates.
@@ -295,7 +287,7 @@ namespace MariaDB.Data.MySqlClient
 			if (Settings.CertificateFile != null)
 			{
 				if (!Version.isAtLeast(5, 1, 0))
-					throw new MySqlException(Properties.Resources.FileBasedCertificateNotSupported);
+					throw new MySqlException(Properties.ResourceStrings.FileBasedCertificateNotSupported);
 
 				X509Certificate2 clientCert = new X509Certificate2(Settings.CertificateFile,
 					Settings.CertificatePassword);
@@ -368,12 +360,6 @@ namespace MariaDB.Data.MySqlClient
 			return false;
 		}
 
-		#endregion SSL
-
-#endif
-
-		#region Authentication
-
 		/// <summary>
 		/// Return the appropriate set of connection flags for our
 		/// server capabilities and our user requested options.
@@ -421,11 +407,9 @@ namespace MariaDB.Data.MySqlClient
 			if ((serverCaps & ClientFlags.SECURE_CONNECTION) != 0)
 				flags |= ClientFlags.SECURE_CONNECTION;
 
-#if !CF
 			// if the server is capable of SSL and the user is requesting SSL
 			if ((serverCaps & ClientFlags.SSL) != 0 && Settings.SslMode != MySqlSslMode.None)
 				flags |= ClientFlags.SSL;
-#endif
 
 			// if the server supports output parameters, then we do too
 			if ((serverCaps & ClientFlags.PS_MULTI_RESULTS) != 0)
@@ -560,8 +544,6 @@ namespace MariaDB.Data.MySqlClient
 			}
 			AuthenticateNew(reset);
 		}
-
-		#endregion Authentication
 
 		public void Reset()
 		{

@@ -130,7 +130,7 @@ namespace MariaDB.Data.MySqlClient
         {
             byte c = ReadByte();
             if (c < 1 || c > 4)
-                throw new MySqlException(Resources.IncorrectTransmission);
+                throw new MySqlException(ResourceStrings.IncorrectTransmission);
             return ReadInteger(c);
         }
 

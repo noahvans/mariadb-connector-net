@@ -143,7 +143,7 @@ namespace MariaDB.Data.MySqlClient
 
             // Throw an exception if the ordinal cannot be found.
             throw new IndexOutOfRangeException(
-                String.Format(Resources.CouldNotFindColumnName, name));
+                String.Format(ResourceStrings.CouldNotFindColumnName, name));
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace MariaDB.Data.MySqlClient
             get
             {
                 if (rowIndex < 0)
-                    throw new MySqlException(Resources.AttemptToAccessBeforeRead);
+                    throw new MySqlException(ResourceStrings.AttemptToAccessBeforeRead);
 
                 // keep count of how many columns we have left to access
                 uaFieldsUsed[index] = true;
@@ -164,7 +164,7 @@ namespace MariaDB.Data.MySqlClient
                 if (isSequential && index != seqIndex)
                 {
                     if (index < seqIndex)
-                        throw new MySqlException(Resources.ReadingPriorColumnUsingSeqAccess);
+                        throw new MySqlException(ResourceStrings.ReadingPriorColumnUsingSeqAccess);
                     while (seqIndex < (index - 1))
                         driver.SkipColumnValue(values[++seqIndex]);
                     values[index] = driver.ReadColumnValue(index, fields[index], values[index]);
@@ -346,7 +346,7 @@ namespace MariaDB.Data.MySqlClient
                 bool rowExists = driver.FetchDataRow(statementId, fields.Length);
                 rowIndex = 0;
                 if (rowExists)
-                    throw new MySqlException(Resources.MoreThanOneOPRow);
+                    throw new MySqlException(ResourceStrings.MoreThanOneOPRow);
             }
         }
     }

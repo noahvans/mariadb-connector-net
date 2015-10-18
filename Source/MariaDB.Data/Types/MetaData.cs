@@ -20,7 +20,7 @@ namespace MariaDB.Data.Types
     {
         public static bool IsNumericType(string typename)
         {
-            string lowerType = typename.ToLower(CultureInfo.InvariantCulture);
+            string lowerType = typename.ToLower();
             switch (lowerType)
             {
                 case "int":
@@ -44,7 +44,7 @@ namespace MariaDB.Data.Types
 
         public static bool IsTextType(string typename)
         {
-            string lowerType = typename.ToLower(CultureInfo.InvariantCulture);
+            string lowerType = typename.ToLower();
             switch (lowerType)
             {
                 case "varchar":
@@ -64,7 +64,7 @@ namespace MariaDB.Data.Types
 
         public static bool SupportScale(string typename)
         {
-            string lowerType = typename.ToLower(CultureInfo.InvariantCulture);
+            string lowerType = typename.ToLower();
             switch (lowerType)
             {
                 case "numeric":
@@ -79,7 +79,7 @@ namespace MariaDB.Data.Types
         public static MySqlDbType NameToType(string typeName, bool unsigned,
              bool realAsFloat, MySqlConnection connection)
         {
-            switch (typeName.ToUpper(CultureInfo.InvariantCulture))
+            switch (typeName.ToUpper())
             {
                 case "CHAR":
                     return MySqlDbType.String;

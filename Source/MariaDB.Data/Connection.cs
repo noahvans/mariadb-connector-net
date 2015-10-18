@@ -12,32 +12,16 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-
-#if !CF
-
-using System.Drawing;
-using System.Drawing.Design;
-using System.Transactions;
-
-#endif
-
 using IsolationLevel = System.Data.IsolationLevel;
 using MariaDB.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
+
 
 namespace MariaDB.Data.MySqlClient
 {
-    /// <include file='docs/MySqlConnection.xml' path='docs/ClassSummary/*'/>
-#if !CF
-
-    [ToolboxBitmap(typeof(MySqlConnection), "MySqlClient.resources.connection.bmp")]
-    [DesignerCategory("Code")]
-    [ToolboxItem(true)]
-#endif
-    public sealed class MySqlConnection : DbConnection, ICloneable
+    /// <include file='docs/MySqlConnection.xml' path='docs/ClassSummary/*'/>    
+    public sealed class MySqlConnection : DbConnection
     {
         internal ConnectionState connectionState;
         internal Driver driver;
@@ -46,9 +30,7 @@ namespace MariaDB.Data.MySqlClient
         private SchemaProvider schemaProvider;
         private ProcedureCache procedureCache;
         private bool isInUse;
-#if !CF
         private PerformanceMonitor perfMonitor;
-#endif
         private bool isKillQueryConnection;
         private string database;
         private int commandTimeout;
@@ -57,7 +39,7 @@ namespace MariaDB.Data.MySqlClient
         public event MySqlInfoMessageEventHandler InfoMessage;
 
         private static Cache<string, MySqlConnectionStringBuilder> connectionStringCache =
-            new Cache<string, MySqlConnectionStringBuilder>(0, 25);
+           new Cache<string, MySqlConnectionStringBuilder>(0, 25);
 
         /// <include file='docs/MySqlConnection.xml' path='docs/DefaultCtor/*'/>
         public MySqlConnection()
@@ -74,16 +56,10 @@ namespace MariaDB.Data.MySqlClient
             ConnectionString = connectionString;
         }
 
-        #region Interal Methods & Properties
-
-#if !CF
-
         internal PerformanceMonitor PerfMonitor
         {
             get { return perfMonitor; }
         }
-
-#endif
 
         internal ProcedureCache ProcedureCache
         {
@@ -122,13 +98,9 @@ namespace MariaDB.Data.MySqlClient
         {
             get
             {
-#if !CF
                 return (State == ConnectionState.Closed) &&
                     driver != null &&
                     driver.CurrentTransaction != null;
-#else
-                return false;
-#endif
             }
         }
 
@@ -138,17 +110,9 @@ namespace MariaDB.Data.MySqlClient
             set { isInUse = value; }
         }
 
-        #endregion Interal Methods & Properties
-
-        #region Properties
-
         /// <summary>
         /// Returns the id of the server thread this connection is executing on
         /// </summary>
-#if !CF
-
-        [Browsable(false)]
-#endif
         public int ServerThread
         {
             get { return driver.ThreadID; }
@@ -157,30 +121,18 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets the name of the MySQL server to which to connect.
         /// </summary>
-#if !CF
-
-        [Browsable(true)]
-#endif
         public override string DataSource
         {
             get { return settings.Server; }
         }
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ConnectionTimeout/*'/>
-#if !CF
-
-        [Browsable(true)]
-#endif
         public override int ConnectionTimeout
         {
             get { return (int)settings.ConnectionTimeout; }
         }
 
         /// <include file='docs/MySqlConnection.xml' path='docs/Database/*'/>
-#if !CF
-
-        [Browsable(true)]
-#endif
         public override string Database
         {
             get { return database; }
@@ -189,44 +141,24 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Indicates if this connection should use compression when communicating with the server.
         /// </summary>
-#if !CF
-
-        [Browsable(false)]
-#endif
         public bool UseCompression
         {
             get { return settings.UseCompression; }
         }
 
         /// <include file='docs/MySqlConnection.xml' path='docs/State/*'/>
-#if !CF
-
-        [Browsable(false)]
-#endif
         public override ConnectionState State
         {
             get { return connectionState; }
         }
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ServerVersion/*'/>
-#if !CF
-
-        [Browsable(false)]
-#endif
         public override string ServerVersion
         {
             get { return driver.Version.ToString(); }
         }
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ConnectionString/*'/>
-#if !CF
-
-        [Editor("MySql.Data.MySqlClient.Design.ConnectionStringTypeEditor,MySqlClient.Design", typeof(UITypeEditor))]
-        [Browsable(true)]
-        [Category("Data")]
-        [Description(
-            "Information used to connect to a DataSource, such as 'Server=xxx;UserId=yyy;Password=zzz;Database=dbdb'.")]
-#endif
         public override string ConnectionString
         {
             get
@@ -268,82 +200,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-#if !CF && !__MonoCS__
-
-        protected override DbProviderFactory DbProviderFactory
-        {
-            get
-            {
-                return MySqlClientFactory.Instance;
-            }
-        }
-
-#endif
-
-        #endregion Properties
-
-        #region Transactions
-
-#if !MONO && !CF
-
-        /// <summary>
-        /// Enlists in the specified transaction.
-        /// </summary>
-        /// <param name="transaction">
-        /// A reference to an existing <see cref="System.Transactions.Transaction"/> in which to enlist.
-        /// </param>
-        public override void EnlistTransaction(Transaction transaction)
-        {
-            // enlisting in the null transaction is a noop
-            if (transaction == null)
-                return;
-
-            // guard against trying to enlist in more than one transaction
-            if (driver.CurrentTransaction != null)
-            {
-                if (driver.CurrentTransaction.BaseTransaction == transaction)
-                    return;
-
-                throw new MySqlException("Already enlisted");
-            }
-
-            // now see if we need to swap out drivers.  We would need to do this since
-            // we have to make sure all ops for a given transaction are done on the
-            // same physical connection.
-            Driver existingDriver = DriverTransactionManager.GetDriverInTransaction(transaction);
-            if (existingDriver != null)
-            {
-                // we can't allow more than one driver to contribute to the same connection
-                if (existingDriver.IsInActiveUse)
-                    throw new NotSupportedException(Resources.MultipleConnectionsInTransactionNotSupported);
-
-                // there is an existing driver and it's not being currently used.
-                // now we need to see if it is using the same connection string
-                string text1 = existingDriver.Settings.ConnectionString;
-                string text2 = Settings.ConnectionString;
-                if (String.Compare(text1, text2, true) != 0)
-                    throw new NotSupportedException(Resources.MultipleConnectionsInTransactionNotSupported);
-
-                // close existing driver
-                // set this new driver as our existing driver
-                CloseFully();
-                driver = existingDriver;
-            }
-
-            if (driver.CurrentTransaction == null)
-            {
-                MySqlPromotableTransaction t = new MySqlPromotableTransaction(this, transaction);
-                if (!transaction.EnlistPromotableSinglePhase(t))
-                    throw new NotSupportedException(Resources.DistributedTxnNotSupported);
-
-                driver.CurrentTransaction = t;
-                DriverTransactionManager.SetDriverInTransaction(driver);
-                driver.IsInActiveUse = true;
-            }
-        }
-
-#endif
-
         /// <include file='docs/MySqlConnection.xml' path='docs/BeginTransaction/*'/>
         public new MySqlTransaction BeginTransaction()
         {
@@ -355,11 +211,11 @@ namespace MariaDB.Data.MySqlClient
         {
             //TODO: check note in help
             if (State != ConnectionState.Open)
-                throw new InvalidOperationException(Resources.ConnectionNotOpen);
+                throw new InvalidOperationException(ResourceStrings.ConnectionNotOpen);
 
             // First check to see if we are in a current transaction
             if (driver.HasStatus(ServerStatusFlags.InTransaction))
-                throw new InvalidOperationException(Resources.NoNestedTransactions);
+                throw new InvalidOperationException(ResourceStrings.NoNestedTransactions);
 
             MySqlTransaction t = new MySqlTransaction(this, iso);
 
@@ -385,9 +241,9 @@ namespace MariaDB.Data.MySqlClient
                     break;
 
                 case IsolationLevel.Chaos:
-                    throw new NotSupportedException(Resources.ChaosNotSupported);
+                    throw new NotSupportedException(ResourceStrings.ChaosNotSupported);
                 case IsolationLevel.Snapshot:
-                    throw new NotSupportedException(Resources.SnapshotNotSupported);
+                    throw new NotSupportedException(ResourceStrings.SnapshotNotSupported);
             }
 
             cmd.ExecuteNonQuery();
@@ -398,28 +254,24 @@ namespace MariaDB.Data.MySqlClient
             return t;
         }
 
-        #endregion Transactions
-
         /// <include file='docs/MySqlConnection.xml' path='docs/ChangeDatabase/*'/>
         public override void ChangeDatabase(string databaseName)
         {
             if (databaseName == null || databaseName.Trim().Length == 0)
-                throw new ArgumentException(Resources.ParameterIsInvalid, "databaseName");
+                throw new ArgumentException(ResourceStrings.ParameterIsInvalid, "databaseName");
 
             if (State != ConnectionState.Open)
-                throw new InvalidOperationException(Resources.ConnectionNotOpen);
+                throw new InvalidOperationException(ResourceStrings.ConnectionNotOpen);
 
             // This lock  prevents promotable transaction rollback to run
             // in parallel
             lock (driver)
             {
-#if !CF
                 if (Transaction.Current != null &&
                     Transaction.Current.TransactionInformation.Status == TransactionStatus.Aborted)
                 {
                     throw new TransactionAbortedException();
                 }
-#endif
                 // We use default command timeout for SetDatabase
                 using (new CommandTimer(this, (int)Settings.DefaultCommandTimeout))
                 {
@@ -446,7 +298,7 @@ namespace MariaDB.Data.MySqlClient
         public bool Ping()
         {
             if (Reader != null)
-                throw new MySqlException(Resources.DataReaderOpen);
+                throw new MySqlException(ResourceStrings.DataReaderOpen);
             if (driver != null && driver.Ping())
                 return true;
             driver = null;
@@ -458,11 +310,10 @@ namespace MariaDB.Data.MySqlClient
         public override void Open()
         {
             if (State == ConnectionState.Open)
-                throw new InvalidOperationException(Resources.ConnectionAlreadyOpen);
+                throw new InvalidOperationException(ResourceStrings.ConnectionAlreadyOpen);
 
             SetState(ConnectionState.Connecting, true);
 
-#if !CF
             // if we are auto enlisting in a current transaction, then we will be
             // treating the connection as pooled
             if (settings.AutoEnlist && Transaction.Current != null)
@@ -471,9 +322,8 @@ namespace MariaDB.Data.MySqlClient
                 if (driver != null &&
                     (driver.IsInActiveUse ||
                     !driver.Settings.EquivalentTo(this.Settings)))
-                    throw new NotSupportedException(Resources.MultipleConnectionsInTransactionNotSupported);
+                    throw new NotSupportedException(ResourceStrings.MultipleConnectionsInTransactionNotSupported);
             }
-#endif
 
             try
             {
@@ -504,17 +354,12 @@ namespace MariaDB.Data.MySqlClient
 
             // setup our schema provider
             schemaProvider = new ISSchemaProvider(this);
-#if !CF
             perfMonitor = new PerformanceMonitor(this);
-#endif
 
             // if we are opening up inside a current transaction, then autoenlist
             // TODO: control this with a connection string option
-#if !MONO && !CF
             if (Transaction.Current != null && settings.AutoEnlist)
                 EnlistTransaction(Transaction.Current);
-#endif
-
             hasBeenOpen = true;
             SetState(ConnectionState.Open, true);
         }
@@ -527,8 +372,6 @@ namespace MariaDB.Data.MySqlClient
             c.Connection = this;
             return c;
         }
-
-        #region ICloneable
 
         /// <summary>
         /// Creates a new MySqlConnection object with the exact same ConnectionString value
@@ -543,23 +386,12 @@ namespace MariaDB.Data.MySqlClient
             return clone;
         }
 
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
-
-        #endregion ICloneable
-
-        #region IDisposeable
-
         protected override void Dispose(bool disposing)
         {
             if (State == ConnectionState.Open)
                 Close();
             base.Dispose(disposing);
         }
-
-        #endregion IDisposeable
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
@@ -620,14 +452,10 @@ namespace MariaDB.Data.MySqlClient
             // will be null on the second time through
             if (driver != null)
             {
-#if !CF
                 if (driver.CurrentTransaction == null)
-#endif
                     CloseFully();
-#if !CF
                 else
                     driver.IsInActiveUse = false;
-#endif
             }
 
             SetState(ConnectionState.Closed, true);
@@ -652,7 +480,7 @@ namespace MariaDB.Data.MySqlClient
                 Abort();
                 if (ex is TimeoutException)
                 {
-                    throw new MySqlException(Resources.Timeout, true, ex);
+                    throw new MySqlException(ResourceStrings.Timeout, true, ex);
                 }
                 else
                 {
@@ -685,7 +513,7 @@ namespace MariaDB.Data.MySqlClient
             }
             if (ex is TimeoutException)
             {
-                throw new MySqlException(Resources.Timeout, isFatal, ex);
+                throw new MySqlException(ResourceStrings.Timeout, isFatal, ex);
             }
         }
 
@@ -707,8 +535,6 @@ namespace MariaDB.Data.MySqlClient
                 cmd.ExecuteNonQuery();
             }
         }
-
-        #region Routines for timeout support.
 
         // Problem description:
         // Sometimes, ExecuteReader is called recursively. This is the case if
@@ -770,9 +596,11 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #endregion Routines for timeout support.
-
-        #region GetSchema Support
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
 
         /// <summary>
         /// Returns schema information for the data source of this <see cref="DbConnection"/>.
@@ -814,10 +642,7 @@ namespace MariaDB.Data.MySqlClient
             DataTable dt = schemaProvider.GetSchema(collectionName, restrictions);
             return dt;
         }
-
-        #endregion GetSchema Support
-
-        #region Pool Routines
+        */
 
         /// <include file='docs/MySqlConnection.xml' path='docs/ClearPool/*'/>
         public static void ClearPool(MySqlConnection connection)
@@ -831,7 +656,6 @@ namespace MariaDB.Data.MySqlClient
             MySqlPoolManager.ClearAllPools();
         }
 
-        #endregion Pool Routines
     }
 
     /// <summary>
@@ -869,8 +693,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #region IDisposable Members
-
         public void Dispose()
         {
             if (timeoutSet)
@@ -881,6 +703,6 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        #endregion IDisposable Members
     }
 }
+ 

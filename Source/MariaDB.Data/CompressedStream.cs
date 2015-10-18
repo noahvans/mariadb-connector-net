@@ -14,8 +14,7 @@
 using System;
 using System.IO;
 using MariaDB.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
-using zlib;
+using System.IO.Compression;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -26,18 +25,16 @@ namespace MariaDB.Data.MySqlClient
     {
         // writing fields
         private Stream baseStream;
-
         private MemoryStream cache;
 
         // reading fields
         private byte[] localByte;
-
         private byte[] inBuffer;
         private byte[] lengthBytes;
         private WeakReference inBufferRef;
         private int inPos;
         private int maxInPos;
-        private ZInputStream zInStream;
+        private GZipStream zInStream;
 
         public CompressedStream(Stream baseStream)
         {
@@ -47,8 +44,6 @@ namespace MariaDB.Data.MySqlClient
             cache = new MemoryStream();
             inBufferRef = new WeakReference(inBuffer, false);
         }
-
-        #region Properties
 
         public override bool CanRead
         {
@@ -76,17 +71,9 @@ namespace MariaDB.Data.MySqlClient
             set { baseStream.Position = value; }
         }
 
-        #endregion Properties
-
-        public override void Close()
-        {
-            baseStream.Close();
-            base.Close();
-        }
-
         public override void SetLength(long value)
         {
-            throw new NotSupportedException(Resources.CSNoSetLength);
+            throw new NotSupportedException(ResourceStrings.CSNoSetLength);
         }
 
         public override int ReadByte()
@@ -137,11 +124,11 @@ namespace MariaDB.Data.MySqlClient
         public override int Read(byte[] buffer, int offset, int count)
         {
             if (buffer == null)
-                throw new ArgumentNullException("buffer", Resources.BufferCannotBeNull);
+                throw new ArgumentNullException("buffer", ResourceStrings.BufferCannotBeNull);
             if (offset < 0 || offset >= buffer.Length)
-                throw new ArgumentOutOfRangeException("offset", Resources.OffsetMustBeValid);
+                throw new ArgumentOutOfRangeException("offset", ResourceStrings.OffsetMustBeValid);
             if ((offset + count) > buffer.Length)
-                throw new ArgumentException(Resources.BufferNotLargeEnough, "buffer");
+                throw new ArgumentException(ResourceStrings.BufferNotLargeEnough, "buffer");
 
             if (inPos == maxInPos)
                 PrepareNextPacket();
@@ -149,7 +136,7 @@ namespace MariaDB.Data.MySqlClient
             int countToRead = Math.Min(count, maxInPos - inPos);
             int countRead;
             if (zInStream != null)
-                countRead = zInStream.read(buffer, offset, countToRead);
+                countRead = zInStream.Read(buffer, offset, countToRead);
             else
                 countRead = baseStream.Read(buffer, offset, countToRead);
             inPos += countRead;
@@ -158,11 +145,8 @@ namespace MariaDB.Data.MySqlClient
             if (inPos == maxInPos)
             {
                 zInStream = null;
-                if (!Platform.IsMono())
-                {
-                    inBufferRef = new WeakReference(inBuffer, false);
-                    inBuffer = null;
-                }
+                inBufferRef = new WeakReference(inBuffer, false);
+                inBuffer = null;
             }
 
             return countRead;
@@ -185,8 +169,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 ReadNextPacket(compressedLength);
                 MemoryStream ms = new MemoryStream(inBuffer);
-                zInStream = new ZInputStream(ms);
-                zInStream.maxInput = compressedLength;
+                zInStream = new GZipStream(ms, CompressionMode.Compress);
             }
 
             inPos = 0;
@@ -195,9 +178,7 @@ namespace MariaDB.Data.MySqlClient
 
         private void ReadNextPacket(int len)
         {
-            if (!Platform.IsMono())
-                inBuffer = inBufferRef.Target as byte[];
-
+            inBuffer = inBufferRef.Target as byte[];
             if (inBuffer == null || inBuffer.Length < len)
                 inBuffer = new byte[len];
             MySqlStream.ReadFully(baseStream, inBuffer, 0, len);
@@ -205,15 +186,16 @@ namespace MariaDB.Data.MySqlClient
 
         private MemoryStream CompressCache()
         {
-            // small arrays almost never yeild a benefit from compressing
+            // small arrays almost never yield a benefit from compressing
             if (cache.Length < 50)
                 return null;
 
-            byte[] cacheBytes = cache.GetBuffer();
+            ArraySegment<byte> cacheBytes = new ArraySegment<byte>();
+            cache.TryGetBuffer(out cacheBytes);
             MemoryStream compressedBuffer = new MemoryStream();
-            ZOutputStream zos = new ZOutputStream(compressedBuffer, zlibConst.Z_DEFAULT_COMPRESSION);
-            zos.Write(cacheBytes, 0, (int)cache.Length);
-            zos.finish();
+            var zos = new GZipStream(compressedBuffer, CompressionMode.Decompress);
+            zos.Write(cacheBytes.Array, 0, (int)cache.Length);
+            zos.Flush();
 
             // if the compression hasn't helped, then just return null
             if (compressedBuffer.Length >= cache.Length)
@@ -226,9 +208,10 @@ namespace MariaDB.Data.MySqlClient
             long compressedLength, uncompressedLength;
 
             // we need to save the sequence byte that is written
-            byte[] cacheBuffer = cache.GetBuffer();
-            byte seq = cacheBuffer[3];
-            cacheBuffer[3] = 0;
+            ArraySegment<byte> cacheBuffer = new ArraySegment<byte>();
+            cache.TryGetBuffer(out cacheBuffer);
+            byte seq = cacheBuffer.Array[3];
+            cacheBuffer.Array[3] = 0;
 
             // first we compress our current cache
             MemoryStream compressedBuffer = CompressCache();
@@ -255,19 +238,20 @@ namespace MariaDB.Data.MySqlClient
             int bytesToWrite = (int)dataLength + 7;
             memStream.SetLength(bytesToWrite);
 
-            byte[] buffer = memStream.GetBuffer();
-            Array.Copy(buffer, 0, buffer, 7, (int)dataLength);
+            ArraySegment<byte> buffer = new ArraySegment<byte>();
+            memStream.TryGetBuffer(out buffer);
+            Array.Copy(buffer.Array, 0, buffer.Array, 7, (int)dataLength);
 
             // Write length prefix
-            buffer[0] = (byte)(compressedLength & 0xff);
-            buffer[1] = (byte)((compressedLength >> 8) & 0xff);
-            buffer[2] = (byte)((compressedLength >> 16) & 0xff);
-            buffer[3] = seq;
-            buffer[4] = (byte)(uncompressedLength & 0xff);
-            buffer[5] = (byte)((uncompressedLength >> 8) & 0xff);
-            buffer[6] = (byte)((uncompressedLength >> 16) & 0xff);
+            buffer.Array[0] = (byte)(compressedLength & 0xff);
+            buffer.Array[1] = (byte)((compressedLength >> 8) & 0xff);
+            buffer.Array[2] = (byte)((compressedLength >> 16) & 0xff);
+            buffer.Array[3] = seq;
+            buffer.Array[4] = (byte)(uncompressedLength & 0xff);
+            buffer.Array[5] = (byte)((uncompressedLength >> 8) & 0xff);
+            buffer.Array[6] = (byte)((uncompressedLength >> 16) & 0xff);
 
-            baseStream.Write(buffer, 0, bytesToWrite);
+            baseStream.Write(buffer.Array, 0, bytesToWrite);
             baseStream.Flush();
             cache.SetLength(0);
         }
@@ -283,8 +267,9 @@ namespace MariaDB.Data.MySqlClient
         {
             // if we have not done so yet, see if we can calculate how many bytes we are expecting
             if (cache.Length < 4) return false;
-            byte[] buf = cache.GetBuffer();
-            int expectedLen = buf[0] + (buf[1] << 8) + (buf[2] << 16);
+            ArraySegment<byte> buf = new ArraySegment<byte>();
+            cache.TryGetBuffer(out buf);
+            int expectedLen = buf.Array[0] + (buf.Array[1] << 8) + (buf.Array[2] << 16);
             if (cache.Length < (expectedLen + 4)) return false;
             return true;
         }

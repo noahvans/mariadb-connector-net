@@ -253,7 +253,7 @@ namespace MariaDB.Data.MySqlClient
                 if (!autoEvent.WaitOne(timeOut, false)) break;
                 timeOut = fullTimeOut - (int)DateTime.Now.Subtract(start).TotalMilliseconds;
             }
-            throw new MySqlException(Resources.TimeoutGettingConnection);
+            throw new MySqlException(ResourceStrings.TimeoutGettingConnection);
         }
 
         /// <summary>

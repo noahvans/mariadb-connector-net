@@ -166,6 +166,12 @@ namespace MariaDB.Data.Types
             packet.Position += len;
         }
 
+
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
         public static void SetDSInfo(DataTable dsTable)
         {
             string[] types = new string[] { "BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB", "BINARY", "VARBINARY" };
@@ -207,5 +213,6 @@ namespace MariaDB.Data.Types
                 dsTable.Rows.Add(row);
             }
         }
+        */
     }
 }

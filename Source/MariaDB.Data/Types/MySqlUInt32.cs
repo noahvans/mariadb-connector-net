@@ -106,6 +106,11 @@ namespace MariaDB.Data.Types
             packet.Position += 4;
         }
 
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
         internal static void SetDSInfo(DataTable dsTable)
         {
             string[] types = new string[] { "MEDIUMINT", "INT" };
@@ -144,5 +149,7 @@ namespace MariaDB.Data.Types
                 dsTable.Rows.Add(row);
             }
         }
+        */
     }
 }
+ 

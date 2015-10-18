@@ -14,7 +14,7 @@
 using System;
 using System.Data;
 using MariaDB.Data.MySqlClient;
-using MariaDB.Data.MySqlClient.Properties;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.Types
 {
@@ -43,8 +43,6 @@ namespace MariaDB.Data.Types
             get { return oldGuids; }
             set { oldGuids = value; }
         }
-
-        #region IMySqlValue Members
 
         public bool IsNull
         {
@@ -100,7 +98,7 @@ namespace MariaDB.Data.Types
                 }
                 catch (Exception ex)
                 {
-                    throw new MySqlException(Resources.DataNotInSupportedFormat, ex);
+                    throw new MySqlException(ResourceStrings.DataNotInSupportedFormat, ex);
                 }
             }
 
@@ -193,8 +191,11 @@ namespace MariaDB.Data.Types
             packet.Position += len;
         }
 
-        #endregion IMySqlValue Members
-
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
         public static void SetDSInfo(DataTable dsTable)
         {
             // we use name indexing because this method will only be called
@@ -226,5 +227,7 @@ namespace MariaDB.Data.Types
             row["NativeDataType"] = null;
             dsTable.Rows.Add(row);
         }
+        */
     }
 }
+ 

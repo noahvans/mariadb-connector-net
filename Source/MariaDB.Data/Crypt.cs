@@ -14,13 +14,8 @@
 using System;
 using System.Globalization;
 using System.Text;
+using System.Security.Cryptography;
 using MariaDB.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
-
-//using System.Security.Cryptography;
-//#if CF
-//using OpenNETCF.Security.Cryptography;
-//#endif
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -30,33 +25,7 @@ namespace MariaDB.Data.MySqlClient
     internal class Crypt
     {
         // private ctor to prevent creating a default one
-        private Crypt()
-        {
-        }
-
-        /*		private void Create41Password( string password )
-                {
-                    SHA1 sha = new SHA1CryptoServiceProvider();
-                    byte[] firstPassBytes = sha.ComputeHash( System.Text.Encoding.Default.GetBytes( password ));
-
-                    byte[] salt = packet.GetBuffer();
-                    byte[] input = new byte[ firstPassBytes.Length + 4 ];
-                    salt.CopyTo( input, 0 );
-                    firstPassBytes.CopyTo( input, 4 );
-                    byte[] outPass = new byte[100];
-                    byte[] secondPassBytes = sha.ComputeHash( input );
-
-                    byte[] cryptSalt = new byte[20];
-                    Security.ArrayCrypt( salt, 4, cryptSalt, 0, secondPassBytes, 20 );
-
-                    Security.ArrayCrypt( cryptSalt, 0, firstPassBytes, 0, firstPassBytes, 20 );
-
-                    // send the packet
-                    packet = CreatePacket(null);
-                    packet.Write( firstPassBytes, 0, 20 );
-                    SendPacket(packet);
-                }
-        */
+        private Crypt() { }
 
         /// <summary>
         /// Simple XOR scramble
@@ -72,21 +41,21 @@ namespace MariaDB.Data.MySqlClient
         {
             // make sure we were called properly
             if (fromIndex < 0 || fromIndex >= from.Length)
-                throw new ArgumentException(Resources.IndexMustBeValid, "fromIndex");
+                throw new ArgumentException(ResourceStrings.IndexMustBeValid, "fromIndex");
             if ((fromIndex + length) > from.Length)
-                throw new ArgumentException(Resources.FromAndLengthTooBig, "fromIndex");
+                throw new ArgumentException(ResourceStrings.FromAndLengthTooBig, "fromIndex");
             if (from == null)
-                throw new ArgumentException(Resources.BufferCannotBeNull, "from");
+                throw new ArgumentException(ResourceStrings.BufferCannotBeNull, "from");
             if (to == null)
-                throw new ArgumentException(Resources.BufferCannotBeNull, "to");
+                throw new ArgumentException(ResourceStrings.BufferCannotBeNull, "to");
             if (toIndex < 0 || toIndex >= to.Length)
-                throw new ArgumentException(Resources.IndexMustBeValid, "toIndex");
+                throw new ArgumentException(ResourceStrings.IndexMustBeValid, "toIndex");
             if ((toIndex + length) > to.Length)
-                throw new ArgumentException(Resources.IndexAndLengthTooBig, "toIndex");
+                throw new ArgumentException(ResourceStrings.IndexAndLengthTooBig, "toIndex");
             if (password == null || password.Length < length)
-                throw new ArgumentException(Resources.PasswordMustHaveLegalChars, "password");
+                throw new ArgumentException(ResourceStrings.PasswordMustHaveLegalChars, "password");
             if (length < 0)
-                throw new ArgumentException(Resources.ParameterCannotBeNegative, "count");
+                throw new ArgumentException(ResourceStrings.ParameterCannotBeNegative, "count");
 
             // now perform the work
             for (int i = 0; i < length; i++)
@@ -101,12 +70,12 @@ namespace MariaDB.Data.MySqlClient
         /// <returns>Array of bytes containing the scrambled password</returns>
         public static byte[] Get410Password(string password, byte[] seedBytes)
         {
-            SHA1Hash sha = new SHA1Hash();
+            SHA1 sha = SHA1.Create();
             //SHA1 sha = new SHA1CryptoServiceProvider();
 
             // clean it and then digest it
             password = password.Replace(" ", "").Replace("\t", "");
-            byte[] passBytes = Encoding.Default.GetBytes(password);
+            byte[] passBytes = Encoding.UTF8.GetBytes(password);
             byte[] firstPass = sha.ComputeHash(passBytes);
 
             byte[] input = new byte[24];
@@ -163,7 +132,7 @@ namespace MariaDB.Data.MySqlClient
             byte[] scrambledBuff = new byte[20];
             XorScramble(seedBytes, 4, scrambledBuff, 0, binaryHash, 20);
 
-            string scrambleString = Encoding.Default.GetString(scrambledBuff, 0, scrambledBuff.Length).Substring(0, 8);
+            string scrambleString = Encoding.UTF8.GetString(scrambledBuff, 0, scrambledBuff.Length).Substring(0, 8);
 
             long[] hashPass = Hash(password);
             long[] hashMessage = Hash(scrambleString);
@@ -203,9 +172,9 @@ namespace MariaDB.Data.MySqlClient
             //SHA1 sha = new SHA1CryptoServiceProvider();
             SHA1Hash sha = new SHA1Hash();
 
-            byte[] firstHash = sha.ComputeHash(Encoding.Default.GetBytes(password));
+            byte[] firstHash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
             byte[] secondHash = sha.ComputeHash(firstHash);
-            byte[] seedBytes = Encoding.Default.GetBytes(seed);
+            byte[] seedBytes = Encoding.UTF8.GetBytes(seed);
 
             byte[] input = new byte[seedBytes.Length + secondHash.Length];
             Array.Copy(seedBytes, 0, input, 0, seedBytes.Length);

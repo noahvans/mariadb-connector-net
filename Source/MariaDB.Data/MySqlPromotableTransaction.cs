@@ -16,7 +16,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
-using System.Transactions;
 
 namespace MariaDB.Data.MySqlClient
 {

@@ -18,7 +18,6 @@ using System.Globalization;
 using System.Security;
 using System.Text;
 using MariaDB.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
 using MariaDB.Data.Types;
 
 namespace MariaDB.Data.MySqlClient
@@ -38,11 +37,8 @@ namespace MariaDB.Data.MySqlClient
 		protected Hashtable charSets;
 		protected long maxPacketSize;
 		private DateTime idleSince;
-
-#if !CF
 		protected MySqlPromotableTransaction currentTransaction;
 		protected bool inActiveUse;
-#endif
 		protected MySqlPool pool;
 		private bool firstResult;
 		protected IDriver handler;
@@ -63,7 +59,7 @@ namespace MariaDB.Data.MySqlClient
 		{
 			encoding = Encoding.GetEncoding(1252);
 			if (encoding == null)
-				throw new MySqlException(Resources.DefaultEncodingNotFound);
+				throw new MySqlException(ResourceStrings.DefaultEncodingNotFound);
 			connectionString = settings;
 			serverCharSet = "latin1";
 			serverCharSetIndex = -1;
@@ -75,8 +71,6 @@ namespace MariaDB.Data.MySqlClient
 		{
 			Dispose(false);
 		}
-
-		#region Properties
 
 		public int ThreadID
 		{
@@ -100,8 +94,6 @@ namespace MariaDB.Data.MySqlClient
 			set { encoding = value; }
 		}
 
-#if !CF
-
 		public MySqlPromotableTransaction CurrentTransaction
 		{
 			get { return currentTransaction; }
@@ -113,8 +105,6 @@ namespace MariaDB.Data.MySqlClient
 			get { return inActiveUse; }
 			set { inActiveUse = value; }
 		}
-
-#endif
 
 		public bool IsOpen
 		{
@@ -153,8 +143,6 @@ namespace MariaDB.Data.MySqlClient
 			get { return (handler.Flags & ClientFlags.MULTI_STATEMENTS) != 0; }
 		}
 
-		#endregion Properties
-
 		public string Property(string key)
 		{
 			return (string)serverProps[key];
@@ -172,7 +160,6 @@ namespace MariaDB.Data.MySqlClient
 		public static Driver Create(MySqlConnectionStringBuilder settings)
 		{
 			Driver d = null;
-#if !CF
 			try
 			{
 				if (MySqlTrace.QueryAnalysisEnabled || settings.Logging || settings.UseUsageAdvisor)
@@ -182,10 +169,9 @@ namespace MariaDB.Data.MySqlClient
 			{
 				if (!(ex.InnerException is SecurityException))
 					throw ex;
-				//Only rethrow if InnerException is not a SecurityException. If it is a SecurityException then
+				//Only re-throw if InnerException is not a SecurityException. If it is a SecurityException then
 				//we couldn't initialize MySqlTrace because we don't have unmanaged code permissions.
 			}
-#endif
 			if (d == null)
 				d = new Driver(settings);
 
@@ -234,12 +220,6 @@ namespace MariaDB.Data.MySqlClient
 				LoadCharacterSets(connection);
 			}
 
-#if AUTHENTICATED
-			string licenseType = serverProps["license"];
-			if (licenseType == null || licenseType.Length == 0 ||
-				licenseType != "commercial")
-				throw new MySqlException( "This client library licensed only for use with commercially-licensed MySQL servers." );
-#endif
 			// if the user has indicated that we are not to reset
 			// the connection and this is not our first time through,
 			// then we are done.
@@ -468,8 +448,6 @@ namespace MariaDB.Data.MySqlClient
 				ReportWarnings(connection);
 		}
 
-		#region IDisposable Members
-
 		protected virtual void Dispose(bool disposing)
 		{
 			// Avoid cyclic calls to Dispose.
@@ -506,7 +484,6 @@ namespace MariaDB.Data.MySqlClient
 			GC.SuppressFinalize(this);
 		}
 
-		#endregion IDisposable Members
 	}
 
 	internal interface IDriver

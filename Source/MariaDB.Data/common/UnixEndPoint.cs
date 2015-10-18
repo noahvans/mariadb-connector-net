@@ -12,7 +12,7 @@
 // a copy of this software and associated documentation files (the
 // "Software"), to deal in the Software without restriction, including
 // without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
+// distribute, sub-license, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
 // 
@@ -28,13 +28,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
 namespace Mono.Unix
 {
-	[Serializable]
 	public class UnixEndPoint : EndPoint
 	{
 		string filename;
@@ -93,13 +93,13 @@ namespace Mono.Unix
 				bytes[i] = socketAddress[i + 2];
 			}
 
-			string name = Encoding.Default.GetString(bytes);
+			string name = Encoding.UTF8.GetString(bytes);
 			return new UnixEndPoint(name);
 		}
 
 		public override SocketAddress Serialize()
 		{
-			byte[] bytes = Encoding.Default.GetBytes(filename);
+			byte[] bytes = Encoding.UTF8.GetBytes(filename);
 			SocketAddress sa = new SocketAddress(AddressFamily, 2 + bytes.Length + 1);
 			// sa [0] -> family low byte, sa [1] -> family high byte
 			for (int i = 0; i < bytes.Length; i++)

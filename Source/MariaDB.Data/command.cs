@@ -16,19 +16,15 @@ using System.Data;
 using System.Data.Common;
 using System.IO;
 using System.ComponentModel;
-using System.Threading;
 using System.Diagnostics;
 using System.Globalization;
 using System.Collections.Generic;
-using MariaDB.Data.MySqlClient.Properties;
-using System.Transactions;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
     /// <include file='docs/mysqlcommand.xml' path='docs/ClassSummary/*'/>
-    [System.Drawing.ToolboxBitmap(typeof(MySqlCommand), "MySqlClient.resources.command.bmp")]
-    [System.ComponentModel.DesignerCategory("Code")]
-    public sealed class MySqlCommand : DbCommand, ICloneable
+    public sealed class MySqlCommand : DbCommand
     {
         private MySqlConnection connection;
         private MySqlTransaction curTransaction;
@@ -87,16 +83,12 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/LastInseredId/*'/>
-        [Browsable(false)]
         public Int64 LastInsertedId
         {
             get { return lastInsertedId; }
         }
 
-        /// <include file='docs/mysqlcommand.xml' path='docs/CommandText/*'/>
-        [Category("Data")]
-        [Description("Command text to execute")]
-        [Editor("MySql.Data.Common.Design.SqlCommandTextEditor,MySqlClient.Design", typeof(System.Drawing.Design.UITypeEditor))]
+        /// <include file='docs/mysqlcommand.xml' path='docs/CommandText/*'/>        
         public override string CommandText
         {
             get { return cmdText; }
@@ -114,9 +106,6 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/CommandTimeout/*'/>
-        [Category("Misc")]
-        [Description("Time to wait for command to execute")]
-        [DefaultValue(30)]
         public override int CommandTimeout
         {
             get { return useDefaultTimeout ? 30 : commandTimeout; }
@@ -142,8 +131,7 @@ namespace MariaDB.Data.MySqlClient
             }
         }
 
-        /// <include file='docs/mysqlcommand.xml' path='docs/CommandType/*'/>
-        [Category("Data")]
+        /// <include file='docs/mysqlcommand.xml' path='docs/CommandType/*'/>        
         public override CommandType CommandType
         {
             get { return cmdType; }
@@ -151,15 +139,12 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/IsPrepared/*'/>
-        [Browsable(false)]
         public bool IsPrepared
         {
             get { return statement != null && statement.IsPrepared; }
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Connection/*'/>
-        [Category("Behavior")]
-        [Description("Connection used by the command")]
         public new MySqlConnection Connection
         {
             get { return connection; }
@@ -192,16 +177,12 @@ namespace MariaDB.Data.MySqlClient
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Parameters/*'/>
-        [Category("Data")]
-        [Description("The parameters collection")]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public new MySqlParameterCollection Parameters
         {
             get { return parameters; }
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/Transaction/*'/>
-        [Browsable(false)]
         public new MySqlTransaction Transaction
         {
             get { return curTransaction; }
@@ -360,7 +341,7 @@ namespace MariaDB.Data.MySqlClient
                 // We have to recheck that there is no reader, after we got the lock
                 if (connection.Reader != null)
                 {
-                    throw new MySqlException(Resources.DataReaderOpen);
+                    throw new MySqlException(ResourceStrings.DataReaderOpen);
                 }
                 System.Transactions.Transaction curTrans = System.Transactions.Transaction.Current;
                 if (curTrans != null)
@@ -391,7 +372,7 @@ namespace MariaDB.Data.MySqlClient
                 lastInsertedId = -1;
                 cmdText = cmdText.Trim();
                 if (String.IsNullOrEmpty(cmdText))
-                    throw new InvalidOperationException(Resources.CommandTextNotInitialized);
+                    throw new InvalidOperationException(ResourceStrings.CommandTextNotInitialized);
 
                 string sql = cmdText.Trim(';');
 
@@ -443,7 +424,7 @@ namespace MariaDB.Data.MySqlClient
                 catch (IOException ioex)
                 {
                     connection.Abort(); // Closes connection without returning it to the pool
-                    throw new MySqlException(Resources.FatalErrorDuringExecute, ioex);
+                    throw new MySqlException(ResourceStrings.FatalErrorDuringExecute, ioex);
                 }
                 catch (MySqlException ex)
                 {
@@ -468,7 +449,7 @@ namespace MariaDB.Data.MySqlClient
                     if (ex.IsFatal)
                         Connection.Close();
                     if (ex.Number == 0)
-                        throw new MySqlException(Resources.FatalErrorDuringExecute, ex);
+                        throw new MySqlException(ResourceStrings.FatalErrorDuringExecute, ex);
                     throw;
                 }
                 finally
@@ -495,11 +476,11 @@ namespace MariaDB.Data.MySqlClient
 
         private void EnsureCommandIsReadOnly(string sql)
         {
-            sql = sql.ToLower(CultureInfo.InvariantCulture);
+            sql = sql.ToLower();
             if (!sql.StartsWith("select") && !sql.StartsWith("show"))
-                throw new MySqlException(Resources.ReplicatedConnectionsAllowOnlyReadonlyStatements);
+                throw new MySqlException(ResourceStrings.ReplicatedConnectionsAllowOnlyReadonlyStatements);
             if (sql.EndsWith("for update") || sql.EndsWith("lock in share mode"))
-                throw new MySqlException(Resources.ReplicatedConnectionsAllowOnlyReadonlyStatements);
+                throw new MySqlException(ResourceStrings.ReplicatedConnectionsAllowOnlyReadonlyStatements);
         }
 
         /// <include file='docs/mysqlcommand.xml' path='docs/ExecuteScalar/*'/>
@@ -614,7 +595,7 @@ namespace MariaDB.Data.MySqlClient
         public IAsyncResult BeginExecuteReader(CommandBehavior behavior)
         {
             if (caller != null)
-                throw new MySqlException(Resources.UnableToStartSecondAsyncOp);
+                throw new MySqlException(ResourceStrings.UnableToStartSecondAsyncOp);
 
             caller = new AsyncDelegate(AsyncExecuteWrapper);
             asyncResult = caller.BeginInvoke(1, behavior, null, null);
@@ -655,7 +636,7 @@ namespace MariaDB.Data.MySqlClient
         public IAsyncResult BeginExecuteNonQuery(AsyncCallback callback, object stateObject)
         {
             if (caller != null)
-                throw new MySqlException(Resources.UnableToStartSecondAsyncOp);
+                throw new MySqlException(ResourceStrings.UnableToStartSecondAsyncOp);
 
             caller = new AsyncDelegate(AsyncExecuteWrapper);
             asyncResult = caller.BeginInvoke(2, CommandBehavior.Default,
@@ -673,7 +654,7 @@ namespace MariaDB.Data.MySqlClient
         public IAsyncResult BeginExecuteNonQuery()
         {
             if (caller != null)
-                throw new MySqlException(Resources.UnableToStartSecondAsyncOp);
+                throw new MySqlException(ResourceStrings.UnableToStartSecondAsyncOp);
 
             caller = new AsyncDelegate(AsyncExecuteWrapper);
             asyncResult = caller.BeginInvoke(2, CommandBehavior.Default, null, null);
@@ -727,11 +708,6 @@ namespace MariaDB.Data.MySqlClient
             return clone;
         }
 
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
-
         internal void AddToBatch(MySqlCommand command)
         {
             if (batch == null)
@@ -748,14 +724,14 @@ namespace MariaDB.Data.MySqlClient
                 if (String.Compare(CommandText.Substring(0, 6), "INSERT", true) == 0)
                 {
                     MySqlCommand cmd = new MySqlCommand("SELECT @@sql_mode", Connection);
-                    string sql_mode = cmd.ExecuteScalar().ToString().ToUpper(CultureInfo.InvariantCulture);
+                    string sql_mode = cmd.ExecuteScalar().ToString().ToUpper();
                     MySqlTokenizer tokenizer = new MySqlTokenizer(CommandText);
                     tokenizer.AnsiQuotes = sql_mode.IndexOf("ANSI_QUOTES") != -1;
                     tokenizer.BackslashEscapes = sql_mode.IndexOf("NO_BACKSLASH_ESCAPES") == -1;
-                    string token = tokenizer.NextToken().ToLower(CultureInfo.InvariantCulture);
+                    string token = tokenizer.NextToken().ToLower();
                     while (token != null)
                     {
-                        if (token.ToUpper(CultureInfo.InvariantCulture) == "VALUES" &&
+                        if (token.ToUpper() == "VALUES" &&
                             !tokenizer.Quoted)
                         {
                             token = tokenizer.NextToken();
@@ -782,7 +758,7 @@ namespace MariaDB.Data.MySqlClient
                                 batchableCommandText += token;
                             token = tokenizer.NextToken();
                             if (token != null && (token == "," ||
-                                token.ToUpper(CultureInfo.InvariantCulture) == "ON"))
+                                token.ToUpper() == "ON"))
                             {
                                 batchableCommandText = null;
                                 break;
@@ -811,7 +787,6 @@ namespace MariaDB.Data.MySqlClient
         /// <summary>
         /// Gets or sets a value indicating whether the command object should be visible in a Windows Form Designer control.
         /// </summary>
-        [Browsable(false)]
         public override bool DesignTimeVisible
         {
             get

@@ -16,7 +16,7 @@ using System.Collections.Specialized;
 using System.Data;
 using System.IO;
 using System.Text;
-using MariaDB.Data.MySqlClient.Properties;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -241,7 +241,7 @@ namespace MariaDB.Data.MySqlClient
             bool openedConnection = false;
 
             if (Connection == null)
-                throw new InvalidOperationException(Resources.ConnectionNotSet);
+                throw new InvalidOperationException(ResourceStrings.ConnectionNotSet);
 
             // next we open up the connection if it is not already open
             if (connection.State != ConnectionState.Open)

@@ -515,7 +515,7 @@ namespace MariaDB.Data.MySqlClient
                 catch (SqlNullValueException snex)
                 {
                     throw new InvalidOperationException(
-                        String.Format(Resources.UnableToRetrieveParameters, routine["ROUTINE_NAME"]), snex);
+                        String.Format(ResourceStrings.UnableToRetrieveParameters, routine["ROUTINE_NAME"]), snex);
                 }
             }
         }

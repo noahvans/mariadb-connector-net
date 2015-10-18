@@ -19,7 +19,6 @@ namespace MariaDB.Data.Types
     /// Summary description for MySqlConversionException.
     /// </summary>
 
-    [Serializable]
     public class MySqlConversionException : Exception
     {
         /// <summary>ctor</summary>

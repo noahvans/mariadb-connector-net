@@ -1,21 +1,21 @@
 {
     "version": "1.0.1.0",
-    "description": "ADO.Net driver for MariaDB and MySQL",
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
+    "description": "EntityFramework 7 driver for MariaDB and MySQL",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/noahvans/mariadb-connector-net"
+    },
     "compilationOptions": {
-        "define": [ "DNX" ]
+        "define": [ "DNXCore" ]
     },
     "frameworks": {
-        "dnx451": {
+        "dnxcore50": {
             "frameworkAssemblies": {
-                "System.Data.DataSetExtensions": "4.0.0.0",
-                "System.Data.Entity": "4.0.0.0"
             }
         }
     },
     "dependencies": {
+        "EntityFramework.Relational": "7.0.0-*",
         "MariaDB.Data": "1.0.1.0"
     }
 }

@@ -27,7 +27,7 @@ namespace MariaDB.Data.MySqlClient
         {
             this.connection = connection;
 
-            string categoryName = Resources.PerfMonCategoryName;
+            string categoryName = ResourceStrings.PerfMonCategoryName;
 
             if (connection.Settings.UsePerformanceMonitor && procedureHardQueries == null)
             {
@@ -60,8 +60,8 @@ namespace MariaDB.Data.MySqlClient
             ccd.CounterName = "SoftProcedureQueries";
             ccdc.Add(ccd);
 
-            if (!PerformanceCounterCategory.Exists(Resources.PerfMonCategoryName))
-                PerformanceCounterCategory.Create(Resources.PerfMonCategoryName, null, PerformanceCounterCategoryType.MultiInstance, ccdc);
+            if (!PerformanceCounterCategory.Exists(ResourceStrings.PerfMonCategoryName))
+                PerformanceCounterCategory.Create(ResourceStrings.PerfMonCategoryName, null, PerformanceCounterCategoryType.MultiInstance, ccdc);
         }
 
 #endif

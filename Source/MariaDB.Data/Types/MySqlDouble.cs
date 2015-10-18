@@ -115,6 +115,11 @@ namespace MariaDB.Data.Types
             packet.Position += 8;
         }
 
+        /*
+        // Due to the DNXCore replacement for DataReader.GetSchemaTable()
+        // haven't implemented (refer to https://github.com/dotnet/corefx/issues/3423)
+        // this method should be remove till GetSchema is back.
+        //
         internal static void SetDSInfo(DataTable dsTable)
         {
             // we use name indexing because this method will only be called
@@ -146,5 +151,7 @@ namespace MariaDB.Data.Types
             row["NativeDataType"] = null;
             dsTable.Rows.Add(row);
         }
+        */
     }
 }
+ 
