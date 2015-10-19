@@ -23,6 +23,7 @@
     "dnxcore50": {
       "dependencies": {
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-*",
+        "System.ComponentModel.TypeConverter": "4.0.1-beta-23409",
         "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
         "System.Collections.Specialized": "4.0.1-*",
         "System.Net.Primitives": "4.0.11-*",
@@ -34,7 +35,10 @@
         "System.IO.MemoryMappedFiles": "4.0.0-*",
         "System.Security.Cryptography.X509Certificates": "4.0.0-*",
         "System.Threading.Thread": "4.0.0-*",
-        "System.Runtime": "4.0.21-*"
+        "System.Runtime": "4.0.21-*",
+        "System.Security.Principal.Windows": "4.0.0-*",
+        "System.Threading.Timer": "4.0.1-*",
+        "System.Net.Security": "4.0.0-*"
       }
     }
   }

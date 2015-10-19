@@ -16,7 +16,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using MariaDB.Data.MySqlClient.Properties;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -30,7 +30,6 @@ namespace MariaDB.Data.MySqlClient
         private MySqlConnectionStringBuilder settings;
         private uint minSize;
         private uint maxSize;
-        private ProcedureCache procedureCache;
         private bool beingCleared;
         private int available;
         private AutoResetEvent autoEvent;
@@ -59,7 +58,6 @@ namespace MariaDB.Data.MySqlClient
             for (int i = 0; i < minSize; i++)
                 EnqueueIdle(CreateNewPooledConnection());
 
-            procedureCache = new ProcedureCache((int)settings.ProcedureCacheSize);
         }
 
         #region Properties
@@ -68,11 +66,6 @@ namespace MariaDB.Data.MySqlClient
         {
             get { return settings; }
             set { settings = value; }
-        }
-
-        public ProcedureCache ProcedureCache
-        {
-            get { return procedureCache; }
         }
 
         /// <summary>
@@ -230,10 +223,9 @@ namespace MariaDB.Data.MySqlClient
                 return driver;
             }
             catch (Exception ex)
-            {
-                MySqlTrace.LogError(-1, ex.Message);
+            {                   
                 Interlocked.Increment(ref available);
-                throw;
+                throw ex;
             }
         }
 
@@ -250,7 +242,7 @@ namespace MariaDB.Data.MySqlClient
                 if (driver != null) return driver;
 
                 // We have no tickets right now, lets wait for one.
-                if (!autoEvent.WaitOne(timeOut, false)) break;
+                if (!autoEvent.WaitOne(timeOut)) break;
                 timeOut = fullTimeOut - (int)DateTime.Now.Subtract(start).TotalMilliseconds;
             }
             throw new MySqlException(ResourceStrings.TimeoutGettingConnection);

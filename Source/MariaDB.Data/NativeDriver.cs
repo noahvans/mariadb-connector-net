@@ -19,6 +19,8 @@ using MariaDB.Data.Types;
 using System.Text;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.IO.MemoryMappedFiles;
 
 /// <summary>
 /// 
@@ -170,11 +172,7 @@ namespace MariaDB.Data.MySqlClient
 					string pipeName = Settings.PipeName;
 					if (Settings.ConnectionProtocol != MySqlConnectionProtocol.NamedPipe)
 						pipeName = null;
-#if !DNX
 					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, pipeName, Settings.Keepalive);
-#else
-					StreamCreator sc = new StreamCreator(Settings.Server, Settings.Port, Settings.Keepalive);
-#endif
 					baseStream = sc.GetStream(Settings.ConnectionTimeout);
 				}
 			}
@@ -235,8 +233,6 @@ namespace MariaDB.Data.MySqlClient
 
 			packet.Clear();
 			packet.WriteInteger((int)connectionFlags, 4);
-
-#if !CF
 			if ((serverCaps & ClientFlags.SSL) == 0)
 			{
 				if ((Settings.SslMode != MySqlSslMode.None)
@@ -255,8 +251,6 @@ namespace MariaDB.Data.MySqlClient
 				packet.Clear();
 				packet.WriteInteger((int)connectionFlags, 4);
 			}
-#endif
-
 			packet.WriteInteger(maxSinglePacket, 4);
 			packet.WriteByte(8);
 			packet.Write(new byte[23]);
@@ -287,7 +281,7 @@ namespace MariaDB.Data.MySqlClient
 			if (Settings.CertificateFile != null)
 			{
 				if (!Version.isAtLeast(5, 1, 0))
-					throw new MySqlException(Properties.ResourceStrings.FileBasedCertificateNotSupported);
+					throw new MySqlException(ResourceStrings.FileBasedCertificateNotSupported);
 
 				X509Certificate2 clientCert = new X509Certificate2(Settings.CertificateFile,
 					Settings.CertificatePassword);
@@ -331,7 +325,7 @@ namespace MariaDB.Data.MySqlClient
 				new RemoteCertificateValidationCallback(ServerCheckValidation);
 			SslStream ss = new SslStream(baseStream, true, sslValidateCallback, null);
 			X509CertificateCollection certs = GetClientCertificates();
-			ss.AuthenticateAsClient(Settings.Server, certs, SslProtocols.Default, false);
+			ss.AuthenticateAsClient(Settings.Server, certs, SslProtocols.Ssl2, false);
 			baseStream = ss;
 			stream = new MySqlStream(ss, Encoding, false);
 			stream.SequenceByte = 2;
@@ -595,7 +589,7 @@ namespace MariaDB.Data.MySqlClient
 				}
 
 				if (stream != null)
-					stream.Close();
+					stream.Dispose();
 				stream = null;
 			}
 			catch (Exception)

@@ -26,7 +26,8 @@ namespace MariaDB.Data.MySqlClient
 	{
 		// The DataReader should always be open when returned to the user.
 		private bool isOpen = true;
-
+		// Prefix used for to generate inout or output parameters names
+		internal const string ParameterPrefix = "_cnet_param_";
 		private CommandBehavior commandBehavior;
 		private MySqlCommand command;
 		internal long affectedRows;
@@ -902,16 +903,6 @@ namespace MariaDB.Data.MySqlClient
 					{
 						resultSet = driver.NextResult(Statement.StatementId, false);
 						if (resultSet == null) return false;
-						if (resultSet.IsOutputParameters && command.CommandType == CommandType.StoredProcedure)
-						{
-							StoredProcedure sp = statement as StoredProcedure;
-							sp.ProcessOutputParameters(this);
-							resultSet.Close();
-							if (!sp.ServerProvidingOutputParameters) return false;
-							// if we are using server side output parameters then we will get our ok packet
-							// *after* the output parameters result set
-							resultSet = driver.NextResult(Statement.StatementId, true);
-						}
 						resultSet.Cached = isCaching;
 					}
 
@@ -958,11 +949,6 @@ namespace MariaDB.Data.MySqlClient
 			{
 				connection.HandleTimeoutOrThreadAbort(tex);
 				throw; // unreached
-			}
-			catch (System.Threading.ThreadAbortException taex)
-			{
-				connection.HandleTimeoutOrThreadAbort(taex);
-				throw;
 			}
 			catch (MySqlException ex)
 			{
@@ -1019,7 +1005,7 @@ namespace MariaDB.Data.MySqlClient
 			if ((commandBehavior & System.Data.CommandBehavior.SchemaOnly) != 0) return;
 			resultSet.NextRow(commandBehavior);
 
-			string prefix = "@" + StoredProcedure.ParameterPrefix;
+			string prefix = "@" + ParameterPrefix;
 
 			for (int i = 0; i < FieldCount; i++)
 			{
@@ -1040,7 +1026,7 @@ namespace MariaDB.Data.MySqlClient
 			for (int i = 0; i < FieldCount; i++)
 			{
 				string fieldName = GetName(i);
-				fieldName = fieldName.Remove(0, StoredProcedure.ParameterPrefix.Length + 1);
+				fieldName = fieldName.Remove(0, ParameterPrefix.Length + 1);
 				MySqlParameter parameter = command.Parameters.GetParameterFlexible(fieldName, true);
 
 				IMySqlValue v = MySqlField.GetIMySqlValue(parameter.MySqlDbType);
@@ -1061,7 +1047,7 @@ namespace MariaDB.Data.MySqlClient
 		/// <returns></returns>
 		public override IEnumerator GetEnumerator()
 		{
-			return new DbEnumerator(this, (commandBehavior & CommandBehavior.CloseConnection) != 0);
+			throw new NotImplementedException();
 		}
 	}
 }

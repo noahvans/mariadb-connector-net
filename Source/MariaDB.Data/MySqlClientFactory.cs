@@ -31,7 +31,6 @@ namespace MariaDB.Data.MySqlClient
         public static MySqlClientFactory Instance = new MySqlClientFactory();
 
         private Type dbServicesType;
-        private FieldInfo mySqlDbProviderServicesInstance;
 
         /// <summary>
         /// Returns a strongly typed <see cref="DbCommand"/> instance.

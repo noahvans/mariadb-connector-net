@@ -172,12 +172,6 @@ namespace MariaDB.Data.MySqlClient
                 // signed integer (~24 days). We truncate the value if it exceeds
                 // maximum (MySqlCommand.CommandTimeout uses the same technique
                 uint timeout = Math.Min(value, Int32.MaxValue / 1000);
-                if (timeout != value)
-                {
-                    MySqlTrace.LogWarning(-1, "Connection timeout value too large ("
-                        + value + " seconds). Changed to max. possible value" +
-                        +timeout + " seconds)");
-                }
                 SetValue("Connect Timeout", timeout);
             }
         }
@@ -684,13 +678,8 @@ namespace MariaDB.Data.MySqlClient
 
         private void HandleObsolete(string keyword, object value)
         {
-            if (String.Compare(keyword, "Use Old Syntax", true) == 0)
-                MySqlTrace.LogWarning(-1, "Use Old Syntax is now obsolete.  Please see documentation");
-            else if (String.Compare(keyword, "Use Procedure Bodies", true) == 0)
-            {
-                MySqlTrace.LogWarning(-1, "Use Procedure Bodies is now obsolete.  Use Check Parameters instead");
+            if (String.Compare(keyword, "Use Procedure Bodies", true) == 0)
                 CheckParameters = (bool)value;
-            }
         }
 
         private object ParseEnum(Type t, string requestedValue, string key)

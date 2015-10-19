@@ -11,12 +11,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -149,7 +149,7 @@ namespace MariaDB.Data.MySqlClient
             try
             {
                 string mode = connection.driver.Property("sql_mode");
-                mode = mode.ToUpper(CultureInfo.InvariantCulture);
+                mode = mode.ToUpper();
                 bool ansiQuotes = mode.IndexOf("ANSI_QUOTES") != -1;
                 bool noBackslashEscapes = mode.IndexOf("NO_BACKSLASH_ESCAPES") != -1;
 
@@ -258,7 +258,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 if (!tokenizer.Quoted)
                 {
-                    if (token.ToLower(CultureInfo.InvariantCulture) == "delimiter")
+                    if (token.ToLower() == "delimiter")
                     {
                         tokenizer.NextToken();
                         AdjustDelimiterEnd(tokenizer);
@@ -283,7 +283,7 @@ namespace MariaDB.Data.MySqlClient
                             }
                         }
 
-                        int delimiterPos = token.IndexOf(currentDelimiter, StringComparison.InvariantCultureIgnoreCase);
+                        int delimiterPos = token.IndexOf(currentDelimiter, StringComparison.CurrentCultureIgnoreCase);
                         if (delimiterPos != -1)
                         {
                             int endPos = tokenizer.StopIndex - token.Length + delimiterPos;

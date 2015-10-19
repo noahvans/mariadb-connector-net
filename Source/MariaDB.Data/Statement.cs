@@ -11,9 +11,9 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.Collections;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -177,8 +177,6 @@ namespace MariaDB.Data.MySqlClient
         protected virtual bool ShouldIgnoreMissingParameter(string parameterName)
         {
             if (Connection.Settings.AllowUserVariables)
-                return true;
-            if (parameterName.StartsWith("@" + StoredProcedure.ParameterPrefix))
                 return true;
             if (parameterName.Length > 1 &&
                 (parameterName[1] == '`' || parameterName[1] == '\''))

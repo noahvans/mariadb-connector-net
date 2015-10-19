@@ -16,7 +16,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using MariaDB.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -76,14 +75,21 @@ namespace MariaDB.Data.MySqlClient
         {
             get
             {
-                byte[] bits = buffer.GetBuffer();
+                ArraySegment<byte> tmp = new ArraySegment<byte>();
+                buffer.TryGetBuffer(out tmp);
+                byte[] bits = tmp.Array;
                 return bits[0] == 0xfe && Length <= 5;
             }
         }
 
         public byte[] Buffer
         {
-            get { return buffer.GetBuffer(); }
+            get
+            {
+                ArraySegment<byte> tmp = new ArraySegment<byte>();
+                buffer.TryGetBuffer(out tmp);
+                return tmp.Array;
+            }
         }
 
         public DBVersion Version
@@ -157,7 +163,9 @@ namespace MariaDB.Data.MySqlClient
             ulong value = 0;
 
             int pos = (int)buffer.Position;
-            byte[] bits = buffer.GetBuffer();
+            ArraySegment<byte> tmp = new ArraySegment<byte>();
+            buffer.TryGetBuffer(out tmp);
+            byte[] bits = tmp.Array;
             int shift = 0;
 
             for (int i = 0; i < numbytes; i++)
@@ -173,7 +181,9 @@ namespace MariaDB.Data.MySqlClient
         public long ReadLong(int numbytes)
         {
             Debug.Assert((buffer.Position + numbytes) <= buffer.Length);
-            byte[] bytes = buffer.GetBuffer();
+            ArraySegment<byte> tmp = new ArraySegment<byte>();
+            buffer.TryGetBuffer(out tmp);
+            byte[] bytes = tmp.Array;
             int pos = (int)buffer.Position;
             buffer.Position += numbytes;
             switch (numbytes)
@@ -188,7 +198,9 @@ namespace MariaDB.Data.MySqlClient
         public ulong ReadULong(int numbytes)
         {
             Debug.Assert((buffer.Position + numbytes) <= buffer.Length);
-            byte[] bytes = buffer.GetBuffer();
+            ArraySegment<byte> tmp = new ArraySegment<byte>();
+            buffer.TryGetBuffer(out tmp);
+            byte[] bytes = tmp.Array;
             int pos = (int)buffer.Position;
             buffer.Position += numbytes;
             switch (numbytes)
@@ -205,7 +217,9 @@ namespace MariaDB.Data.MySqlClient
             int value = 0;
 
             int pos = (int)buffer.Position;
-            byte[] bits = buffer.GetBuffer();
+            ArraySegment<byte> tmp = new ArraySegment<byte>();
+            buffer.TryGetBuffer(out tmp);
+            byte[] bits = tmp.Array;
             int shift = 0;
 
             for (int i = 0; i < 3; i++)
@@ -330,7 +344,9 @@ namespace MariaDB.Data.MySqlClient
 
         public string ReadString(Encoding enc)
         {
-            byte[] bits = buffer.GetBuffer();
+            ArraySegment<byte> tmp = new ArraySegment<byte>();
+            buffer.TryGetBuffer(out tmp);
+            byte[] bits = tmp.Array;
             int end = (int)buffer.Position;
 
             while (end < (int)buffer.Length &&

@@ -255,12 +255,12 @@ namespace MariaDB.Data.MySqlClient
             set { baseStream.WriteTimeout = value; }
         }
 
-        public override void Close()
+        public new void Dispose()
         {
             if (isClosed)
                 return;
             isClosed = true;
-            baseStream.Close();
+            baseStream.Dispose();
         }
 
         public void ResetTimeout(int newTimeout)

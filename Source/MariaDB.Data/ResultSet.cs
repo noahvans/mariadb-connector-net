@@ -16,8 +16,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using MariaDB.Data.MySqlClient.Properties;
 using MariaDB.Data.Types;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -299,11 +299,7 @@ namespace MariaDB.Data.MySqlClient
         private bool IsOutputParameterResultSet()
         {
             if (driver.HasStatus(ServerStatusFlags.OutputParameters)) return true;
-
             if (fields.Length == 0) return false;
-
-            for (int x = 0; x < fields.Length; x++)
-                if (!fields[x].ColumnName.StartsWith("@" + StoredProcedure.ParameterPrefix)) return false;
             return true;
         }
 
@@ -317,7 +313,7 @@ namespace MariaDB.Data.MySqlClient
             values = new IMySqlValue[numCols];
             uaFieldsUsed = new bool[numCols];
             fieldHashCS = new Hashtable();
-            fieldHashCI = new Hashtable(StringComparer.InvariantCultureIgnoreCase);
+            fieldHashCI = new Hashtable(StringComparer.CurrentCultureIgnoreCase);
 
             for (int i = 0; i < fields.Length; i++)
             {

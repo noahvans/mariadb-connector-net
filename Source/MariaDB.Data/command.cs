@@ -119,13 +119,6 @@ namespace MariaDB.Data.MySqlClient
                 // use milliseconds expressed ints for timeout values.
                 // Hence, truncate the value.
                 int timeout = Math.Min(value, Int32.MaxValue / 1000);
-                if (timeout != value)
-                {
-                    MySqlTrace.LogWarning(connection.ServerThread,
-                    "Command timeout value too large ("
-                    + value + " seconds). Changed to max. possible value ("
-                    + timeout + " seconds)");
-                }
                 commandTimeout = timeout;
                 useDefaultTimeout = false;
             }
@@ -199,7 +192,7 @@ namespace MariaDB.Data.MySqlClient
         {
             get { return cacheAge; }
             set { cacheAge = value; }
-        }        
+        }
 
         internal List<MySqlCommand> Batch
         {
@@ -343,30 +336,6 @@ namespace MariaDB.Data.MySqlClient
                 {
                     throw new MySqlException(ResourceStrings.DataReaderOpen);
                 }
-                System.Transactions.Transaction curTrans = System.Transactions.Transaction.Current;
-                if (curTrans != null)
-                {
-                    bool inRollback = false;
-                    if (driver.CurrentTransaction != null)
-                        inRollback = driver.CurrentTransaction.InRollback;
-                    if (!inRollback)
-                    {
-                        TransactionStatus status = TransactionStatus.InDoubt;
-                        try
-                        {
-                            // in some cases (during state transitions) this throws
-                            // an exception. Ignore exceptions, we're only interested
-                            // whether transaction was aborted or not.
-                            status = curTrans.TransactionInformation.Status;
-                        }
-                        catch (TransactionException)
-                        {
-                        }
-                        if (status == TransactionStatus.Aborted)
-                            throw new TransactionAbortedException();
-                    }
-                }
-
                 commandTimer = new CommandTimer(connection, CommandTimeout);
 
                 lastInsertedId = -1;
@@ -385,10 +354,7 @@ namespace MariaDB.Data.MySqlClient
 
                 if (statement == null || !statement.IsPrepared)
                 {
-                    if (CommandType == CommandType.StoredProcedure)
-                        statement = new StoredProcedure(this, sql);
-                    else
-                        statement = new PreparableStatement(this, sql);
+                    statement = new PreparableStatement(this, sql);
                 }
 
                 // stored procs are the only statement type that need do anything during resolve
@@ -397,7 +363,6 @@ namespace MariaDB.Data.MySqlClient
                 // Now that we have completed our resolve step, we can handle our
                 // command behaviors
                 HandleCommandBehaviors(behavior);
-
                 updatedRowCount = -1;
                 try
                 {
@@ -415,11 +380,6 @@ namespace MariaDB.Data.MySqlClient
                 {
                     connection.HandleTimeoutOrThreadAbort(tex);
                     throw; //unreached
-                }
-                catch (ThreadAbortException taex)
-                {
-                    connection.HandleTimeoutOrThreadAbort(taex);
-                    throw;
                 }
                 catch (IOException ioex)
                 {
@@ -522,12 +482,7 @@ namespace MariaDB.Data.MySqlClient
                 if (psSQL == null ||
                      psSQL.Trim().Length == 0)
                     return;
-
-                if (CommandType == CommandType.StoredProcedure)
-                    statement = new StoredProcedure(this, CommandText);
-                else
-                    statement = new PreparableStatement(this, CommandText);
-
+                statement = new PreparableStatement(this, CommandText);
                 statement.Resolve(true);
                 statement.Prepare();
             }

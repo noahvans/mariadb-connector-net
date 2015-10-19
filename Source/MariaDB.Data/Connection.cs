@@ -27,10 +27,7 @@ namespace MariaDB.Data.MySqlClient
         internal Driver driver;
         private MySqlConnectionStringBuilder settings;
         private bool hasBeenOpen;
-        private SchemaProvider schemaProvider;
-        private ProcedureCache procedureCache;
         private bool isInUse;
-        private PerformanceMonitor perfMonitor;
         private bool isKillQueryConnection;
         private string database;
         private int commandTimeout;
@@ -54,16 +51,6 @@ namespace MariaDB.Data.MySqlClient
             : this()
         {
             ConnectionString = connectionString;
-        }
-
-        internal PerformanceMonitor PerfMonitor
-        {
-            get { return perfMonitor; }
-        }
-
-        internal ProcedureCache ProcedureCache
-        {
-            get { return procedureCache; }
         }
 
         internal MySqlConnectionStringBuilder Settings
@@ -98,9 +85,7 @@ namespace MariaDB.Data.MySqlClient
         {
             get
             {
-                return (State == ConnectionState.Closed) &&
-                    driver != null &&
-                    driver.CurrentTransaction != null;
+                return (State == ConnectionState.Closed) && driver != null;
             }
         }
 
@@ -267,11 +252,6 @@ namespace MariaDB.Data.MySqlClient
             // in parallel
             lock (driver)
             {
-                if (Transaction.Current != null &&
-                    Transaction.Current.TransactionInformation.Status == TransactionStatus.Aborted)
-                {
-                    throw new TransactionAbortedException();
-                }
                 // We use default command timeout for SetDatabase
                 using (new CommandTimer(this, (int)Settings.DefaultCommandTimeout))
                 {
@@ -311,20 +291,7 @@ namespace MariaDB.Data.MySqlClient
         {
             if (State == ConnectionState.Open)
                 throw new InvalidOperationException(ResourceStrings.ConnectionAlreadyOpen);
-
             SetState(ConnectionState.Connecting, true);
-
-            // if we are auto enlisting in a current transaction, then we will be
-            // treating the connection as pooled
-            if (settings.AutoEnlist && Transaction.Current != null)
-            {
-                driver = DriverTransactionManager.GetDriverInTransaction(Transaction.Current);
-                if (driver != null &&
-                    (driver.IsInActiveUse ||
-                    !driver.Settings.EquivalentTo(this.Settings)))
-                    throw new NotSupportedException(ResourceStrings.MultipleConnectionsInTransactionNotSupported);
-            }
-
             try
             {
                 if (settings.Pooling)
@@ -332,13 +299,11 @@ namespace MariaDB.Data.MySqlClient
                     MySqlPool pool = MySqlPoolManager.GetPool(settings);
                     if (driver == null || !driver.IsOpen)
                         driver = pool.GetConnection();
-                    procedureCache = pool.ProcedureCache;
                 }
                 else
                 {
                     if (driver == null || !driver.IsOpen)
                         driver = Driver.Create(settings);
-                    procedureCache = new ProcedureCache((int)settings.ProcedureCacheSize);
                 }
             }
             catch (Exception)
@@ -351,15 +316,6 @@ namespace MariaDB.Data.MySqlClient
             driver.Configure(this);
             if (settings.Database != null && settings.Database != String.Empty)
                 ChangeDatabase(settings.Database);
-
-            // setup our schema provider
-            schemaProvider = new ISSchemaProvider(this);
-            perfMonitor = new PerformanceMonitor(this);
-
-            // if we are opening up inside a current transaction, then autoenlist
-            // TODO: control this with a connection string option
-            if (Transaction.Current != null && settings.AutoEnlist)
-                EnlistTransaction(Transaction.Current);
             hasBeenOpen = true;
             SetState(ConnectionState.Open, true);
         }
@@ -411,10 +367,7 @@ namespace MariaDB.Data.MySqlClient
             {
                 driver.Close();
             }
-            catch (Exception ex)
-            {
-                MySqlTrace.LogWarning(ServerThread, String.Concat("Error occurred aborting the connection. Exception was: ", ex.Message));
-            }
+            catch { }
             finally
             {
                 this.isInUse = false;
@@ -452,10 +405,8 @@ namespace MariaDB.Data.MySqlClient
             // will be null on the second time through
             if (driver != null)
             {
-                if (driver.CurrentTransaction == null)
-                    CloseFully();
-                else
-                    driver.IsInActiveUse = false;
+                CloseFully();
+                driver.IsInActiveUse = false;
             }
 
             SetState(ConnectionState.Closed, true);
@@ -504,10 +455,8 @@ namespace MariaDB.Data.MySqlClient
                     Reader = null;
                 }
             }
-            catch (Exception ex2)
+            catch
             {
-                MySqlTrace.LogWarning(ServerThread, "Could not kill query, " +
-                    " aborting connection. Exception was " + ex2.Message);
                 Abort();
                 isFatal = true;
             }
@@ -705,4 +654,3 @@ namespace MariaDB.Data.MySqlClient
 
     }
 }
- 

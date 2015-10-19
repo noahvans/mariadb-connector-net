@@ -11,11 +11,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Threading;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -37,7 +38,6 @@ namespace MariaDB.Data.MySqlClient
         private static string GetKey(MySqlConnectionStringBuilder settings)
         {
             string key = settings.ConnectionString;
-#if !CF
             if (settings.IntegratedSecurity && !settings.ConnectionReset)
             {
                 try
@@ -58,7 +58,6 @@ namespace MariaDB.Data.MySqlClient
                     throw new MySqlException(ResourceStrings.NoWindowsIdentity, ex);
                 }
             }
-#endif
             return key;
         }
 

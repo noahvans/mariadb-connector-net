@@ -11,10 +11,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.IO;
 using System.Text;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -66,15 +66,18 @@ namespace MariaDB.Data.MySqlClient
             else
                 stream = timedStream;
 
-            inStream = new BufferedStream(stream);
+            inStream = new MemoryStream();
+            var p = stream.Position;
+            stream.CopyTo(inStream);
+            stream.Position = p;
             outStream = stream;
         }
 
-        public void Close()
+        public void Dispose()
         {
-            outStream.Close();
-            inStream.Close();
-            timedStream.Close();
+            outStream.Dispose();
+            inStream.Dispose();
+            timedStream.Dispose();
         }
 
         #region Properties

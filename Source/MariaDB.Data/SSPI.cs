@@ -40,7 +40,7 @@ namespace MariaDB.Data.MySqlClient
         private byte[] packetHeader;
         private int seq = 3;
 
-        [DllImport("secur32", CharSet = CharSet.Auto)]
+        [DllImport("secur32", CharSet = CharSet.Unicode)]
         private static extern int AcquireCredentialsHandle(
             string pszPrincipal,
             string pszPackage,
@@ -52,7 +52,7 @@ namespace MariaDB.Data.MySqlClient
             ref SECURITY_HANDLE phCredential,
             ref SECURITY_INTEGER ptsExpiry);
 
-        [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("secur32", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int InitializeSecurityContext(
             ref SECURITY_HANDLE phCredential,
             IntPtr phContext,
@@ -67,7 +67,7 @@ namespace MariaDB.Data.MySqlClient
             out uint pfContextAttr,
             out SECURITY_INTEGER ptsExpiry);
 
-        [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("secur32", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int InitializeSecurityContext(
             ref SECURITY_HANDLE phCredential,
             ref SECURITY_HANDLE phContext,
@@ -82,21 +82,21 @@ namespace MariaDB.Data.MySqlClient
             out uint pfContextAttr,
             out SECURITY_INTEGER ptsExpiry);
 
-        [DllImport("secur32", CharSet = CharSet.Auto, SetLastError = true)]
+        [DllImport("secur32", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int CompleteAuthToken(
            ref SECURITY_HANDLE phContext,
            ref SecBufferDesc pToken);
 
-        [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("secur32.Dll", CharSet = CharSet.Unicode, SetLastError = false)]
         public static extern int QueryContextAttributes(
             ref SECURITY_HANDLE phContext,
             uint ulAttribute,
             out SecPkgContext_Sizes pContextAttributes);
 
-        [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("secur32.Dll", CharSet = CharSet.Unicode, SetLastError = false)]
         public static extern int FreeCredentialsHandle(ref SECURITY_HANDLE pCred);
 
-        [DllImport("secur32.Dll", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("secur32.Dll", CharSet = CharSet.Unicode, SetLastError = false)]
         public static extern int DeleteSecurityContext(ref SECURITY_HANDLE pCred);
 
         public SSPI(string targetName, Stream stream, int seqNo)

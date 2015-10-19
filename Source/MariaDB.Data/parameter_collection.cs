@@ -11,24 +11,18 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Common;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
     /// <summary>
     /// Represents a collection of parameters relevant to a <see cref="MySqlCommand"/> as well as their respective mappings to columns in a <see cref="System.Data.DataSet"/>. This class cannot be inherited.
     /// </summary>
-    /// <include file='docs/MySqlParameterCollection.xml' path='MyDocs/MyMembers[@name="Class"]/*'/>
-#if !CF
-
-    [Editor("MySql.Data.MySqlClient.Design.DBParametersEditor,MySql.Design", typeof(System.Drawing.Design.UITypeEditor))]
-    [ListBindable(true)]
-#endif
+    /// <include file='docs/MySqlParameterCollection.xml' path='MyDocs/MyMembers[@name="Class"]/*'/>    
     public sealed class MySqlParameterCollection : DbParameterCollection
     {
         private List<DbParameter> items = new List<DbParameter>();
@@ -326,33 +320,6 @@ namespace MariaDB.Data.MySqlClient
             if (parameter == null)
                 throw new MySqlException("Only MySqlParameter objects may be stored");
             InternalAdd(parameter, index);
-        }
-
-        /// <summary>
-        /// Gets a value that indicates whether the <see cref="MySqlParameterCollection"/>
-        /// has a fixed size.
-        /// </summary>
-        public override bool IsFixedSize
-        {
-            get { return (items as IList).IsFixedSize; }
-        }
-
-        /// <summary>
-        /// Gets a value that indicates whether the <see cref="MySqlParameterCollection"/>
-        /// is read-only.
-        /// </summary>
-        public override bool IsReadOnly
-        {
-            get { return (items as IList).IsReadOnly; }
-        }
-
-        /// <summary>
-        /// Gets a value that indicates whether the <see cref="MySqlParameterCollection"/>
-        /// is synchronized.
-        /// </summary>
-        public override bool IsSynchronized
-        {
-            get { return (items as IList).IsSynchronized; }
         }
 
         /// <summary>

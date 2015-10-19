@@ -38,8 +38,6 @@ namespace MariaDB.Data.MySqlClient
         // this class provides only static methods
         private MySqlHelper() { }
 
-        #region ExecuteNonQuery
-
         /// <summary>
         /// Executes a single command against a MySQL database.  The <see cref="MySqlConnection"/> is assumed to be
         /// open when the method is called and remains open after the method completes.
@@ -85,131 +83,6 @@ namespace MariaDB.Data.MySqlClient
                 return ExecuteNonQuery(cn, commandText, parms);
             }
         }
-
-        #endregion ExecuteNonQuery
-
-        #region ExecuteDataSet
-
-        /// <summary>
-        /// Executes a single SQL command and returns the first row of the resultset.  A new MySqlConnection object
-        /// is created, opened, and closed during this method.
-        /// </summary>
-        /// <param name="connectionString">Settings to be used for the connection</param>
-        /// <param name="commandText">Command to execute</param>
-        /// <param name="parms">Parameters to use for the command</param>
-        /// <returns>DataRow containing the first row of the resultset</returns>
-        public static DataRow ExecuteDataRow(string connectionString, string commandText, params MySqlParameter[] parms)
-        {
-            DataSet ds = ExecuteDataset(connectionString, commandText, parms);
-            if (ds == null) return null;
-            if (ds.Tables.Count == 0) return null;
-            if (ds.Tables[0].Rows.Count == 0) return null;
-            return ds.Tables[0].Rows[0];
-        }
-
-        /// <summary>
-        /// Executes a single SQL command and returns the resultset in a <see cref="DataSet"/>.
-        /// A new MySqlConnection object is created, opened, and closed during this method.
-        /// </summary>
-        /// <param name="connectionString">Settings to be used for the connection</param>
-        /// <param name="commandText">Command to execute</param>
-        /// <returns><see cref="DataSet"/> containing the resultset</returns>
-        public static DataSet ExecuteDataset(string connectionString, string commandText)
-        {
-            //pass through the call providing null for the set of SqlParameters
-            return ExecuteDataset(connectionString, commandText, (MySqlParameter[])null);
-        }
-
-        /// <summary>
-        /// Executes a single SQL command and returns the resultset in a <see cref="DataSet"/>.
-        /// A new MySqlConnection object is created, opened, and closed during this method.
-        /// </summary>
-        /// <param name="connectionString">Settings to be used for the connection</param>
-        /// <param name="commandText">Command to execute</param>
-        /// <param name="commandParameters">Parameters to use for the command</param>
-        /// <returns><see cref="DataSet"/> containing the resultset</returns>
-        public static DataSet ExecuteDataset(string connectionString, string commandText, params MySqlParameter[] commandParameters)
-        {
-            //create & open a SqlConnection, and dispose of it after we are done.
-            using (MySqlConnection cn = new MySqlConnection(connectionString))
-            {
-                cn.Open();
-
-                //call the overload that takes a connection in place of the connection string
-                return ExecuteDataset(cn, commandText, commandParameters);
-            }
-        }
-
-        /// <summary>
-        /// Executes a single SQL command and returns the resultset in a <see cref="DataSet"/>.
-        /// The state of the <see cref="MySqlConnection"/> object remains unchanged after execution
-        /// of this method.
-        /// </summary>
-        /// <param name="connection"><see cref="MySqlConnection"/> object to use</param>
-        /// <param name="commandText">Command to execute</param>
-        /// <returns><see cref="DataSet"/> containing the resultset</returns>
-        public static DataSet ExecuteDataset(MySqlConnection connection, string commandText)
-        {
-            //pass through the call providing null for the set of SqlParameters
-            return ExecuteDataset(connection, commandText, (MySqlParameter[])null);
-        }
-
-        /// <summary>
-        /// Executes a single SQL command and returns the resultset in a <see cref="DataSet"/>.
-        /// The state of the <see cref="MySqlConnection"/> object remains unchanged after execution
-        /// of this method.
-        /// </summary>
-        /// <param name="connection"><see cref="MySqlConnection"/> object to use</param>
-        /// <param name="commandText">Command to execute</param>
-        /// <param name="commandParameters">Parameters to use for the command</param>
-        /// <returns><see cref="DataSet"/> containing the resultset</returns>
-        public static DataSet ExecuteDataset(MySqlConnection connection, string commandText, params MySqlParameter[] commandParameters)
-        {
-            //create a command and prepare it for execution
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = connection;
-            cmd.CommandText = commandText;
-            cmd.CommandType = CommandType.Text;
-
-            if (commandParameters != null)
-                foreach (MySqlParameter p in commandParameters)
-                    cmd.Parameters.Add(p);
-
-            //create the DataAdapter & DataSet
-            MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-            DataSet ds = new DataSet();
-
-            //fill the DataSet using default values for DataTable names, etc.
-            da.Fill(ds);
-
-            // detach the MySqlParameters from the command object, so they can be used again.
-            cmd.Parameters.Clear();
-
-            //return the dataset
-            return ds;
-        }
-
-        /// <summary>
-        /// Updates the given table with data from the given <see cref="DataSet"/>
-        /// </summary>
-        /// <param name="connectionString">Settings to use for the update</param>
-        /// <param name="commandText">Command text to use for the update</param>
-        /// <param name="ds"><see cref="DataSet"/> containing the new data to use in the update</param>
-        /// <param name="tablename">Tablename in the dataset to update</param>
-        public static void UpdateDataSet(string connectionString, string commandText, DataSet ds, string tablename)
-        {
-            MySqlConnection cn = new MySqlConnection(connectionString);
-            cn.Open();
-            MySqlDataAdapter da = new MySqlDataAdapter(commandText, cn);
-            MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-            cb.ToString();
-            da.Update(ds, tablename);
-            cn.Close();
-        }
-
-        #endregion ExecuteDataSet
-
-        #region ExecuteDataReader
 
         /// <summary>
         /// Executes a single command against a MySQL database, possibly inside an existing transaction.
@@ -306,10 +179,6 @@ namespace MariaDB.Data.MySqlClient
             return ExecuteReader(connection, null, commandText, commandParameters, true);
         }
 
-        #endregion ExecuteDataReader
-
-        #region ExecuteScalar
-
         /// <summary>
         /// Execute a single command against a MySQL database.
         /// </summary>
@@ -380,10 +249,6 @@ namespace MariaDB.Data.MySqlClient
             return retval;
         }
 
-        #endregion ExecuteScalar
-
-        #region Utility methods
-
         private static CharClass[] makeCharClassArray()
         {
             CharClass[] a = new CharClass[65536];
@@ -452,6 +317,5 @@ namespace MariaDB.Data.MySqlClient
             return sb.ToString();
         }
 
-        #endregion Utility methods
     }
 }

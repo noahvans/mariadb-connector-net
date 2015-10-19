@@ -11,12 +11,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using MariaDB.Data.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Text;
-using MariaDB.Data.MySqlClient.Properties;
 
 namespace MariaDB.Data.MySqlClient
 {
@@ -87,7 +87,7 @@ namespace MariaDB.Data.MySqlClient
             if (paramList != null && paramList.Length > 0)
             {
                 nullMap = new BitArray(paramList.Length);
-                numNullBytes = (nullMap.Count + 7) / 8;
+                numNullBytes = (nullMap.Length + 7) / 8;
             }
 
             packet = new MySqlPacket(Driver.Encoding);
@@ -146,11 +146,32 @@ namespace MariaDB.Data.MySqlClient
                 p.Serialize(packet, true, Connection.Settings);
             }
             if (nullMap != null)
-                nullMap.CopyTo(packet.Buffer, nullMapPosition);
+                ToByteArray(nullMap, packet.Buffer, nullMapPosition);
 
             executionCount++;
 
             Driver.ExecuteStatement(packet);
+        }
+
+        private void ToByteArray(BitArray bits, byte[] outp, int pos)
+        {
+            int numBytes = bits.Length / 8;
+            if (bits.Length % 8 != 0) numBytes++;
+
+            int byteIndex = pos, bitIndex = 0;
+
+            for (int i = 0; i < bits.Length; i++)
+            {
+                if (bits[i])
+                    outp[byteIndex] |= (byte)(1 << (7 - bitIndex));
+
+                bitIndex++;
+                if (bitIndex == 8)
+                {
+                    bitIndex = 0;
+                    byteIndex++;
+                }
+            }
         }
 
         public override bool ExecuteNext()
@@ -181,13 +202,6 @@ namespace MariaDB.Data.MySqlClient
             string parameter = tokenizer.NextParameter();
             while (parameter != null)
             {
-                if (parameter.IndexOf(StoredProcedure.ParameterPrefix) == -1)
-                {
-                    newSQL.Append(sql.Substring(startPos, tokenizer.StartIndex - startPos));
-                    newSQL.Append("?");
-                    parameterMap.Add(parameter);
-                    startPos = tokenizer.StopIndex;
-                }
                 parameter = tokenizer.NextParameter();
             }
             newSQL.Append(sql.Substring(startPos));
