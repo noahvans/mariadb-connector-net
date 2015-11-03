@@ -1,0 +1,6 @@
+language: csharp
+solution: MariaDBClient.CLR2.sln
+install:
+  - nuget restore MariaDBClient.CLR2.sln
+script:
+  - xbuild /p:Configuration=Release MariaDBClient.CLR2.sln

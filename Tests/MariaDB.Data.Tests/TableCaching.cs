@@ -27,10 +27,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("CREATE TABLE test (id INT, name VARCHAR(20), name2 VARCHAR(20))");
             execSQL("INSERT INTO test VALUES (1, 'boo', 'hoo'), (2, 'first', 'last'), (3, 'fred', 'flintstone')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             string connStr = GetConnectionString(true) + ";logging=true;table cache=true";
             using (MySqlConnection c = new MySqlConnection(connStr))
@@ -53,10 +50,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("CREATE TABLE test3 (id INT, name VARCHAR(20), name2 VARCHAR(20))");
             execSQL("INSERT INTO test3 VALUES (1, 'boo', 'hoo'), (2, 'first', 'last'), (3, 'fred', 'flintstone')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             string connStr = GetConnectionString(true) + ";logging=true;table cache=true;default table cache age=1";
             using (MySqlConnection c = new MySqlConnection(connStr))
@@ -81,10 +75,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("CREATE TABLE test2 (id INT, name VARCHAR(20), name2 VARCHAR(20))");
             execSQL("INSERT INTO test2 VALUES (1, 'boo', 'hoo'), (2, 'first', 'last'), (3, 'fred', 'flintstone')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             string connStr = GetConnectionString(true) + ";logging=true;table cache=true;default table cache age=1";
             using (MySqlConnection c = new MySqlConnection(connStr))

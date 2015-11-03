@@ -315,19 +315,21 @@ namespace MariaDB.Data.MySqlClient.Tests
 
 		private bool IsConnectionAlive(int serverThread)
 		{
-			MySqlDataAdapter da = new MySqlDataAdapter("SHOW PROCESSLIST", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			foreach (DataRow row in dt.Rows)
-				if ((long)row["Id"] == serverThread)
-					return true;
-			return false;
+			//Change to DNXCore style
+			//MySqlDataAdapter da = new MySqlDataAdapter("SHOW PROCESSLIST", conn);
+			//DataTable dt = new DataTable();
+			//da.Fill(dt);
+			//foreach (DataRow row in dt.Rows)
+			//	if ((long)row["Id"] == serverThread)
+			//		return true;
+			//return false;
+			throw new NotImplementedException();
 		}
 
 		[Test]
 		public void CleanIdleConnections()
 		{
-			string assemblyName = typeof(MySqlConnection).Assembly.FullName;
+			string assemblyName = typeof(MySqlConnection).GetTypeInfo().Assembly.FullName;
 			string pmName = String.Format("MySql.Data.MySqlClient.MySqlPoolManager, {0}", assemblyName);
 
 			Type poolManager = Type.GetType(pmName, false);
@@ -387,7 +389,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 			connections[0] = new MySqlConnection(connStr);
 			connections[0].Open();
 
-			string assemblyName = typeof(MySqlConnection).Assembly.FullName;
+			string assemblyName = typeof(MySqlConnection).GetTypeInfo().Assembly.FullName;
 			string pmName = String.Format("MySql.Data.MySqlClient.MySqlPoolManager, {0}", assemblyName);
 
 			Type poolManager = Type.GetType(pmName, false);
@@ -544,9 +546,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 				String.Format(";logging=true;cache server properties={0}", cache);
 
 			GenericListener listener = new GenericListener();
-			MySqlTrace.Listeners.Add(listener);
-			MySqlTrace.Switch.Level = System.Diagnostics.SourceLevels.All;
-
+			
 			using (MySqlConnection c = new MySqlConnection(connStr))
 			{
 				c.Open();

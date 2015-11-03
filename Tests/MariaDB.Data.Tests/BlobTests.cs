@@ -172,7 +172,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             cmd.Parameters.AddWithValue("?t1", DBNull.Value);
             string str = "This is my text value";
             cmd.Parameters.Add(new MySqlParameter("?b1", MySqlDbType.LongBlob, str.Length,
-                ParameterDirection.Input, true, 0, 0, "b1", DataRowVersion.Current, str));
+                ParameterDirection.Input, true, 0, 0, "b1", str));
             rows = cmd.ExecuteNonQuery();
             Assert.AreEqual(1, rows, "Checking insert rowcount");
 
@@ -193,39 +193,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                 Assert.AreEqual(DBNull.Value, reader.GetValue(2));
                 Assert.AreEqual("This is my text value", reader.GetString(1));
             }
-        }
-
-        [Test]
-        public void UpdateDataSet()
-        {
-            execSQL("CREATE TABLE Test (id INT NOT NULL, blob1 LONGBLOB, text1 LONGTEXT, PRIMARY KEY(id))");
-            execSQL("INSERT INTO Test VALUES( 1, NULL, 'Text field' )");
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-
-            string s = (string)dt.Rows[0][2];
-            Assert.AreEqual("Text field", s);
-
-            byte[] inBuf = Utils.CreateBlob(512);
-            dt.Rows[0].BeginEdit();
-            dt.Rows[0]["blob1"] = inBuf;
-            dt.Rows[0].EndEdit();
-            DataTable changes = dt.GetChanges();
-            da.Update(changes);
-            dt.AcceptChanges();
-
-            dt.Clear();
-            da.Fill(dt);
-            cb.Dispose();
-
-            byte[] outBuf = (byte[])dt.Rows[0]["blob1"];
-            Assert.AreEqual(inBuf.Length, outBuf.Length,
-                      "checking length of updated buffer");
-            for (int y = 0; y < inBuf.Length; y++)
-                Assert.AreEqual(inBuf[y], outBuf[y], "checking array data");
         }
 
         [Test]

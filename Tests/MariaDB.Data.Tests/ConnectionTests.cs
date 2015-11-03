@@ -13,8 +13,8 @@
 
 using System;
 using System.Data;
-using MariaDB.Data.MySqlClient.Properties;
 using NUnit.Framework;
+using MariaDB.Data.Common;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -371,29 +371,9 @@ namespace MariaDB.Data.MySqlClient.Tests
             }
         }
 
-        /// <summary>
-        /// Bug #10281 Clone issue with MySqlConnection
-        /// Bug #27269 MySqlConnection.Clone does not mimic SqlConnection.Clone behaviour
-        /// </summary>
-        [Test]
-        public void TestConnectionClone()
-        {
-            MySqlConnection c = new MySqlConnection();
-            MySqlConnection clone = (MySqlConnection)((ICloneable)c).Clone();
-            clone.ToString();
-
-            string connStr = GetConnectionString(true);
-            connStr = connStr.Replace("persist security info=true", "persist security info=false");
-            c = new MySqlConnection(connStr);
-            c.Open();
-            c.Close();
-            MySqlConnection c2 = (MySqlConnection)((ICloneable)c).Clone();
-            c2.Open();
-            c2.Close();
-        }
 
         /// <summary>
-        /// Bug #13321  	Persist security info does not woek
+        /// Bug #13321  	Persist security info does not work
         /// </summary>
         [Test]
         public void PersistSecurityInfo()
@@ -632,7 +612,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                 }
                 catch (MySqlException ex)
                 {
-                    Assert.AreEqual(Resources.DataReaderOpen, ex.Message);
+                    Assert.AreEqual(ResourceStrings.DataReaderOpen, ex.Message);
                 }
             }
         }
@@ -648,42 +628,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             using (MySqlConnection c = new MySqlConnection(connstr))
             {
                 c.Open();
-            }
-        }
-
-#if !CF
-
-        [Test]
-        public void CanOpenConnectionInMediumTrust()
-        {
-            AppDomain appDomain = PartialTrustSandbox.CreatePartialTrustDomain();
-
-            PartialTrustSandbox sandbox = (PartialTrustSandbox)appDomain.CreateInstanceAndUnwrap(
-                typeof(PartialTrustSandbox).Assembly.FullName,
-                typeof(PartialTrustSandbox).FullName);
-
-            try
-            {
-                MySqlConnection connection = sandbox.TryOpenConnection(GetConnectionString(true));
-                Assert.IsNotNull(connection);
-                Assert.IsTrue(connection.State == ConnectionState.Open);
-                connection.Close();
-
-                //Now try with logging enabled
-                connection = sandbox.TryOpenConnection(GetConnectionString(true) + ";logging=true");
-                Assert.IsNotNull(connection);
-                Assert.IsTrue(connection.State == ConnectionState.Open);
-                connection.Close();
-
-                //Now try with Usage Advisor enabled
-                connection = sandbox.TryOpenConnection(GetConnectionString(true) + ";Use Usage Advisor=true");
-                Assert.IsNotNull(connection);
-                Assert.IsTrue(connection.State == ConnectionState.Open);
-                connection.Close();
-            }
-            finally
-            {
-                AppDomain.Unload(appDomain);
             }
         }
 
@@ -708,28 +652,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                 Assert.AreEqual(ConnectionState.Open, c.State);
             }
         }
-
-#endif
-
-#if CF
-        /// <summary>
-        /// A client running in .NET Compact Framework can't connect to MySQL server using SSL and a pfx file.
-        /// <remarks>
-        /// This test requires starting the server with SSL support.
-        /// For instance, the following command line enables SSL in the server:
-        /// mysqld --no-defaults --standalone --console --ssl-ca='MySQLServerDir'\mysql-test\std_data\cacert.pem --ssl-cert='MySQLServerDir'\mysql-test\std_data\server-cert.pem --ssl-key='MySQLServerDir'\mysql-test\std_data\server-key.pem
-        /// </remarks>
-        /// </summary>
-        [Test]
-        [ExpectedException(typeof(ArgumentException))]
-        public void CannotConnectUsingFileBasedCertificateInCF()
-        {
-            string connstr = GetConnectionString(true);
-            connstr += ";CertificateFile=client.pfx;CertificatePassword=pass;SSL Mode=Required;";
-
-            MySqlConnection c = new MySqlConnection(connstr);
-        }
-#endif
 
         [Test]
         public void CanOpenConnectionAfterAborting()

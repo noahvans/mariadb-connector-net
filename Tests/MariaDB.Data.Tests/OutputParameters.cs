@@ -230,18 +230,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.Parameters.AddWithValue("?Name", "Item3");
 			cmd.Parameters.Add("?Table1Id", MySqlDbType.Int32);
 			cmd.Parameters["?Table1Id"].Direction = ParameterDirection.Output;
-
-			DataSet ds = new DataSet();
-			if (prepare) cmd.Prepare();
-			MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-			try
-			{
-				da.Fill(ds);
-			}
-			catch (MySqlException)
-			{
-				// on 5.1 this throws an exception that no rows were returned.
-			}
 		}
 
 		[Test]
@@ -342,30 +330,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			catch (InvalidOperationException)
 			{
 			}
-		}
-
-		/// <summary>
-		/// Bug #27668 FillSchema and Stored Proc with an out parameter
-		/// </summary>
-		[Test]
-		public void GetSchema2()
-		{
-			if (Version.Major < 5) return;
-
-			execSQL(@"CREATE TABLE Test(id INT AUTO_INCREMENT, PRIMARY KEY (id)) ");
-			execSQL(@"CREATE PROCEDURE spTest (OUT id INT)
-				BEGIN INSERT INTO Test VALUES (NULL); SET id=520; END");
-
-			MySqlCommand cmd = new MySqlCommand("spTest", conn);
-			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.Parameters.Add("?id", MySqlDbType.Int32);
-			cmd.Parameters[0].Direction = ParameterDirection.Output;
-			MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-			DataTable dt = new DataTable();
-			if (prepare) cmd.Prepare();
-			cmd.ExecuteNonQuery();
-			da.Fill(dt);
-			da.FillSchema(dt, SchemaType.Mapped);
 		}
 
 		[Test]

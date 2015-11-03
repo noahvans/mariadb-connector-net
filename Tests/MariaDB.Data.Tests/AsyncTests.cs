@@ -17,10 +17,8 @@ using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
-    [TestFixture]
-    public class AsyncTests : BaseTest
-    {
-        [Test]
+        public class AsyncTests : BaseTest
+    {           
         public void ExecuteNonQuery()
         {
             if (Version < new Version(5, 0)) return;
@@ -46,8 +44,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             object cnt = proc.ExecuteScalar();
             Assert.AreEqual(300, cnt);
         }
-
-        [Test]
+                
         public void ExecuteReader()
         {
             if (Version < new Version(5, 0)) return;

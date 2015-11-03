@@ -14,6 +14,7 @@
 using System;
 using System.Data;
 using NUnit.Framework;
+using System.Data.Common;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
@@ -53,11 +54,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 			execSQL("INSERT INTO Test VALUES (1, 2)");
 
 			// create the command and prepare the statement
-			IDbCommand cmd = conn.CreateCommand();
+			var cmd = conn.CreateCommand();
 			cmd.CommandText = "SELECT * FROM Test WHERE one = ?p1";
 
 			// create the parameter
-			IDbDataParameter p1 = cmd.CreateParameter();
+			var p1 = cmd.CreateParameter();
 			p1.ParameterName = "?p1";
 			p1.DbType = DbType.Int32;
 			p1.Precision = (byte)10;
@@ -68,7 +69,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 
 			cmd.Prepare();
 			// Execute the reader
-			using (IDataReader reader = cmd.ExecuteReader())
+			using (var reader = cmd.ExecuteReader())
 			{
 				// Fetch the first record
 				reader.Read();
@@ -235,11 +236,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 			execSQL("INSERT INTO Test VALUES (1, 2, 3, 4, 5, 6, 7)");
 
 			// create the command and prepare the statement
-			IDbCommand cmd = conn.CreateCommand();
+			var cmd = conn.CreateCommand();
 			cmd.CommandText = "SELECT one, two, three, four, five, six, seven FROM Test";
 			cmd.Prepare();
 			// Execute the reader
-			using (IDataReader reader = cmd.ExecuteReader())
+			using (var reader = cmd.ExecuteReader())
 			{
 				// Fetch the first record
 				reader.Read();
@@ -306,10 +307,10 @@ namespace MariaDB.Data.MySqlClient.Tests
 			execSQL("CREATE TABLE Test (one integer, two integer )");
 			execSQL("INSERT INTO Test VALUES( 1, 2)");
 			// create the command and prepare the statement
-			IDbCommand cmd = conn.CreateCommand();
+			var cmd = conn.CreateCommand();
 			cmd.CommandText = "SELECT * FROM Test where one = ?p1";
 			// create the parameter
-			IDbDataParameter p1 = cmd.CreateParameter();
+			var p1 = cmd.CreateParameter();
 			p1.ParameterName = "?p1";
 			p1.DbType = DbType.Int32;
 			p1.Precision = (byte)10;
@@ -321,7 +322,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 			// set the parameter value
 			p1.Value = 1;
 			// Execute the reader
-			IDataReader reader = null;
+			DbDataReader reader = null;
 			try
 			{
 				reader = cmd.ExecuteReader();
@@ -334,7 +335,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 			}
 			finally
 			{
-				if (reader != null) reader.Close();
+				if (reader != null) reader.Dispose();
 			}
 		}
 
@@ -393,14 +394,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.Parameters["?sc"].Value = 42;
 			int result = cmd.ExecuteNonQuery();
 			Assert.AreEqual(1, result);
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-			Assert.AreEqual("test", dt.Rows[0]["input"]);
-			Assert.AreEqual(1, dt.Rows[0]["state"]);
-			Assert.AreEqual(42, dt.Rows[0]["score"]);
 		}
 
 		/// <summary>
@@ -417,7 +410,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 					"`AdminJunk` tinyint(1) NOT NULL default '0', " +
 					"PRIMARY KEY  (`BlackListID`), KEY `SubscriberID` (`SubscriberID`))");
 
-			IDbCommand cmd = conn.CreateCommand();
+			var cmd = conn.CreateCommand();
 			cmd.CommandText = "INSERT INTO `Test`(`SubscriberID`,`Phone`,`ContactID`, " +
 				"`AdminJunk`) VALUES (?SubscriberID,?Phone,?ContactID, ?AdminJunk);";
 
@@ -469,13 +462,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.Parameters[0].Value = 1;
 			cmd.Parameters[1].Value = "short string";
 			cmd.ExecuteNonQuery();
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-			Assert.AreEqual(1, dt.Rows[0]["id"]);
-			Assert.AreEqual("short string", dt.Rows[0]["name"]);
 		}
 
 		/// <summary>
@@ -678,15 +664,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.Parameters[2].Value = 2;
 			cmd.Parameters[3].Value = 3;
 			cmd.ExecuteNonQuery();
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-			Assert.AreEqual(127, dt.Rows[0][0]);
-			Assert.AreEqual(1, dt.Rows[0][1]);
-			Assert.AreEqual(2, dt.Rows[0][2]);
-			Assert.AreEqual(3, dt.Rows[0][3]);
 		}
 
 		/// <summary>

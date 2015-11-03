@@ -1,21 +1,26 @@
 {
-    "version": "1.0.1.0",
-    "description": "EntityFramework 7 driver for MariaDB and MySQL",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/noahvans/mariadb-connector-net"
-    },
-    "compilationOptions": {
-        "define": [ "DNXCore" ]
-    },
-    "frameworks": {
-        "dnxcore50": {
-            "frameworkAssemblies": {
-            }
-        }
-    },
-    "dependencies": {
-        "EntityFramework.Relational": "7.0.0-*",
-        "MariaDB.Data": "1.0.1.0"
+  "version": "1.0.1.0",
+  "description": "EntityFramework 7 driver for MariaDB and MySQL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noahvans/mariadb-connector-net"
+  },
+  "compilationOptions": {
+    "define": [ "DNXCore" ]
+  },
+  "namedResource": {
+    "MariaDB.Data.Entity.ResourceStrings": "Properties/ResourceStrings.resx"
+  },
+  "resource": [ "Properties/SchemaMapping.msl", "Properties/ProviderManifest.xml" ],
+
+  "frameworks": {
+    "dnxcore50": {
+      "frameworkAssemblies": {
+      }
     }
+  },
+  "dependencies": {
+    "EntityFramework.Relational": "7.0.0-*",
+    "MariaDB.Data": "1.0.1.0"
+  }
 }

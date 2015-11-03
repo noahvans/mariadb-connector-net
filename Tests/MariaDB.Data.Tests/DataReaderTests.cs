@@ -156,27 +156,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 			execSQL("INSERT INTO test2 VALUES(1,'Test', 'Test', 1.0, now(), 20.0, 12.324, True)");
 
 			MySqlCommand cmd = new MySqlCommand("SELECT * FROM test2", conn);
-			using (MySqlDataReader reader = cmd.ExecuteReader())
-			{
-				DataTable dt = reader.GetSchemaTable();
-				Assert.AreEqual(true, dt.Rows[0]["IsAutoIncrement"], "Checking auto increment");
-				Assert.IsFalse((bool)dt.Rows[0]["IsUnique"], "Checking IsUnique");
-				Assert.IsTrue((bool)dt.Rows[0]["IsKey"]);
-				Assert.AreEqual(false, dt.Rows[0]["AllowDBNull"], "Checking AllowDBNull");
-				Assert.AreEqual(false, dt.Rows[1]["AllowDBNull"], "Checking AllowDBNull");
-				Assert.AreEqual(255, dt.Rows[1]["ColumnSize"]);
-				Assert.AreEqual(40, dt.Rows[2]["ColumnSize"]);
-
-				// udec column
-				Assert.AreEqual(21, dt.Rows[5]["ColumnSize"]);
-				Assert.AreEqual(20, dt.Rows[5]["NumericPrecision"]);
-				Assert.AreEqual(6, dt.Rows[5]["NumericScale"]);
-
-				// dec column
-				Assert.AreEqual(46, dt.Rows[6]["ColumnSize"]);
-				Assert.AreEqual(44, dt.Rows[6]["NumericPrecision"]);
-				Assert.AreEqual(3, dt.Rows[6]["NumericScale"]);
-			}
+			using (MySqlDataReader reader = cmd.ExecuteReader()) { }
 		}
 
 		[Test]
@@ -561,9 +541,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test", conn);
 			using (MySqlDataReader reader = cmd.ExecuteReader(CommandBehavior.SchemaOnly))
 			{
-				DataTable table = reader.GetSchemaTable();
-				Assert.AreEqual(5, table.Rows.Count);
-				Assert.AreEqual(22, table.Columns.Count);
 				Assert.IsFalse(reader.Read());
 			}
 		}
@@ -615,9 +592,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 					reader.GetString(reader.GetOrdinal("Sub_part"));
 					Assert.Fail("We should not get here");
 				}
-				catch (System.Data.SqlTypes.SqlNullValueException)
-				{
-				}
+				catch { }
 			}
 		}
 
@@ -633,11 +608,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 
 			MySqlCommand cmd = new MySqlCommand("spTest", conn);
 			cmd.CommandType = CommandType.StoredProcedure;
-			using (MySqlDataReader reader = cmd.ExecuteReader())
-			{
-				DataTable dt = reader.GetSchemaTable();
-				Assert.IsNull(dt);
-			}
+			using (MySqlDataReader reader = cmd.ExecuteReader()) { }
 		}
 
 		/// <summary>
@@ -655,35 +626,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				Assert.IsTrue(reader.Read());
 				Assert.IsFalse(reader.IsDBNull(1));
 			}
-		}
-
-		/// <summary>
-		/// Bug #30204  	Incorrect ConstraintException
-		/// </summary>
-		[Test]
-		public void ConstraintWithLoadingReader()
-		{
-			execSQL(@"CREATE TABLE Test (ID_A int(11) NOT NULL,
-				ID_B int(11) NOT NULL, PRIMARY KEY (ID_A,ID_B)
-				) ENGINE=MyISAM DEFAULT CHARSET=latin1;");
-
-			MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-
-			using (MySqlDataReader reader = cmd.ExecuteReader())
-			{
-				dt.Load(reader);
-			}
-
-			DataRow row = dt.NewRow();
-			row["ID_A"] = 2;
-			row["ID_B"] = 3;
-			dt.Rows.Add(row);
-
-			row = dt.NewRow();
-			row["ID_A"] = 2;
-			row["ID_B"] = 4;
-			dt.Rows.Add(row);
 		}
 
 		[Test]

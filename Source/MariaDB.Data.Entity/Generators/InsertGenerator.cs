@@ -11,15 +11,22 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
+using Microsoft.Data.Entity.Query.Sql;
 using System.Collections.Generic;
-using System.Data.Common.CommandTrees;
-using System.Data.Metadata.Edm;
+using Microsoft.Data.Entity.Storage;
+using System;
+using System.Data.Common;
 
 namespace MariaDB.Data.Entity
 {
-    internal class InsertGenerator : SqlGenerator
+    internal class InsertGenerator : ISqlQueryGenerator
     {
-        public override string GenerateSQL(DbCommandTree tree)
+        public IRelationalValueBufferFactory CreateValueBufferFactory(IRelationalValueBufferFactoryFactory relationalValueBufferFactoryFactory, DbDataReader dataReader)
+        {
+            throw new NotImplementedException();
+        }
+
+        public RelationalCommand GenerateSql(IDictionary<string, object> parameterValues)
         {
             DbInsertCommandTree commandTree = tree as DbInsertCommandTree;
 
@@ -51,6 +58,7 @@ namespace MariaDB.Data.Entity
                 statement.ReturningSelect = GenerateReturningSql(commandTree, commandTree.Returning);
 
             return statement.ToString();
+
         }
     }
 }

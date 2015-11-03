@@ -17,7 +17,6 @@ using NUnit.Framework;
 
 namespace MariaDB.Data.MySqlClient.Tests
 {
-    [TestFixture]
     public class LoggingTests : BaseTest
     {
         public LoggingTests()
@@ -31,7 +30,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             createTable("CREATE TABLE Test (id int, name VARCHAR(200))", "INNODB");
         }
 
-        [Test]
         public void SimpleLogging()
         {
             execSQL("INSERT INTO Test VALUES (1, 'Test1')");
@@ -39,10 +37,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("INSERT INTO Test VALUES (3, 'Test3')");
             execSQL("INSERT INTO Test VALUES (4, 'Test4')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test", conn);
             using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -55,16 +50,12 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.IsTrue(listener.Strings[3].Contains("Query Closed"));
         }
 
-        [Test]
         public void Warnings()
         {
             execSQL("DROP TABLE IF EXISTS Test");
             execSQL("CREATE TABLE Test(id INT, name VARCHAR(5))");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("INSERT IGNORE INTO Test VALUES (1, 'abcdef')", conn);
             cmd.ExecuteNonQuery();
@@ -81,13 +72,9 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.IsTrue(listener.Strings[8].Contains("Query Closed"));
         }
 
-        [Test]
         public void ProviderNormalizingQuery()
         {
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             StringBuilder sql = new StringBuilder("SELECT '");
             for (int i = 0; i < 400; i++)
@@ -103,13 +90,9 @@ namespace MariaDB.Data.MySqlClient.Tests
         /// <summary>
         /// Bug #57641	Substring out of range exception in ConsumeQuotedToken
         /// </summary>
-        [Test]
         public void QuotedTokenAt300()
         {
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             string sql = @"SELECT 1 AS `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA1`,  2 AS `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2`,
                 3 AS `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA3`,  4 AS `AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4`,

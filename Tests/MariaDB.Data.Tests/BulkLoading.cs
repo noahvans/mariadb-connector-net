@@ -28,11 +28,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.WriteLine(i + "\t'Test'");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -40,12 +40,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.Timeout = 0;
             int count = loader.Load();
             Assert.AreEqual(200, count);
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(200, dt.Rows.Count);
-            Assert.AreEqual("'Test'", dt.Rows[0][1].ToString().Trim());
         }
 
         [Test]
@@ -55,11 +49,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.WriteLine(i + "\t'Test'");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             FileInfo fi = new FileInfo(path);
             FileAttributes oldAttr = fi.Attributes;
@@ -72,12 +66,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                 loader.Timeout = 0;
                 int count = loader.Load();
                 Assert.AreEqual(200, count);
-
-                MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-                Assert.AreEqual(200, dt.Rows.Count);
-                Assert.AreEqual("'Test'", dt.Rows[0][1].ToString().Trim());
             }
             finally
             {
@@ -93,11 +81,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.Write(i + ",'Test' xxx");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -119,11 +107,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.Write(i + ",'Test' xxx");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -146,7 +134,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 100; i++)
                 sw.Write("aaa" + i + ",'Test' xxx");
             for (int i = 100; i < 200; i++)
@@ -156,7 +144,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             for (int i = 300; i < 400; i++)
                 sw.Write("bbb" + i + ",'Test' xxx");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -179,11 +167,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.WriteLine(i + "\t`col1`\tcol2");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -193,13 +181,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.FieldQuotationOptional = true;
             int count = loader.Load();
             Assert.AreEqual(200, count);
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(200, dt.Rows.Count);
-            Assert.AreEqual("col1", dt.Rows[0][1]);
-            Assert.AreEqual("col2", dt.Rows[0][2].ToString().Trim());
         }
 
         [Test]
@@ -209,11 +190,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 200; i++)
                 sw.WriteLine(i + ",col1\tstill col1,col2");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -223,13 +204,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.FieldTerminator = ",";
             int count = loader.Load();
             Assert.AreEqual(200, count);
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(200, dt.Rows.Count);
-            Assert.AreEqual("col1still col1", dt.Rows[0][1]);
-            Assert.AreEqual("col2", dt.Rows[0][2].ToString().Trim());
         }
 
         [Test]
@@ -239,11 +213,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 20; i++)
                 sw.WriteLine(i + ",col1");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -254,11 +228,11 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual(20, count);
 
             path = Path.GetTempFileName();
-            sw = new StreamWriter(path);
+            sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 20; i++)
                 sw.WriteLine(i + ",col2");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -267,12 +241,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.FieldTerminator = ",";
             loader.ConflictOption = MySqlBulkLoaderConflictOption.Replace;
             loader.Load();
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(20, dt.Rows.Count);
-            Assert.AreEqual("col2", dt.Rows[0][1].ToString().Trim());
         }
 
         [Test]
@@ -282,11 +250,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 20; i++)
                 sw.WriteLine(i + ",col1");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -297,11 +265,11 @@ namespace MariaDB.Data.MySqlClient.Tests
             Assert.AreEqual(20, count);
 
             path = Path.GetTempFileName();
-            sw = new StreamWriter(path);
+            sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 20; i++)
                 sw.WriteLine(i + ",col2");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -310,12 +278,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.FieldTerminator = ",";
             loader.ConflictOption = MySqlBulkLoaderConflictOption.Ignore;
             loader.Load();
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(20, dt.Rows.Count);
-            Assert.AreEqual("col1", dt.Rows[0][1].ToString().Trim());
         }
 
         [Test]
@@ -326,11 +288,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 
             // first create the external file
             string path = Path.GetTempFileName();
-            StreamWriter sw = new StreamWriter(path);
+            StreamWriter sw = new StreamWriter(File.OpenWrite(path));
             for (int i = 0; i < 20; i++)
                 sw.WriteLine(i + ",col3,col2,col1");
             sw.Flush();
-            sw.Close();
+            sw.Dispose();
 
             MySqlBulkLoader loader = new MySqlBulkLoader(conn);
             loader.TableName = "Test";
@@ -344,14 +306,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             loader.Columns.Add("n1");
             int count = loader.Load();
             Assert.AreEqual(20, count);
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual(20, dt.Rows.Count);
-            Assert.AreEqual("col1", dt.Rows[0][1]);
-            Assert.AreEqual("col2", dt.Rows[0][2]);
-            Assert.AreEqual("col3", dt.Rows[0][3].ToString().Trim());
         }
     }
 }

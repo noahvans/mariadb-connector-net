@@ -147,8 +147,8 @@ namespace MariaDB.Data.MySqlClient.Tests
         [Test]
         public void SetDbType()
         {
-            IDbCommand cmd = conn.CreateCommand();
-            IDbDataParameter prm = cmd.CreateParameter();
+            var cmd = conn.CreateCommand();
+            var prm = cmd.CreateParameter();
             prm.DbType = DbType.Int64;
             Assert.AreEqual(DbType.Int64, prm.DbType);
             prm.Value = 3;
@@ -240,8 +240,8 @@ namespace MariaDB.Data.MySqlClient.Tests
         [Test]
         public void DefaultType()
         {
-            IDbCommand cmd = conn.CreateCommand();
-            IDbDataParameter p = cmd.CreateParameter();
+            var cmd = conn.CreateCommand();
+            var p = cmd.CreateParameter();
             p.ParameterName = "?boo";
             p.Value = "test";
             MySqlParameter mp = (MySqlParameter)p;
@@ -276,35 +276,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             cmd.CommandText = "SELECT name FROM Test WHERE id=3";
             name = cmd.ExecuteScalar();
             Assert.AreEqual("Test3", name);
-        }
-
-        /// <summary>
-        /// Bug #13276  	Exception on serialize after inserting null value
-        /// </summary>
-        [Test]
-        public void InsertValueAfterNull()
-        {
-            execSQL("DROP TABLE Test");
-            execSQL("CREATE TABLE Test (id int auto_increment primary key, foo int)");
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            MySqlCommand c = new MySqlCommand("INSERT INTO Test (foo) values (?foo)", conn);
-            c.Parameters.Add("?foo", MySqlDbType.Int32, 0, "foo");
-
-            da.InsertCommand = c;
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            DataRow row = dt.NewRow();
-            dt.Rows.Add(row);
-            row = dt.NewRow();
-            row["foo"] = 2;
-            dt.Rows.Add(row);
-            da.Update(dt);
-
-            dt.Clear();
-            da.Fill(dt);
-            Assert.AreEqual(2, dt.Rows.Count);
-            Assert.AreEqual(2, dt.Rows[1]["foo"]);
         }
 
         /// <summary>
@@ -472,20 +443,11 @@ namespace MariaDB.Data.MySqlClient.Tests
             cmd.Parameters[0].Size = 10;
             cmd.ExecuteNonQuery();
 
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            Assert.AreEqual("123", dt.Rows[0][0]);
-
             cmd.Parameters.Clear();
             cmd.Parameters.Add("?p1", MySqlDbType.VarChar);
             cmd.Parameters[0].Value = "123456789012345";
             cmd.Parameters[0].Size = 10;
             cmd.ExecuteNonQuery();
-
-            dt.Clear();
-            da.Fill(dt);
-            Assert.AreEqual("1234567890", dt.Rows[1][0]);
         }
 
         /// <summary>
@@ -495,11 +457,11 @@ namespace MariaDB.Data.MySqlClient.Tests
         public void NonInputParametersToCtor()
         {
             MySqlParameter p = new MySqlParameter("?p1", MySqlDbType.VarChar, 20,
-                ParameterDirection.InputOutput, true, 0, 0, "id", DataRowVersion.Current, 0);
+                ParameterDirection.InputOutput, true, 0, 0, "id", 0);
             Assert.AreEqual(ParameterDirection.InputOutput, p.Direction);
 
             MySqlParameter p1 = new MySqlParameter("?p1", MySqlDbType.VarChar, 20,
-                ParameterDirection.Output, true, 0, 0, "id", DataRowVersion.Current, 0);
+                ParameterDirection.Output, true, 0, 0, "id", 0);
             Assert.AreEqual(ParameterDirection.Output, p1.Direction);
         }
 

@@ -31,10 +31,10 @@ private static readonly string PROVIDER_NAME_MYSQL = "MySql.Data.MySqlClient";
 /// </summary>
 private bool IsMySql
 {
-    get
-    {
-        return (this.ProviderInvariantName.Equals(PROVIDER_NAME_MYSQL, StringComparison.Ordinal));
-    }
+	get
+	{
+		return (this.ProviderInvariantName.Equals(PROVIDER_NAME_MYSQL, StringComparison.Ordinal));
+	}
 }
 
 /// <summary>
@@ -48,8 +48,8 @@ private static string MyId(string userIdentifier)
 
 private static bool IsIdentity(EdmProperty property, Version targetVersion)
 {
-    return (property.GetStoreGeneratedPatternValue(targetVersion, DataSpace.SSpace) == StoreGeneratedPattern.Identity
-        && true == IsIntegerOrDecimalType(property));
+	return (property.GetStoreGeneratedPatternValue(targetVersion, DataSpace.SSpace) == StoreGeneratedPattern.Identity
+		&& true == IsIntegerOrDecimalType(property));
 }
 
 private static string WriteMySqlType(EdmProperty property)
@@ -65,11 +65,11 @@ private static string WriteMySqlType(EdmProperty property)
 /// </summary>
 private static string WriteMySqlIdentity(EdmProperty property, Version targetVersion)
 {
-    if (IsIdentity(property, targetVersion))
-    {
-        return "AUTO_INCREMENT PRIMARY KEY";
-    }
-    return String.Empty;
+	if (IsIdentity(property, targetVersion))
+	{
+		return "AUTO_INCREMENT PRIMARY KEY";
+	}
+	return String.Empty;
 }
 
 /// <summary>
@@ -78,13 +78,13 @@ private static string WriteMySqlIdentity(EdmProperty property, Version targetVer
 /// </summary>
 private static string WriteMySqlColumns(IEnumerable<EdmProperty> properties, char delimiter)
 {
-    StringBuilder serializedProperties = new StringBuilder();
-    foreach (EdmProperty property in properties)
-    {
-        serializedProperties.Append(string.Format("`{0}`", MyId(property.Name)));
-        serializedProperties.Append(delimiter + " ");
-    }
-    return serializedProperties.ToString().Trim().TrimEnd(delimiter);
+	StringBuilder serializedProperties = new StringBuilder();
+	foreach (EdmProperty property in properties)
+	{
+		serializedProperties.Append(string.Format("`{0}`", MyId(property.Name)));
+		serializedProperties.Append(delimiter + " ");
+	}
+	return serializedProperties.ToString().Trim().TrimEnd(delimiter);
 }
 
 #>

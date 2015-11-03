@@ -139,99 +139,8 @@ namespace MariaDB.Data.MySqlClient.Tests
 					{
 					}
 				}
-
-				DataTable dt = new DataTable();
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", c);
-				MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-				da.Fill(dt);
-				dt.Rows[0]["id"] = 2;
-				DataRow row = dt.NewRow();
-				row["id"] = 3;
-				row["d"] = new MySqlDateTime("2003-9-24");
-				row["dt"] = new MySqlDateTime("0000/0/00 00:00:00");
-				dt.Rows.Add(row);
-
-				da.Update(dt);
-
-				dt.Clear();
-				da.Fill(dt);
-				Assert.AreEqual(2, dt.Rows.Count);
-				MySqlDateTime date = (MySqlDateTime)dt.Rows[1]["d"];
-				Assert.AreEqual(2003, date.Year);
-				Assert.AreEqual(9, date.Month);
-				Assert.AreEqual(24, date.Day);
-				cb.Dispose();
 			}
 		}
-
-		[Test]
-		public void InsertDateTimeValue()
-		{
-			using (MySqlConnection c = new MySqlConnection(conn.ConnectionString +
-				";allow zero datetime=yes"))
-			{
-				c.Open();
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT id, dt FROM Test", c);
-				MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-
-				DataTable dt = new DataTable();
-				dt.Columns.Add(new DataColumn("id", typeof(int)));
-				dt.Columns.Add(new DataColumn("dt", typeof(DateTime)));
-
-				da.Fill(dt);
-
-				DateTime now = DateTime.Now;
-				DataRow row = dt.NewRow();
-				row["id"] = 1;
-				row["dt"] = now;
-				dt.Rows.Add(row);
-				da.Update(dt);
-
-				dt.Clear();
-				da.Fill(dt);
-				cb.Dispose();
-
-				Assert.AreEqual(1, dt.Rows.Count);
-				Assert.AreEqual(now.Date, ((DateTime)dt.Rows[0]["dt"]).Date);
-			}
-		}
-
-#if !CF
-
-		[Test]
-		public void SortingMySqlDateTimes()
-		{
-			execSQL("INSERT INTO Test (id, dt) VALUES (1, '2004-10-01')");
-			execSQL("INSERT INTO Test (id, dt) VALUES (2, '2004-10-02')");
-			execSQL("INSERT INTO Test (id, dt) VALUES (3, '2004-11-01')");
-			execSQL("INSERT INTO Test (id, dt) VALUES (4, '2004-11-02')");
-
-			CultureInfo curCulture = Thread.CurrentThread.CurrentCulture;
-			CultureInfo curUICulture = Thread.CurrentThread.CurrentUICulture;
-			CultureInfo cul = new CultureInfo("en-GB");
-			Thread.CurrentThread.CurrentCulture = cul;
-			Thread.CurrentThread.CurrentUICulture = cul;
-
-			using (MySqlConnection c = new MySqlConnection(conn.ConnectionString + ";allow zero datetime=yes"))
-			{
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT dt FROM Test", c);
-				DataTable dt = new DataTable();
-				da.Fill(dt);
-
-				DataView dv = dt.DefaultView;
-				dv.Sort = "dt ASC";
-
-				Assert.AreEqual(new DateTime(2004, 10, 1).Date, Convert.ToDateTime(dv[0]["dt"]).Date);
-				Assert.AreEqual(new DateTime(2004, 10, 2).Date, Convert.ToDateTime(dv[1]["dt"]).Date);
-				Assert.AreEqual(new DateTime(2004, 11, 1).Date, Convert.ToDateTime(dv[2]["dt"]).Date);
-				Assert.AreEqual(new DateTime(2004, 11, 2).Date, Convert.ToDateTime(dv[3]["dt"]).Date);
-
-				Thread.CurrentThread.CurrentCulture = curCulture;
-				Thread.CurrentThread.CurrentUICulture = curUICulture;
-			}
-		}
-
-#endif
 
 		[Test]
 		public void TestZeroDateTimeException()
@@ -289,15 +198,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.Parameters.Add("?dt", MySqlDbType.Date);
 			cmd.Parameters[0].Value = "2005-03-04";
 			cmd.ExecuteNonQuery();
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-			DateTime date = (DateTime)dt.Rows[0]["dt"];
-			Assert.AreEqual(2005, date.Year);
-			Assert.AreEqual(3, date.Month);
-			Assert.AreEqual(4, date.Day);
 		}
 
 		/// <summary>
@@ -334,9 +234,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			sql.AppendFormat(CultureInfo.InvariantCulture,
 				@"SELECT ID, ANTENNAID, TEL_TIMESTAMP, LOS_TIMESTAMP FROM Test
 				WHERE TEL_TIMESTAMP >= '{0}'", date.ToString("u"));
-			MySqlDataAdapter da = new MySqlDataAdapter(sql.ToString(), conn);
-			DataSet dataSet = new DataSet();
-			da.Fill(dataSet);
 		}
 
 		/// <summary>
@@ -354,37 +251,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			using (MySqlDataReader reader = cmd.ExecuteReader())
 			{
 				reader.Read();
-			}
-		}
-
-		[Test]
-		public void DateTimeInDataTable()
-		{
-			execSQL("INSERT INTO Test VALUES(1, Now(), '0000-00-00', NULL, NULL)");
-
-			using (MySqlConnection c = new MySqlConnection(
-				conn.ConnectionString + ";pooling=false;AllowZeroDatetime=true"))
-			{
-				c.Open();
-
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", c);
-				MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-				DataTable dt = new DataTable();
-
-				da.Fill(dt);
-				DataRow row = dt.NewRow();
-				row["id"] = 2;
-				row["dt"] = new MySqlDateTime(DateTime.Now);
-				row["d"] = new MySqlDateTime(DateTime.Now);
-				row["t"] = new TimeSpan(1, 1, 1);
-				row["ts"] = DBNull.Value;
-				dt.Rows.Add(row);
-				da.Update(dt);
-
-				dt.Rows.Clear();
-				da.Fill(dt);
-				Assert.AreEqual(2, dt.Rows.Count);
-				cb.Dispose();
 			}
 		}
 

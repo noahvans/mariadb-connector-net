@@ -266,8 +266,8 @@ namespace MariaDB.Data.MySqlClient.Tests
 					Assert.IsTrue(ex.InnerException is TimeoutException);
 					Assert.IsTrue(c.State == ConnectionState.Open);
 				}
-				string connStr2 = c.ConnectionString.ToLower(CultureInfo.InvariantCulture);
-				Assert.AreEqual(connStr1.ToLower(CultureInfo.InvariantCulture), connStr2);
+				string connStr2 = c.ConnectionString.ToLowerInvariant();
+				Assert.AreEqual(connStr1.ToLowerInvariant(), connStr2);
 			}
 			execSQL("kill " + threadId);
 		}
@@ -331,7 +331,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 					return;
 				}
 				// IT is relatively hard to predict where
-				Console.WriteLine("Warning: all reads completed!");
+				//Console.WriteLine("Warning: all reads completed!");
 				Assert.IsTrue(i == rows);
 			}
 		}

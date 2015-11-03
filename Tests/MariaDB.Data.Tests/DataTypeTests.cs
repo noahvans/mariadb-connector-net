@@ -227,70 +227,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			Assert.AreEqual(MySqlDbType.Int16, p.MySqlDbType);
 		}
 
-		/// <summary>
-		/// Bug #7951 - Error reading timestamp column
-		/// </summary>
-		[Test]
-		public void Timestamp()
-		{
-			// don't run this test on 6 and higher
-			if (Version.Major >= 5 && Version.Minor >= 5) return;
-
-			execSQL("DROP TABLE IF EXISTS Test");
-			execSQL("CREATE TABLE Test (id int, dt DATETIME, ts2 TIMESTAMP(2), ts4 TIMESTAMP(4), " +
-				"ts6 TIMESTAMP(6), ts8 TIMESTAMP(8), ts10 TIMESTAMP(10), ts12 TIMESTAMP(12), " +
-				"ts14 TIMESTAMP(14))");
-			execSQL("INSERT INTO Test (id, dt, ts2, ts4, ts6, ts8, ts10, ts12, ts14) " +
-				"VALUES (1, Now(), Now(), Now(), Now(), Now(), Now(), Now(), Now())");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			DateTime now = (DateTime)dt.Rows[0]["dt"];
-			Assert.AreEqual(1, dt.Rows[0]["id"]);
-
-			DateTime ts2 = (DateTime)dt.Rows[0]["ts2"];
-			Assert.AreEqual(now.Year, ts2.Year);
-
-			DateTime ts4 = (DateTime)dt.Rows[0]["ts4"];
-			Assert.AreEqual(now.Year, ts4.Year);
-			Assert.AreEqual(now.Month, ts4.Month);
-
-			DateTime ts6 = (DateTime)dt.Rows[0]["ts6"];
-			Assert.AreEqual(now.Year, ts6.Year);
-			Assert.AreEqual(now.Month, ts6.Month);
-			Assert.AreEqual(now.Day, ts6.Day);
-
-			DateTime ts8 = (DateTime)dt.Rows[0]["ts8"];
-			Assert.AreEqual(now.Year, ts8.Year);
-			Assert.AreEqual(now.Month, ts8.Month);
-			Assert.AreEqual(now.Day, ts8.Day);
-
-			DateTime ts10 = (DateTime)dt.Rows[0]["ts10"];
-			Assert.AreEqual(now.Year, ts10.Year);
-			Assert.AreEqual(now.Month, ts10.Month);
-			Assert.AreEqual(now.Day, ts10.Day);
-			Assert.AreEqual(now.Hour, ts10.Hour);
-			Assert.AreEqual(now.Minute, ts10.Minute);
-
-			DateTime ts12 = (DateTime)dt.Rows[0]["ts12"];
-			Assert.AreEqual(now.Year, ts12.Year);
-			Assert.AreEqual(now.Month, ts12.Month);
-			Assert.AreEqual(now.Day, ts12.Day);
-			Assert.AreEqual(now.Hour, ts12.Hour);
-			Assert.AreEqual(now.Minute, ts12.Minute);
-			Assert.AreEqual(now.Second, ts12.Second);
-
-			DateTime ts14 = (DateTime)dt.Rows[0]["ts14"];
-			Assert.AreEqual(now.Year, ts14.Year);
-			Assert.AreEqual(now.Month, ts14.Month);
-			Assert.AreEqual(now.Day, ts14.Day);
-			Assert.AreEqual(now.Hour, ts14.Hour);
-			Assert.AreEqual(now.Minute, ts14.Minute);
-			Assert.AreEqual(now.Second, ts14.Second);
-		}
-
 		[Test]
 		public void AggregateTypesTest()
 		{
@@ -389,33 +325,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			}
 		}
 
-		/// <summary>
-		/// Bug #10486 MySqlDataAdapter.Update error for decimal column
-		/// </summary>
-		[Test]
-		public void UpdateDecimalColumns()
-		{
-			execSQL("CREATE TABLE Test (id int not null auto_increment primary key, " +
-				"dec1 decimal(10,1))");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			DataRow row = dt.NewRow();
-			row["id"] = DBNull.Value;
-			row["dec1"] = 23.4;
-			dt.Rows.Add(row);
-			da.Update(dt);
-
-			dt.Clear();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-			Assert.AreEqual(1, dt.Rows[0]["id"]);
-			Assert.AreEqual(23.4, dt.Rows[0]["dec1"]);
-			cb.Dispose();
-		}
-
 		[Test]
 		public void DecimalTests()
 		{
@@ -501,66 +410,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 		}
 
 		/// <summary>
-		/// Bug #17375 CommandBuilder ignores Unsigned flag at Parameter creation
-		/// Bug #15274 Use MySqlDbType.UInt32, throwed exception 'Only byte arrays can be serialize'
-		/// </summary>
-		[Test]
-		public void UnsignedTypes()
-		{
-			execSQL("CREATE TABLE Test (b TINYINT UNSIGNED PRIMARY KEY)");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			DataView dv = new DataView(dt);
-			DataRowView row;
-
-			row = dv.AddNew();
-			row["b"] = 120;
-			row.EndEdit();
-			da.Update(dv.Table);
-
-			row = dv.AddNew();
-			row["b"] = 135;
-			row.EndEdit();
-			da.Update(dv.Table);
-			cb.Dispose();
-
-			execSQL("DROP TABLE IF EXISTS Test");
-			execSQL("CREATE TABLE Test (b MEDIUMINT UNSIGNED PRIMARY KEY)");
-			execSQL("INSERT INTO Test VALUES(20)");
-			MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test WHERE (b > ?id)", conn);
-			cmd.Parameters.Add("?id", MySqlDbType.UInt16).Value = 10;
-			using (MySqlDataReader dr = cmd.ExecuteReader())
-			{
-				dr.Read();
-				Assert.AreEqual(20, dr.GetUInt16(0));
-			}
-		}
-
-		/// <summary>
-		/// Bug #25912 selecting negative time values gets wrong results
-		/// </summary>
-		[Test]
-		public void TestNegativeTime()
-		{
-			execSQL("CREATE TABLE Test (t time)");
-			execSQL("INSERT INTO Test SET T='-07:24:00'");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			TimeSpan ts = (TimeSpan)dt.Rows[0]["t"];
-			Assert.AreEqual(-7, ts.Hours);
-			Assert.AreEqual(-24, ts.Minutes);
-			Assert.AreEqual(0, ts.Seconds);
-		}
-
-		/// <summary>
 		/// Bug #25605 BINARY and VARBINARY is returned as a string
 		/// </summary>
 		[Test]
@@ -596,81 +445,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 		}
 
 		[Test]
-		public void BinaryTypes()
-		{
-			execSQL(@"CREATE TABLE Test (c1 VARCHAR(20), c2 VARBINARY(20),
-				c3 TEXT, c4 BLOB, c6 VARCHAR(20) CHARACTER SET BINARY)");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(typeof(String), dt.Columns[0].DataType);
-			Assert.AreEqual(typeof(byte[]), dt.Columns[1].DataType);
-			Assert.AreEqual(typeof(String), dt.Columns[2].DataType);
-			Assert.AreEqual(typeof(byte[]), dt.Columns[3].DataType);
-			Assert.AreEqual(typeof(byte[]), dt.Columns[4].DataType);
-		}
-
-		[Test]
-		public void ShowColumns()
-		{
-			if (Version < new Version(5, 0)) return;
-
-			MySqlDataAdapter da = new MySqlDataAdapter(
-				@"SELECT TRIM(TRAILING ' unsigned' FROM
-				  TRIM(TRAILING ' zerofill' FROM COLUMN_TYPE)) AS MYSQL_TYPE,
-				  IF(COLUMN_DEFAULT IS NULL, NULL,
-				  IF(ASCII(COLUMN_DEFAULT) = 1 OR COLUMN_DEFAULT = '1', 1, 0))
-				  AS TRUE_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS
-				  WHERE TABLE_SCHEMA='test' AND TABLE_NAME='test'", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			Assert.AreEqual(typeof(string), dt.Columns[0].DataType);
-			Assert.AreEqual(typeof(Int64), dt.Columns[1].DataType);
-		}
-
-		[Test]
-		public void RespectBinaryFlag()
-		{
-			execSQL("CREATE TABLE Test (col1 VARBINARY(20), col2 BLOB)");
-
-			string connStr = GetConnectionString(true) + ";respect binary flags=false";
-
-			using (MySqlConnection c = new MySqlConnection(connStr))
-			{
-				c.Open();
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", c);
-				DataTable dt = new DataTable();
-				da.Fill(dt);
-				Assert.IsTrue(dt.Columns[0].DataType == typeof(System.String));
-				Assert.IsTrue(dt.Columns[1].DataType == typeof(System.Byte[]));
-			}
-		}
-
-		/// <summary>
-		/// Bug #27959 Bool datatype is not returned as System.Boolean by MySqlDataAdapter
-		/// </summary>
-		[Test]
-		public void Boolean()
-		{
-			if (Version < new Version(5, 0)) return;
-
-			execSQL("CREATE TABLE Test (id INT, `on` BOOLEAN, v TINYINT(2))");
-			execSQL("INSERT INTO Test VALUES (1,1,1), (2,0,0)");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(typeof(Boolean), dt.Columns[1].DataType);
-			Assert.AreEqual(typeof(SByte), dt.Columns[2].DataType);
-			Assert.AreEqual(true, dt.Rows[0][1]);
-			Assert.AreEqual(false, dt.Rows[1][1]);
-			Assert.AreEqual(1, dt.Rows[0][2]);
-			Assert.AreEqual(0, dt.Rows[1][2]);
-		}
-
-		[Test]
 		public void Binary16AsGuid()
 		{
 			if (Version < new Version(5, 0)) return;
@@ -690,15 +464,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				cmd.Parameters.AddWithValue("@c", bytes);
 				cmd.Parameters.AddWithValue("@c1", g.ToString());
 				cmd.ExecuteNonQuery();
-
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", c);
-				DataTable dt = new DataTable();
-				da.Fill(dt);
-				Assert.IsTrue(dt.Rows[0][1] is Guid);
-				Assert.IsTrue(dt.Rows[0][2] is byte[]);
-				Assert.IsTrue(dt.Rows[0][3] is byte[]);
-
-				Assert.AreEqual(g, dt.Rows[0][1]);
 
 				string s = BitConverter.ToString(bytes);
 
@@ -732,10 +497,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.ExecuteNonQuery();
 			execSQL("insert into Test (AGUID) values (NULL)");
 			cmd.ExecuteNonQuery();
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
 		}
 
 		/// <summary>
@@ -756,24 +517,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				Enabled bit(1) NOT NULL, PRIMARY KEY (`Id`))
 				ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1");
 			execSQL(@"INSERT INTO Child (Id, MainId, Value, Enabled) VALUES (1,2,12345,0x01)");
-
-			MySqlDataAdapter da = new MySqlDataAdapter(
-				@"SELECT m.Descr, c.Value, c.Enabled FROM Main m
-				LEFT OUTER JOIN Child c ON m.Id=c.MainId ORDER BY m.Descr", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(3, dt.Rows.Count);
-			Assert.AreEqual("AAA", dt.Rows[0][0]);
-			Assert.AreEqual("BBB", dt.Rows[1][0]);
-			Assert.AreEqual("CCC", dt.Rows[2][0]);
-
-			Assert.AreEqual(DBNull.Value, dt.Rows[0][1]);
-			Assert.AreEqual(12345, dt.Rows[1][1]);
-			Assert.AreEqual(DBNull.Value, dt.Rows[2][1]);
-
-			Assert.AreEqual(DBNull.Value, dt.Rows[0][2]);
-			Assert.AreEqual(1, dt.Rows[1][2]);
-			Assert.AreEqual(DBNull.Value, dt.Rows[2][2]);
 		}
 
 		/// <summary>
@@ -855,13 +598,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				cmd.Parameters.Add(new MySqlParameter("@g", MySqlDbType.Guid));
 				cmd.Parameters[0].Value = guid;
 				cmd.ExecuteNonQuery();
-
-				DataTable dt = new DataTable();
-				MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test", c);
-				da.Fill(dt);
-				Assert.AreEqual(1, dt.Rows.Count);
-				Assert.AreEqual(1, dt.Rows[0]["id"]);
-				Assert.AreEqual(guid, dt.Rows[0]["g"]);
 			}
 		}
 
@@ -1025,28 +761,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				catch (Exception)
 				{
 				}
-			}
-		}
-
-		/// <summary>
-		/// Bug #48171	MySqlDataReader.GetSchemaTable() returns 0 in "NumericPrecision" for newdecimal
-		/// </summary>
-		[Test]
-		public void DecimalPrecision()
-		{
-			execSQL("DROP TABLE IF EXISTS test");
-			execSQL("CREATE TABLE test(a decimal(35,2), b decimal(36,2), c decimal(36,2) unsigned)");
-
-			MySqlCommand cmd = new MySqlCommand("SELECT * FROM test", conn);
-			using (MySqlDataReader reader = cmd.ExecuteReader())
-			{
-				DataTable dt = reader.GetSchemaTable();
-				DataRow columnDefinition = dt.Rows[0];
-				Assert.AreEqual(35, columnDefinition[SchemaTableColumn.NumericPrecision]);
-				columnDefinition = dt.Rows[1];
-				Assert.AreEqual(36, columnDefinition[SchemaTableColumn.NumericPrecision]);
-				columnDefinition = dt.Rows[2];
-				Assert.AreEqual(36, columnDefinition[SchemaTableColumn.NumericPrecision]);
 			}
 		}
 

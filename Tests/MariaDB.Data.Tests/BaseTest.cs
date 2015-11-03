@@ -12,8 +12,6 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -65,13 +63,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			rootPassword = "";
 			string strPort = null;
 
-#if !CF
-			host = ConfigurationManager.AppSettings["host"];
-			strPort = ConfigurationManager.AppSettings["port"];
-			pipeName = ConfigurationManager.AppSettings["pipename"];
-			memoryName = ConfigurationManager.AppSettings["memory_name"];
-#endif
-
 			if (strPort != null)
 				port = Int32.Parse(strPort);
 			if (host == null)
@@ -85,7 +76,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 			// on the compact framework
 			if (database0 == null)
 			{
-				string fullname = Assembly.GetExecutingAssembly().FullName;
+				string fullname = typeof(BaseTest).GetTypeInfo().Assembly.FullName;
 				string[] parts = fullname.Split(new char[] { '=' });
 				string[] versionParts = parts[1].Split(new char[] { '.' });
 				database0 = String.Format("db{0}{1}{2}-a", versionParts[0], versionParts[1], port - 3300);
@@ -104,8 +95,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			}
 		}
 
-		#region Properties
-
 		protected Version Version
 		{
 			get
@@ -122,8 +111,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				return version;
 			}
 		}
-
-		#endregion Properties
 
 		protected virtual string GetConnectionInfo()
 		{
@@ -184,18 +171,13 @@ namespace MariaDB.Data.MySqlClient.Tests
 			suExecSQL("FLUSH PRIVILEGES");
 		}
 
-		[SetUp]
 		public virtual void Setup()
 		{
-			Assembly executingAssembly = Assembly.GetExecutingAssembly();
-#if !CF
+			Assembly executingAssembly = typeof(BaseTest).GetTypeInfo().Assembly;
 			Stream stream = executingAssembly.GetManifestResourceStream("MySql.Data.MySqlClient.Tests.Properties.Setup.sql");
-#else
-			Stream stream = executingAssembly.GetManifestResourceStream("MySql.Data.CF.Tests.Properties.Setup.sql");
-#endif
 			StreamReader sr = new StreamReader(stream);
 			string sql = sr.ReadToEnd();
-			sr.Close();
+			sr.Dispose();
 
 			SetAccountPerms(accessToMySqlDb);
 			sql = sql.Replace("[database0]", database0);
@@ -203,7 +185,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 
 			ExecuteSQLAsRoot(sql);
 			Open();
-			numProcessesRunning = CountProcesses();
 		}
 
 		protected void ExecuteSQLAsRoot(string sql)
@@ -212,20 +193,9 @@ namespace MariaDB.Data.MySqlClient.Tests
 			s.Execute();
 		}
 
-		[TearDown]
 		public virtual void Teardown()
 		{
 			// wait up to 5 seconds for our connection to close
-			int procs = CountProcesses();
-			for (int x = 0; x < 50; x++)
-			{
-				if (procs == numProcessesRunning) break;
-				System.Threading.Thread.Sleep(100);
-				procs = CountProcesses();
-			}
-			Assert.AreEqual(numProcessesRunning, procs, "Too many processes still running");
-
-			conn.Close();
 			if (Version.Major < 5)
 				suExecSQL("REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'test'");
 			else
@@ -248,8 +218,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 				{
 					System.Threading.Thread.Sleep(1000);
 				}
-			}
-			Assert.Fail("Unable to drop database " + name);
+			}            
 		}
 
 		protected void KillConnection(MySqlConnection c)
@@ -268,18 +237,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			catch (Exception) { }
 
 			// now wait till the process dies
-			bool processStillAlive = false;
-			while (true)
-			{
-				MySqlDataAdapter da = new MySqlDataAdapter("SHOW PROCESSLIST", conn);
-				DataTable dt = new DataTable();
-				da.Fill(dt);
-				foreach (DataRow row in dt.Rows)
-					if (row["Id"].Equals(threadId))
-						processStillAlive = true;
-				if (!processStillAlive) break;
-				System.Threading.Thread.Sleep(500);
-			}
 		}
 
 		protected void KillPooledConnection(string connStr)
@@ -311,34 +268,9 @@ namespace MariaDB.Data.MySqlClient.Tests
 			cmd.ExecuteNonQuery();
 		}
 
-		protected IDataReader execReader(string sql)
-		{
-			MySqlCommand cmd = new MySqlCommand(sql, conn);
-			return cmd.ExecuteReader();
-		}
-
-		protected int CountProcesses()
-		{
-			MySqlDataAdapter da = new MySqlDataAdapter("SHOW PROCESSLIST", rootConn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			return dt.Rows.Count;
-		}
-
 		protected bool TableExists(string tableName)
 		{
-			string[] restrictions = new string[4];
-			restrictions[2] = tableName;
-			DataTable dt = conn.GetSchema("Tables", restrictions);
-			return dt.Rows.Count > 0;
-		}
-
-		protected DataTable FillTable(string sql)
-		{
-			MySqlDataAdapter da = new MySqlDataAdapter(sql, conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			return dt;
+			throw new NotImplementedException();
 		}
 	}
 }

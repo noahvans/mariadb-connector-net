@@ -38,10 +38,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("INSERT INTO Test VALUES (3, 'Test3')");
             execSQL("INSERT INTO Test VALUES (4, 'Test4')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             string sql = "SELECT * FROM Test; SELECT * FROM Test WHERE id > 2";
             MySqlCommand cmd = new MySqlCommand(sql, conn);
@@ -79,10 +76,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("INSERT INTO Test VALUES (3, 'Test3')");
             execSQL("INSERT INTO Test VALUES (4, 'Test4')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test; SELECT * FROM Test WHERE id > 2", conn);
             using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -113,10 +107,7 @@ namespace MariaDB.Data.MySqlClient.Tests
         {
             execSQL("INSERT INTO Test VALUES (1, 'Test1')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("SELECT * FROM Test", conn);
             using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -143,10 +134,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("INSERT INTO Test VALUES (3, 'Test1')");
             execSQL("INSERT INTO Test VALUES (4, 'Test1')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("SELECT name FROM Test WHERE id=3", conn);
             using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -172,10 +160,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             execSQL("INSERT INTO Test VALUES (3, 'Test3')");
             execSQL("INSERT INTO Test VALUES (4, 'Test4')");
 
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
             GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
 
             MySqlCommand cmd = new MySqlCommand("SELECT name FROM Test WHERE id=3", conn);
             using (MySqlDataReader reader = cmd.ExecuteReader())

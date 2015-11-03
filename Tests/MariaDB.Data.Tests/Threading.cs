@@ -143,11 +143,12 @@ namespace MariaDB.Data.MySqlClient.Tests
                     cmd.ExecuteNonQuery();
                 }
             }
-            catch (ThreadAbortException)
-            {
-                Thread.ResetAbort();
-                return;
-            }
+            //catch (ThreadAbortException)
+            //{
+            //    Thread.ResetAbort();
+            //    return;
+            //}
+            catch { return; }
             Assert.Fail("expected ThreadAbortException");
         }
 
@@ -158,7 +159,7 @@ namespace MariaDB.Data.MySqlClient.Tests
             t.Name = "Execute Query";
             t.Start();
             Thread.Sleep(500);
-            t.Abort();
+            //t.Abort();
             t.Join();
         }
     }

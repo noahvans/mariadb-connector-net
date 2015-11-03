@@ -33,17 +33,17 @@
 // Setup for the template (initializing variables, etc.)
 // +++++++++++++++++++++++++++++++++++++++++++++++++
 
-    string databaseName = this.GetInput<string>(EdmParameterBag.ParameterName.DatabaseName.ToString());
-    string edmxPath = this.GetInput<string>(EdmParameterBag.ParameterName.EdmxPath.ToString());
-    Version targetVersion = this.GetInput<Version>(EdmParameterBag.ParameterName.TargetVersion.ToString());
-    
-    if (false == InitializeAndValidateExistingStore()) 
-    {
+	string databaseName = this.GetInput<string>(EdmParameterBag.ParameterName.DatabaseName.ToString());
+	string edmxPath = this.GetInput<string>(EdmParameterBag.ParameterName.EdmxPath.ToString());
+	Version targetVersion = this.GetInput<Version>(EdmParameterBag.ParameterName.TargetVersion.ToString());
+	
+	if (false == InitializeAndValidateExistingStore()) 
+	{
 #>
 -- Warning: There were errors validating the existing SSDL. Drop statements
 -- will not be generated.
 <#
-    }
+	}
 #>
 
 -- -----------------------------------------------------------
@@ -51,24 +51,24 @@
 -- -----------------------------------------------------------
 -- Date Created: <#=DateTime.Now#>
 <#
-    if (!String.IsNullOrEmpty(edmxPath))
-    {
+	if (!String.IsNullOrEmpty(edmxPath))
+	{
 #>
 -- Generated from EDMX file: <#=MyId(edmxPath)#>
 -- Target version: <#=MyId(targetVersion.ToString())#>
 <#
-    }
+	}
 #>
 -- --------------------------------------------------
 
 <#  if (!String.IsNullOrEmpty(databaseName))
-    {
+	{
 #>
 DROP DATABASE IF EXISTS `<#=MyId(databaseName)#>`;
 CREATE DATABASE `<#=MyId(databaseName)#>`;
 USE `<#=MyId(databaseName)#>`;
 <#
-    }
+	}
 #>
 
 -- --------------------------------------------------
@@ -77,17 +77,17 @@ USE `<#=MyId(databaseName)#>`;
 -- --------------------------------------------------
 
 <#
-    foreach (AssociationSet associationSet in ExistingStore.GetAllAssociationSets())
-    {
-        ReferentialConstraint constraint = associationSet.ElementType.ReferentialConstraints.Single();
-        string constraintName = MyId(WriteFKConstraintName(constraint));
-        AssociationSetEnd dependentSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.ToRole).Single();
-        string dependentTableName = MyId(dependentSetEnd.EntitySet.GetTableName());
-        
+	foreach (AssociationSet associationSet in ExistingStore.GetAllAssociationSets())
+	{
+		ReferentialConstraint constraint = associationSet.ElementType.ReferentialConstraints.Single();
+		string constraintName = MyId(WriteFKConstraintName(constraint));
+		AssociationSetEnd dependentSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.ToRole).Single();
+		string dependentTableName = MyId(dependentSetEnd.EntitySet.GetTableName());
+		
 #>
 --    ALTER TABLE `<#=dependentTableName#>` DROP CONSTRAINT `<#=constraintName#>`;
 <#
-    }
+	}
 #>
 
 -- --------------------------------------------------
@@ -95,13 +95,13 @@ USE `<#=MyId(databaseName)#>`;
 -- --------------------------------------------------
 SET foreign_key_checks = 0;
 <#
-    foreach (EntitySet entitySet in ExistingStore.GetAllEntitySets())
-    { 
-        string tableName = MyId(entitySet.GetTableName());
+	foreach (EntitySet entitySet in ExistingStore.GetAllEntitySets())
+	{ 
+		string tableName = MyId(entitySet.GetTableName());
 #>
-    DROP TABLE IF EXISTS `<#=tableName#>`;
+	DROP TABLE IF EXISTS `<#=tableName#>`;
 <#
-    }
+	}
 #>
 SET foreign_key_checks = 1;
 
@@ -110,26 +110,26 @@ SET foreign_key_checks = 1;
 -- --------------------------------------------------
 
 <#
-    foreach (EntitySet entitySet in Store.GetAllEntitySets())
-    {
-        string tableName = MyId(entitySet.GetTableName());
+	foreach (EntitySet entitySet in Store.GetAllEntitySets())
+	{
+		string tableName = MyId(entitySet.GetTableName());
 #>
 -- Creating table '<#=tableName#>'
 
 CREATE TABLE `<#=tableName#>` (
 <#
-        for (int p = 0; p < entitySet.ElementType.Properties.Count; p++)
-        {
-            EdmProperty prop = entitySet.ElementType.Properties[p];
+		for (int p = 0; p < entitySet.ElementType.Properties.Count; p++)
+		{
+			EdmProperty prop = entitySet.ElementType.Properties[p];
 #>
-    `<#=MyId(prop.Name)#>` <#=WriteMySqlType(prop)#> <#=WriteMySqlIdentity(prop, targetVersion)#> <#=WriteNullable(prop.Nullable)#><#=(p < entitySet.ElementType.Properties.Count - 1) ? "," : ""#>
+	`<#=MyId(prop.Name)#>` <#=WriteMySqlType(prop)#> <#=WriteMySqlIdentity(prop, targetVersion)#> <#=WriteNullable(prop.Nullable)#><#=(p < entitySet.ElementType.Properties.Count - 1) ? "," : ""#>
 <#
-        }
+		}
 #>
 );
 
 <# 
-    } 
+	} 
 #>
 
 
@@ -138,9 +138,9 @@ CREATE TABLE `<#=tableName#>` (
 -- --------------------------------------------------
 
 <#
-    foreach (EntitySet entitySet in Store.GetAllEntitySets())
-    {
-        string tableName = MyId(entitySet.GetTableName());
+	foreach (EntitySet entitySet in Store.GetAllEntitySets())
+	{
+		string tableName = MyId(entitySet.GetTableName());
 		
 		bool hasAutoColumn = false;
 		foreach (EdmProperty keyProperty in entitySet.ElementType.GetKeyProperties())
@@ -157,10 +157,10 @@ CREATE TABLE `<#=tableName#>` (
 
 ALTER TABLE `<#=tableName#>`
 ADD CONSTRAINT `PK_<#=tableName#>`
-    PRIMARY KEY (<#=WriteMySqlColumns(entitySet.ElementType.GetKeyProperties(), ',')#> );
+	PRIMARY KEY (<#=WriteMySqlColumns(entitySet.ElementType.GetKeyProperties(), ',')#> );
 
 <#
-    }
+	}
 #>
 
 
@@ -169,39 +169,39 @@ ADD CONSTRAINT `PK_<#=tableName#>`
 -- --------------------------------------------------
 
 <#
-    foreach (AssociationSet associationSet in Store.GetAllAssociationSets())
-    {
-        ReferentialConstraint constraint = associationSet.ElementType.ReferentialConstraints.Single();
-        AssociationSetEnd dependentSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.ToRole).Single();
-        AssociationSetEnd principalSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.FromRole).Single();
-        string dependentTableName = MyId(dependentSetEnd.EntitySet.GetTableName());
-        string principalTableName = MyId(principalSetEnd.EntitySet.GetTableName());
+	foreach (AssociationSet associationSet in Store.GetAllAssociationSets())
+	{
+		ReferentialConstraint constraint = associationSet.ElementType.ReferentialConstraints.Single();
+		AssociationSetEnd dependentSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.ToRole).Single();
+		AssociationSetEnd principalSetEnd = associationSet.AssociationSetEnds.Where(ase => ase.CorrespondingAssociationEndMember == constraint.FromRole).Single();
+		string dependentTableName = MyId(dependentSetEnd.EntitySet.GetTableName());
+		string principalTableName = MyId(principalSetEnd.EntitySet.GetTableName());
 #>
 -- Creating foreign key on <#=WriteMySqlColumns(constraint.ToProperties, ',')#> in table '<#=dependentTableName#>'
 
 ALTER TABLE `<#=dependentTableName#>`
 ADD CONSTRAINT `<#=WriteFKConstraintName(constraint)#>`
-    FOREIGN KEY (<#=WriteMySqlColumns(constraint.ToProperties, ',')#>)
-    REFERENCES `<#=principalTableName#>`
-        (<#=WriteMySqlColumns(constraint.FromProperties, ',')#>)
-    ON DELETE <#=GetDeleteAction(constraint)#> ON UPDATE NO ACTION;
+	FOREIGN KEY (<#=WriteMySqlColumns(constraint.ToProperties, ',')#>)
+	REFERENCES `<#=principalTableName#>`
+		(<#=WriteMySqlColumns(constraint.FromProperties, ',')#>)
+	ON DELETE <#=GetDeleteAction(constraint)#> ON UPDATE NO ACTION;
 <#      
-        // if the foreign keys are part of the primary key on the dependent end, then we should not add a constraint.
-        if (!dependentSetEnd.EntitySet.ElementType.GetKeyProperties().Take(constraint.ToProperties.Count()).OrderBy(r => r.Name).SequenceEqual(constraint.ToProperties.OrderBy(r => r.Name)))
-        {
+		// if the foreign keys are part of the primary key on the dependent end, then we should not add a constraint.
+		if (!dependentSetEnd.EntitySet.ElementType.GetKeyProperties().Take(constraint.ToProperties.Count()).OrderBy(r => r.Name).SequenceEqual(constraint.ToProperties.OrderBy(r => r.Name)))
+		{
 #>
 
 -- Creating non-clustered index for FOREIGN KEY '<#=WriteFKConstraintName(constraint)#>'
 
 CREATE INDEX `IX_<#=WriteFKConstraintName(constraint)#>` 
-    ON `<#=dependentTableName#>`
-    (<#=WriteMySqlColumns(constraint.ToProperties, ',')#>);
+	ON `<#=dependentTableName#>`
+	(<#=WriteMySqlColumns(constraint.ToProperties, ',')#>);
 <#      
-        }
+		}
 #>
 
 <#
-    }
+	}
 #>
 -- --------------------------------------------------
 -- Script has ended

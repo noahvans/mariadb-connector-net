@@ -12,7 +12,6 @@
 // 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA
 
 using System.Collections.Generic;
-using System.Data.Metadata.Edm;
 using System.Text;
 
 namespace MariaDB.Data.Entity
@@ -22,7 +21,6 @@ namespace MariaDB.Data.Entity
         public string Schema;
         public string Table;
         public SqlFragment DefiningQuery;
-        public TypeUsage Type;
         public List<ColumnFragment> Columns;
 
         public TableFragment()

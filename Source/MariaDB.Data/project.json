@@ -23,7 +23,7 @@
     "dnxcore50": {
       "dependencies": {
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-*",
-        "System.ComponentModel.TypeConverter": "4.0.1-beta-23409",
+        "System.ComponentModel.TypeConverter": "4.0.1-*",
         "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
         "System.Collections.Specialized": "4.0.1-*",
         "System.Net.Primitives": "4.0.11-*",

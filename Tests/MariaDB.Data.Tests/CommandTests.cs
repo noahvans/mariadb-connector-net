@@ -115,15 +115,7 @@ namespace MariaDB.Data.MySqlClient.Tests
                 (MySqlTransaction)cmd.Transaction);
             clone.Parameters.AddWithValue("?test", 1);
             txn.Rollback();
-        }
-
-        [Test]
-        public void CloneCommand()
-        {
-            MySqlCommand cmd = new MySqlCommand();
-            MySqlCommand newCommand = cmd.Clone();
-            IDbCommand newCommand2 = (IDbCommand)(cmd as ICloneable).Clone();
-        }
+        }        
 
         [Test]
         public void TableWithOVer100Columns()
@@ -252,23 +244,6 @@ namespace MariaDB.Data.MySqlClient.Tests
                     }
                 }
         */
-
-        /// <summary>
-        /// Bug #7248 There is already an open DataReader associated with this Connection which must
-        /// </summary>
-        [Test]
-        public void GenWarnings()
-        {
-            execSQL("CREATE TABLE Test (id INT, dt DATETIME)");
-            execSQL("INSERT INTO Test VALUES (1, NOW())");
-            execSQL("INSERT INTO Test VALUES (2, NOW())");
-            execSQL("INSERT INTO Test VALUES (3, NOW())");
-
-            MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test WHERE dt = '" +
-                DateTime.Now + "'", conn);
-            DataSet ds = new DataSet();
-            da.Fill(ds);
-        }
 
         /// <summary>
         /// Bug #11991 ExecuteScalar
@@ -505,46 +480,6 @@ namespace MariaDB.Data.MySqlClient.Tests
             }
         }
 
-#if !CF
-
-        /// <summary>
-        /// Bug #59616	Only INSERTs are batched
-        /// </summary>
-        [Test]
-        public void BatchUpdatesAndDeletes()
-        {
-            execSQL("CREATE TABLE test (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20))");
-            execSQL("INSERT INTO test VALUES (1, 'boo'), (2, 'boo'), (3, 'boo')");
-
-            MySqlTrace.Listeners.Clear();
-            MySqlTrace.Switch.Level = SourceLevels.All;
-            GenericListener listener = new GenericListener();
-            MySqlTrace.Listeners.Add(listener);
-
-            string connStr = GetConnectionString(true) + ";logging=true;allow batch=true";
-            using (MySqlConnection c = new MySqlConnection(connStr))
-            {
-                c.Open();
-                MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM test", c);
-                MySqlCommandBuilder cb = new MySqlCommandBuilder(da);
-                da.UpdateCommand = cb.GetUpdateCommand();
-                da.UpdateCommand.UpdatedRowSource = UpdateRowSource.None;
-                da.UpdateBatchSize = 100;
-
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
-                dt.Rows[0]["name"] = "boo2";
-                dt.Rows[1]["name"] = "boo2";
-                dt.Rows[2]["name"] = "boo2";
-                da.Update(dt);
-            }
-
-            Assert.AreEqual(1, listener.Find("Query Opened: UPDATE"));
-        }
-
-#endif
-
         [Test]
         public void ExecuteReaderReturnsReaderAfterCancel()
         {
@@ -558,8 +493,8 @@ namespace MariaDB.Data.MySqlClient.Tests
             {
                 connection.Open();
                 MySqlCommand command = new MySqlCommand("SELECT PrimaryKey FROM TableWithDateAsPrimaryKey", connection);
-                IDataReader reader = command.ExecuteReader(CommandBehavior.KeyInfo);
-                DataTable dataTableSchema = reader.GetSchemaTable();
+                var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
+                //DataTable dataTableSchema = reader.GetSchemaTable();
                 command.Cancel();
                 reader.Close();
 
@@ -567,15 +502,13 @@ namespace MariaDB.Data.MySqlClient.Tests
                 reader = command.ExecuteReader(CommandBehavior.KeyInfo);
                 Assert.IsNotNull(reader);
 
-                dataTableSchema = reader.GetSchemaTable();
-                Assert.AreEqual("PrimaryKey", dataTableSchema.Rows[0][dataTableSchema.Columns[0]]);
+                //dataTableSchema = reader.GetSchemaTable();
+                //Assert.AreEqual("PrimaryKey", dataTableSchema.Rows[0][dataTableSchema.Columns[0]]);
 
                 reader.Close();
             }
         }
     }
-
-    #region Configs
 
     public class CommandTestsSocketCompressed : CommandTests
     {
@@ -627,5 +560,4 @@ namespace MariaDB.Data.MySqlClient.Tests
 
 #endif
 
-    #endregion Configs
 }

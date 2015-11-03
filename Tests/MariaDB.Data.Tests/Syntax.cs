@@ -22,18 +22,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 	public class Syntax : BaseTest
 	{
 		[Test]
-		public void ShowCreateTable()
-		{
-			execSQL("CREATE TABLE Test (id INT NOT NULL, name VARCHAR(250), PRIMARY KEY(id))");
-			MySqlDataAdapter da = new MySqlDataAdapter("SHOW CREATE TABLE Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			Assert.AreEqual(1, dt.Rows.Count);
-			Assert.AreEqual(2, dt.Columns.Count);
-		}
-
-		[Test]
 		public void ProblemCharsInSQLUTF8()
 		{
 			if (Version < new Version(4, 1)) return;
@@ -93,11 +81,11 @@ namespace MariaDB.Data.MySqlClient.Tests
 			c.Open();
 
 			string path = Path.GetTempFileName();
-			StreamWriter sw = new StreamWriter(path);
+			StreamWriter sw = new StreamWriter(File.OpenWrite(path));
 			for (int i = 0; i < 2000000; i++)
 				sw.WriteLine(i + ",'Test'");
 			sw.Flush();
-			sw.Close();
+			sw.Dispose();
 
 			path = path.Replace(@"\", @"\\");
 			MySqlCommand cmd = new MySqlCommand(
@@ -262,26 +250,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 		}
 
 		/// <summary>
-		/// Bug #21521 # Symbols not allowed in column/table names.
-		/// </summary>
-		[Test]
-		public void CommentSymbolInTableName()
-		{
-			execSQL("CREATE TABLE Test (`PO#` int(11) NOT NULL auto_increment, " +
-				"`PODate` date default NULL, PRIMARY KEY  (`PO#`))");
-			execSQL("INSERT INTO Test ( `PO#`, `PODate` ) " +
-				"VALUES ( NULL, '2006-01-01' )");
-
-			string sql = "SELECT `PO#` AS PurchaseOrderNumber, " +
-				"`PODate` AS OrderDate FROM  Test";
-			MySqlCommand cmd = new MySqlCommand(sql, conn);
-			MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.AreEqual(1, dt.Rows.Count);
-		}
-
-		/// <summary>
 		/// Bug #25178 Addition message in error
 		/// </summary>
 		[Test]
@@ -297,54 +265,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				string s = ex.Message;
 				Assert.IsFalse(s.StartsWith("#"));
 			}
-		}
-
-		/// <summary>
-		/// Bug #27221 describe SQL command returns all byte array on MySQL versions older than 4.1.15
-		/// </summary>
-		[Test]
-		public void Describe()
-		{
-			execSQL("CREATE TABLE Test (id INT NOT NULL, name VARCHAR(250), PRIMARY KEY(id))");
-			MySqlDataAdapter da = new MySqlDataAdapter("DESCRIBE Test", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			Assert.IsTrue(dt.Columns[0].DataType == typeof(string));
-			Assert.IsTrue(dt.Columns[1].DataType == typeof(string));
-			Assert.IsTrue(dt.Columns[2].DataType == typeof(string));
-			Assert.IsTrue(dt.Columns[3].DataType == typeof(string));
-			Assert.IsTrue(dt.Columns[4].DataType == typeof(string));
-			Assert.IsTrue(dt.Columns[5].DataType == typeof(string));
-		}
-
-		[Test]
-		public void ShowTableStatus()
-		{
-			execSQL("CREATE TABLE Test (id INT NOT NULL, name VARCHAR(250), PRIMARY KEY(id))");
-			MySqlDataAdapter da = new MySqlDataAdapter(
-				String.Format("SHOW TABLE STATUS FROM `{0}` LIKE 'Test'",
-				database0), conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			Assert.IsTrue(dt.Rows[0][0].GetType() == typeof(string));
-		}
-
-		/// <summary>
-		/// Bug #26960 Connector .NET 5.0.5 / Visual Studio Plugin 1.1.2
-		/// </summary>
-		[Test]
-		public void NullAsAType()
-		{
-			MySqlDataAdapter da = new MySqlDataAdapter(
-				@"SELECT 'localhost' as SERVER_NAME,
-				null as CATALOG_NAME, database() as SCHEMA_NAME", conn);
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-			Assert.IsTrue(dt.Rows[0][0].GetType() == typeof(string));
-			Assert.AreEqual(DBNull.Value, dt.Rows[0][1]);
-			Assert.IsTrue(dt.Rows[0][2].GetType() == typeof(string));
 		}
 
 		[Test]
@@ -369,33 +289,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 			finally
 			{
 				suExecSQL(String.Format("DROP DATABASE `{0}`", dbName));
-			}
-		}
-
-		/// <summary>
-		/// Bug #28448  	show processlist; returns byte arrays in the resulting data table
-		/// </summary>
-		[Test]
-		public void ShowProcessList()
-		{
-			string connStr = GetConnectionString(true) + ";respect binary flags=false;";
-			MySqlConnection c = new MySqlConnection(connStr);
-			using (c)
-			{
-				c.Open();
-
-				MySqlCommand cmd = new MySqlCommand("show processlist", c);
-				DataTable dt = new DataTable();
-
-				using (MySqlDataReader rdr = cmd.ExecuteReader())
-				{
-					dt.Load(rdr);
-				}
-				DataRow row = dt.Rows[0];
-
-				Assert.IsTrue(row["User"].GetType().Name == "String");
-				Assert.IsTrue(row["Host"].GetType().Name == "String");
-				Assert.IsTrue(row["Command"].GetType().Name == "String");
 			}
 		}
 
@@ -436,42 +329,6 @@ namespace MariaDB.Data.MySqlClient.Tests
 				reader.Read();
 				Assert.AreEqual("test 2010-03-04 @ 10:14", reader.GetString(0));
 			}
-		}
-
-		/// <summary>
-		/// Bug #54386 : expression with parentheses in INSERT leads to invalid
-		/// query when using batching
-		/// </summary>
-		[Test]
-		public void TokenizerBatching()
-		{
-			execSQL("CREATE TABLE Test (id INT, expr INT,name VARCHAR(20), PRIMARY KEY(id))");
-
-			MySqlDataAdapter da = new MySqlDataAdapter("SELECT * FROM Test",
-				conn);
-			MySqlCommand ins = new MySqlCommand(
-				"INSERT INTO test (id, expr, name) VALUES(?p1, (?p2 * 2) + 3, ?p3)",
-				conn);
-			da.InsertCommand = ins;
-			ins.UpdatedRowSource = UpdateRowSource.None;
-			ins.Parameters.Add("?p1", MySqlDbType.Int32).SourceColumn = "id";
-			ins.Parameters.Add("?p2", MySqlDbType.Int32).SourceColumn = "expr";
-			ins.Parameters.Add("?p3", MySqlDbType.VarChar, 20).SourceColumn = "name";
-
-			DataTable dt = new DataTable();
-			da.Fill(dt);
-
-			for (int i = 1; i <= 100; i++)
-			{
-				DataRow row = dt.NewRow();
-				row["id"] = i;
-				row["expr"] = i;
-				row["name"] = "name " + i;
-				dt.Rows.Add(row);
-			}
-
-			da.UpdateBatchSize = 10;
-			da.Update(dt);
 		}
 
 		/// <summary>
@@ -518,7 +375,7 @@ namespace MariaDB.Data.MySqlClient.Tests
 					"extable_1 tbl_c WHERE tbl_a.daset_id=208 AND tbl_a.sect_id IN " +
 					"(1,2,3,4,5,6,7)",
 					c);
-				Console.WriteLine(cmd.ExecuteScalar());
+				//Console.WriteLine(cmd.ExecuteScalar());
 			}
 		}
 

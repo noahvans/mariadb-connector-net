@@ -135,7 +135,7 @@ namespace MariaDB.Data.MySqlClient
             if (tree.ResultType != null)
             {
                 Debug.Assert(tree.ResultType.EdmType.BuiltInTypeKind == BuiltInTypeKind.CollectionType,
-                    Resources.WrongFunctionResultType);
+                    ResourceStrings.WrongFunctionResultType);
 
                 CollectionType collectionType = (CollectionType)(tree.ResultType.EdmType);
                 EdmType elementType = collectionType.TypeUsage.EdmType;
@@ -159,7 +159,7 @@ namespace MariaDB.Data.MySqlClient
                 }
                 else
                 {
-                    Debug.Fail(Resources.WrongFunctionResultType);
+                    Debug.Fail(ResourceStrings.WrongFunctionResultType);
                 }
             }
         }

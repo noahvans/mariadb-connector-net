@@ -13,8 +13,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common.CommandTrees;
-using System.Data.Metadata.Edm;
 using System.Diagnostics;
 using System.Text;
 
@@ -183,16 +181,17 @@ namespace MariaDB.Data.Entity
 
         private List<ColumnFragment> GetDefaultColumnsForTable(TableFragment table)
         {
-            List<ColumnFragment> columns = new List<ColumnFragment>();
+            //List<ColumnFragment> columns = new List<ColumnFragment>();
 
-            foreach (EdmProperty property in Metadata.GetProperties(table.Type.EdmType))
-            {
-                ColumnFragment col = new ColumnFragment(table.Name, property.Name);
-                col.PushInput(property.Name);
-                col.PushInput(table.Name);
-                columns.Add(col);
-            }
-            return columns;
+            //foreach (EdmProperty property in Metadata.GetProperties(table.Type.EdmType))
+            //{
+            //    ColumnFragment col = new ColumnFragment(table.Name, property.Name);
+            //    col.PushInput(property.Name);
+            //    col.PushInput(table.Name);
+            //    columns.Add(col);
+            //}
+            //return columns;
+            throw new NotImplementedException();
         }
 
         private string MakeColumnNameUnique(string baseName)
@@ -220,34 +219,34 @@ namespace MariaDB.Data.Entity
             return false;
         }
 
-        public bool IsCompatible(DbExpressionKind expressionKind)
-        {
-            switch (expressionKind)
-            {
-                case DbExpressionKind.Filter:
-                    return Where == null && Columns.Count == 0;
+        //public bool IsCompatible(DbExpressionKind expressionKind)
+        //{
+        //    switch (expressionKind)
+        //    {
+        //        case DbExpressionKind.Filter:
+        //            return Where == null && Columns.Count == 0;
 
-                case DbExpressionKind.Project:
-                    return Columns.Count == 0;
+        //        case DbExpressionKind.Project:
+        //            return Columns.Count == 0;
 
-                case DbExpressionKind.Limit:
-                    return Limit == null;
+        //        case DbExpressionKind.Limit:
+        //            return Limit == null;
 
-                case DbExpressionKind.Skip:
-                    return Skip == null;
+        //        case DbExpressionKind.Skip:
+        //            return Skip == null;
 
-                case DbExpressionKind.Sort:
-                    return Columns.Count == 0 &&
-                        GroupBy == null &&
-                        OrderBy == null;
+        //        case DbExpressionKind.Sort:
+        //            return Columns.Count == 0 &&
+        //                GroupBy == null &&
+        //                OrderBy == null;
 
-                case DbExpressionKind.GroupBy:
-                    return Columns.Count == 0 &&
-                        GroupBy == null &&
-                        OrderBy == null &&
-                        Limit == null;
-            }
-            throw new InvalidOperationException();
-        }
+        //        case DbExpressionKind.GroupBy:
+        //            return Columns.Count == 0 &&
+        //                GroupBy == null &&
+        //                OrderBy == null &&
+        //                Limit == null;
+        //    }
+        //    throw new InvalidOperationException();
+        //}
     }
 }

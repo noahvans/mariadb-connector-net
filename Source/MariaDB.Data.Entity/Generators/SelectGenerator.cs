@@ -13,51 +13,29 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common.CommandTrees;
-using System.Data.Metadata.Edm;
 using System.Diagnostics;
+using Microsoft.Data.Entity.Storage;
+using Microsoft.Data.Entity.Query.Expressions;
 
 namespace MariaDB.Data.Entity
 {
-    internal class SelectGenerator : SqlGenerator
+    internal class SelectGenerator : SelectExpressionFactory
     {
         private Stack<SelectStatement> selectStatements = new Stack<SelectStatement>();
-
-        #region Properties
 
         private SelectStatement CurrentSelect
         {
             get { return selectStatements.Count == 0 ? null : selectStatements.Peek(); }
         }
 
-        #endregion Properties
-
-        public override string GenerateSQL(DbCommandTree tree)
-        {
-            DbQueryCommandTree commandTree = tree as DbQueryCommandTree;
-
-            SqlFragment fragment = null;
-
-            DbExpression e = commandTree.Query;
-            switch (commandTree.Query.ExpressionKind)
-            {
-                case DbExpressionKind.Project:
-                    fragment = e.Accept(this);
-                    Debug.Assert(fragment is SelectStatement);
-                    break;
-            }
-
-            return fragment.ToString();
-        }
-
-        public override SqlFragment Visit(DbDistinctExpression expression)
+        public override SqlFragment Visit(DistinctExpression expression)
         {
             SelectStatement select = VisitInputExpressionEnsureSelect(expression.Argument, null, null);
             select.IsDistinct = true;
             return select;
         }
 
-        public override SqlFragment Visit(DbFilterExpression expression)
+        public override SqlFragment Visit(FilterExpression expression)
         {
             SelectStatement select = VisitInputExpressionEnsureSelect(expression.Input.Expression,
                 expression.Input.VariableName, expression.Input.VariableType);
@@ -310,6 +288,22 @@ namespace MariaDB.Data.Entity
             f.Left = left;
             f.Right = right;
             return f;
+        }
+
+        public RelationalCommand GenerateSql(IDictionary<string, object> parameterValues)
+        {
+            SqlFragment fragment = null;
+
+            DbExpression e = commandTree.Query;
+            switch (commandTree.Query.ExpressionKind)
+            {
+                case DbExpressionKind.Project:
+                    fragment = e.Accept(this);
+                    Debug.Assert(fragment is SelectStatement);
+                    break;
+            }
+
+            return fragment.ToString();
         }
     }
 }
